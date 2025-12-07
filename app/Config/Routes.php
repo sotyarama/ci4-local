@@ -39,7 +39,18 @@ $routes->group('', ['filter' => 'auth'], static function($routes) {
         $routes->get('suppliers/edit/(:num)', 'Suppliers::edit/$1');
         $routes->post('suppliers/update/(:num)', 'Suppliers::update/$1');
         $routes->post('suppliers/delete/(:num)', 'Suppliers::delete/$1');
+
     });
+
+    // Master Recipes (Resep per Menu)
+    $routes->group('master/recipes', ['namespace' => 'App\Controllers\Master'], static function($routes) {
+        $routes->get('/', 'Recipes::index');
+        $routes->get('create', 'Recipes::create');
+        $routes->post('store', 'Recipes::store');
+        $routes->get('edit/(:num)', 'Recipes::edit/$1');
+        $routes->post('update/(:num)', 'Recipes::update/$1');
+    });
+
 
     // Transactions - Purchases
     $routes->group('purchases', ['namespace' => 'App\Controllers\Transactions'], static function($routes) {

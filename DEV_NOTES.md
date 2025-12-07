@@ -1,26 +1,23 @@
-# 📘 **DEV_NOTES.md**
+# 📘 **DEV_NOTES.md (Updated: 2025-12-07 Evening)**
 
 # POS Café System — Development Notes
 
 *Author: GS*
 *Project: CodeIgniter 4 Local Development*
-*Last updated: {{today}}*
+*Last updated: 2025-12-07 23:00*
 
 ---
 
 ## 📌 **Repository Overview**
 
-Project ini adalah sistem POS sederhana untuk kebutuhan café kecil, dibangun menggunakan **CodeIgniter 4 (CI4)** dan **PHP 8.3**, dengan struktur modular untuk Master Data, Transaksi, dan Laporan.
+Sistem POS Café berbasis **CodeIgniter 4** dengan fokus pada:
 
-Tujuan utama:
-
-* POS penjualan
-* Manajemen stok + bahan baku
-* Perhitungan HPP dan food cost
+* Manajemen produk & resep (BOM)
+* Manajemen stok & bahan baku
 * Pembelian bahan baku
-* Overhead operasional
-* Audit log & notifikasi
-* Laporan-laporan dasar
+* HPP otomatis
+* POS Sales (future)
+* Laporan & audit log (future)
 
 ---
 
@@ -28,133 +25,180 @@ Tujuan utama:
 
 ### **1. Initial Setup (579c5ce, 2025-12-06)**
 
-* Fresh install CodeIgniter 4
-* Struktur default CI4
-* Belum ada modul POS
+* Install CI4 fresh
+* Struktur default
+* No POS modules yet
 
 ---
 
 ### **2. Initial POS App (3b3a527, 2025-12-06)**
 
-**Modules added:**
+**Modules Added**
 
 * Login & Logout
-* Authentication filter
-* Dashboard (layout utama)
+* Auth Filter
+* Dashboard layout ready
 * CRUD Master Products
 
-**Database work:**
+**Database**
 
-* Roles
-* Users
-* Menu Categories
-* Menus
-* Units
-* Raw Materials
-
-**Seeds:**
-
-* Roles, Users, Menu Categories, Menus, Units
+* Roles, Users
+* Menu Categories, Menus
+* Units, Raw Materials
+  **Seeds**: Roles, Users, Menu Categories, Menus, Units
 
 ---
 
-### **3. Suppliers + Purchases Module (32e2a4c, 2025-12-07)**
+### **3. Master Raw Materials + Suppliers + Purchases (32e2a4c, 2025-12-07)**
 
-**Modules added:**
+**Modules Added**
 
-* Master Raw Materials CRUD (finalized)
-* Master Suppliers CRUD (finalized)
-* Purchases module (initial create)
+* Master Raw Materials (full CRUD)
+* Master Suppliers (full CRUD)
+* Purchases module (header + detail items)
 
-**Database work:**
+**Database**
 
-* Purchases table
-* Purchase items table
-* Suppliers table
+* Suppliers
+* Purchases
+* Purchase Items
 
-Views & controllers untuk form dan list pembelian sudah siap, tetapi cooking logic belum diselesaikan (avg cost, stock movement, dll.)
+**Logic**
+
+* Average cost update
+* Current stock update
+* Stock movement recorded
+
+---
+
+### **4. Recipes Module + HPP System (WORK IN PROGRESS, not committed yet)**
+
+**Today’s progress (Dec 7 evening):**
+
+* Create Recipe (header + multiple items)
+* Edit Recipe (header + items)
+* Recipe Model: `calculateHppForMenu()`
+* HPP panel added to **Edit Recipe** page
+* HPP column added to **List Recipes**
+* Error handling on missing cost / missing recipe fixed
+* Foreign key disabled temporarily (future improvement noted)
 
 ---
 
 # 🧩 **Current Modules Status**
 
-| Module               | Status        | Notes                             |
-| -------------------- | ------------- | --------------------------------- |
-| Login / Auth         | ✔️ Complete   | Stable                            |
-| Dashboard            | ✔️ Complete   | Layout ready                      |
-| Master Products      | ✔️ Complete   | CRUD OK                           |
-| Master Units         | ✔️ Done       | Used in other modules             |
-| Master Raw Materials | ✔️ Complete   | CRUD + validation                 |
-| Master Suppliers     | ✔️ Complete   | CRUD + validation                 |
-| Purchases            | 🟡 Partial    | Needs backend logic (stock, cost) |
-| Stock Movement       | ⛔ Not started | Planned                           |
-| Recipes / HPP        | ⛔ Not started | Planned                           |
-| POS Sales            | ⛔ Not started | Planned                           |
-| Overhead             | ⛔ Not started | Planned                           |
-| Reports              | ⛔ Not started | Planned                           |
-| Audit Logs           | ⛔ Not started | Planned                           |
-| Email Notifications  | ⛔ Optional    | Not started                       |
+| Module               | Status        | Notes                                  |
+| -------------------- | ------------- | -------------------------------------- |
+| Login / Auth         | ✔️ Done       | Stable                                 |
+| Dashboard            | ✔️ Done       | UI base ready                          |
+| Master Products      | ✔️ Done       | CRUD OK                                |
+| Master Units         | ✔️ Done       | Used by raw materials                  |
+| Master Raw Materials | ✔️ Done       | CRUD + validation                      |
+| Master Suppliers     | ✔️ Done       | CRUD                                   |
+| Purchases            | ✔️ Done       | Auto stock + avg cost + stock movement |
+| Stock Movement       | ✔️ Done       | Auto-insert on purchase                |
+| Recipes (CRUD)       | ✔️ Done       | Header + multi-items                   |
+| HPP Calculation      | ✔️ Done       | CostAvg, waste%, yield supported       |
+| HPP UI (Edit Recipe) | ✔️ Done       | Green info panel                       |
+| HPP in Recipe List   | ✔️ Done       | With unit display                      |
+| POS Sales            | ⛔ Not started | Next milestone                         |
+| Overhead             | ⛔ Not started | Future                                 |
+| Reports              | ⛔ Not started | Future                                 |
+| Audit Logs           | ⛔ Not started | Future                                 |
+| Email Notifications  | ⛔ Optional    | Future                                 |
 
 ---
 
-# 🚧 **NEXT TODOs (Short-Term)**
+# 🚧 **NEXT TODOs (Short-Term — TOMORROW)**
 
-### **Purchases Module (Finish Core Logic)**
+### ⭐ **POS Sales Module**
 
-* [ ] Tambah `stock_movements` migration
-* [ ] Update stok bahan baku otomatis ketika pembelian dibuat
-* [ ] Hitung:
+This will be the next big module.
 
-  * [ ] `cost_last`
-  * [ ] `cost_avg`
-* [ ] Tambah field:
+To build POS Sales:
 
-  * subtotal per item
-  * total pembelian
-* [ ] Tambah view untuk riwayat pembelian lengkap
+1. **UI POS sederhana**
+
+   * Pilih menu
+   * Qty
+   * Hitung total
+   * Save to DB (sales + sale_items)
+
+2. **Stock deduction**
+
+   * Deduct bahan baku berdasarkan recipe items
+   * Insert stock_movements: OUT
+
+3. **Food cost**
+
+   * Rekam HPP yang dipakai saat transaksi (snapshot)
+
+4. **Profit summary dasar**
+
+   * Revenue — Cost
 
 ---
 
 # 🍳 **NEXT TODOs (Medium-Term)**
 
-### **Recipes & HPP Calculation**
+### **Stock Adjustment Module**
 
-* [ ] CRUD Resep (recipe header + recipe items)
-* [ ] Isi resep otomatis dikurangi dari stok saat penjualan
-* [ ] Hitung HPP per menu
-* [ ] Format laporan food cost
+* Untuk koreksi manual
+* Wajib masuk kartu stok
+
+### **Overhead Module**
+
+* Catat biaya listrik, air, gas, internet
+* Integrasi ke laporan Profit/Loss
+
+### **Reports (Batch 1)**
+
+* Laporan Pembelian
+* Laporan Penjualan
+* Laporan Stok (Kartu Stok)
+* Laporan HPP Summary per Menu
 
 ---
 
 # 🛒 **NEXT TODOs (Long-Term)**
 
-### **POS Sales & Daily Operations**
+### **Audit Log System**
 
-* [ ] POS kasir
-* [ ] Penjualan → reduce stock by recipe
-* [ ] Invoice / struk sederhana
+* Perubahan harga menu
+* Perubahan resep
+* Manual stock adjustment
+* Track user who edited
 
-### **Reports**
+### **Settings Module**
 
-* [ ] Laporan Penjualan
-* [ ] Laporan Pembelian
-* [ ] Laporan Stok
-* [ ] Laporan Laba Rugi sederhana
+* Owner email
+* Auto email toggle
+* Default currency (IDR fixed)
 
-### **Audit Logs**
+---
 
-* [ ] Tracking perubahan:
+# ⚠️ **Technical Debt / Cleanup Needed Later**
 
-  * harga menu
-  * resep
-  * stok adjustment
-* [ ] Multi-user awareness
+### **Database / Migration Cleanup**
 
-### **System Settings**
+* RecipeItems currently without FK → add FK via new migration
+* Ingredient waste_pct not yet validated
+* HPP rounding rules not standardized yet
 
-* [ ] Owner email
-* [ ] Auto email toggle
-* [ ] Default currency (fixed: IDR)
+### **Performance**
+
+* Recipes::index() melakukan HPP calculation N+1 — acceptable small scale
+  → bisa dioptimasi batch query later
+
+### **UI/UX**
+
+* Dynamic row in Recipes form needs polishing
+* Consistency spacing/padding across modules
+
+### **Security**
+
+* Add CSRF on AJAX (future)
+* Harden input validation
 
 ---
 
@@ -162,29 +206,32 @@ Views & controllers untuk form dan list pembelian sudah siap, tetapi cooking log
 
 Checklist setiap modul selesai:
 
-* [ ] Form validation berfungsi
-* [ ] Error handling standar (flashdata)
-* [ ] CRUD lengkap (Add, Edit, Delete, Restore optional)
-* [ ] SQL constraints tidak error
-* [ ] Migration berjalan dari fresh install
-* [ ] Routes bersih dan terstruktur
+* [ ] Validation OK
+* [ ] Flashdata errors tampil
+* [ ] CRUD lengkap
+* [ ] Migration works from fresh DB
+* [ ] Stock movement correct
+* [ ] HPP calculation correct
+* [ ] No undefined index / null errors
 
 ---
 
 # 🌱 **Development Rules**
 
-* 1 commit per fitur kecil → mudah tracking
-* Migration tidak diubah setelah dipush → kalau mau update, buat migration baru
-* Jangan commit .env (gunakan env template)
-* Gunakan `feature branches` jika modul besar
+* 1 fitur = 1 commit
+* Migration tidak di-edit setelah push (buat migration baru)
+* Jangan commit `.env`
+* Kalau modul besar → buat feature branch
 
 ---
 
 # 🔚 **Notes**
 
-Ini adalah project jangka panjang (beberapa minggu–bulan).
-Dokumen ini menjaga konteks untuk menghindari miscommunication dan mempermudah lanjutan development setelah jeda 1–2 hari.
+Dokumen ini diperbarui setiap selesai 1 sesi coding agar tidak kehilangan konteks.
 
-Jika terjadi perubahan struktur besar, tambahkan **CHANGELOG** di bawah section commit.
+Besok rencana utama:
+✔ Lanjut ke **POS Sales Module**
+✔ Integrasi Recipes + Stock OUT
+✔ Buat UI kasir sederhana
 
 ---
