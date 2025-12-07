@@ -188,13 +188,3 @@ Dokumen ini menjaga konteks untuk menghindari miscommunication dan mempermudah l
 Jika terjadi perubahan struktur besar, tambahkan **CHANGELOG** di bawah section commit.
 
 ---
-
-Siap pakai ya.
-
-Kalau kamu ingin:
-
-* versi markdown yang lebih fancy (emoji lebih banyak, warna, tabel status),
-* versi PDF,
-* atau mau aku tambahkan diagram ERD / flow architecture,
-
-tinggal bilang saja.
