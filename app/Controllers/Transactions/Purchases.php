@@ -7,6 +7,7 @@ use App\Models\PurchaseModel;
 use App\Models\PurchaseItemModel;
 use App\Models\SupplierModel;
 use App\Models\RawMaterialModel;
+use App\Models\StockMovementModel;
 
 class Purchases extends BaseController
 {
@@ -14,6 +15,7 @@ class Purchases extends BaseController
     protected PurchaseItemModel $itemModel;
     protected SupplierModel $supplierModel;
     protected RawMaterialModel $rawModel;
+    protected StockMovementModel $movementModel;
 
     public function __construct()
     {
@@ -21,6 +23,7 @@ class Purchases extends BaseController
         $this->itemModel     = new PurchaseItemModel();
         $this->supplierModel = new SupplierModel();
         $this->rawModel      = new RawMaterialModel();
+        $this->movementModel = new StockMovementModel();
     }
 
     public function index()
@@ -36,9 +39,9 @@ class Purchases extends BaseController
         $purchases = $builder->get()->getResultArray();
 
         $data = [
-            'title'      => 'Pembelian Bahan Baku',
-            'subtitle'   => 'Riwayat pembelian',
-            'purchases'  => $purchases,
+            'title'     => 'Pembelian Bahan Baku',
+            'subtitle'  => 'Riwayat pembelian',
+            'purchases' => $purchases,
         ];
 
         return view('transactions/purchases_index', $data);
@@ -77,7 +80,7 @@ class Purchases extends BaseController
         }
 
         $itemsInput = $this->request->getPost('items') ?? [];
-        $items = [];
+        $items      = [];
 
         // Bersihkan item kosong
         foreach ($itemsInput as $row) {
@@ -118,7 +121,7 @@ class Purchases extends BaseController
 
         $purchaseId = $this->purchaseModel->insert($purchaseData, true);
 
-        // Insert items + update stok / cost
+        // Insert items + update stok / cost + catat stock movement
         foreach ($items as $item) {
             $item['purchase_id'] = $purchaseId;
             $this->itemModel->insert($item);
@@ -126,17 +129,22 @@ class Purchases extends BaseController
             // Update stok & cost raw material
             $material = $this->rawModel->find($item['raw_material_id']);
             if ($material) {
-                $prevStock = (float) $material['current_stock'];
-                $prevAvg   = (float) $material['cost_avg'];
+                $prevStock = (float) ($material['current_stock'] ?? 0);
+                $prevAvg   = (float) ($material['cost_avg'] ?? 0);
 
-                $newQty   = $item['qty'];
-                $unitCost = $item['unit_cost'];
+                $newQty   = (float) $item['qty'];
+                $unitCost = (float) $item['unit_cost'];
 
                 $newStock = $prevStock + $newQty;
 
-                if ($prevStock <= 0) {
+                if ($newStock <= 0) {
+                    // Edge case sangat jarang, tapi untuk jaga-jaga
+                    $newAvg = $unitCost;
+                } elseif ($prevStock <= 0) {
+                    // Jika stok sebelumnya nol atau negatif, pakai harga baru
                     $newAvg = $unitCost;
                 } else {
+                    // Weighted average cost
                     $totalValueBefore = $prevStock * $prevAvg;
                     $totalValueNew    = $newQty * $unitCost;
                     $newAvg           = ($totalValueBefore + $totalValueNew) / $newStock;
@@ -146,6 +154,17 @@ class Purchases extends BaseController
                     'current_stock' => $newStock,
                     'cost_last'     => $unitCost,
                     'cost_avg'      => $newAvg,
+                ]);
+
+                // Catat pergerakan stok (IN)
+                $this->movementModel->insert([
+                    'raw_material_id' => $material['id'],
+                    'movement_type'   => 'IN',
+                    'qty'             => $newQty,
+                    'ref_type'        => 'purchase',
+                    'ref_id'          => $purchaseId,
+                    'note'            => 'Pembelian dari supplier ID ' . $purchaseData['supplier_id'],
+                    'created_at'      => date('Y-m-d H:i:s'),
                 ]);
             }
         }
