@@ -126,8 +126,11 @@
         <div class="nav-section-title">Master</div>
         <a href="<?= site_url('master/products') ?>" class="nav-link small">Menu / Produk</a>
         <a href="<?= site_url('master/categories') ?>" class="nav-link small">Kategori Menu</a>
-
+        <a href="<?= site_url('master/raw-materials') ?>" class="nav-link small">Bahan Baku</a>
+        <a href="<?= site_url('master/suppliers') ?>" class="nav-link small">Supplier</a>
+        
         <div class="nav-section-title">Transaksi</div>
+        <a href="<?= site_url('purchases') ?>" class="nav-link small">Pembelian Bahan</a>
         <a href="<?= site_url('pos/sales') ?>" class="nav-link small">POS Penjualan</a>
 
         <div class="nav-section-title">Biaya</div>

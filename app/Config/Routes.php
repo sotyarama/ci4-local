@@ -16,12 +16,37 @@ $routes->group('', ['filter' => 'auth'], static function($routes) {
 
     // Master Products
     $routes->group('master', ['namespace' => 'App\Controllers\Master'], static function($routes) {
+        // Produk
         $routes->get('products', 'Products::index');
         $routes->get('products/create', 'Products::create');
         $routes->post('products/store', 'Products::store');
         $routes->get('products/edit/(:num)', 'Products::edit/$1');
         $routes->post('products/update/(:num)', 'Products::update/$1');
         $routes->post('products/delete/(:num)', 'Products::delete/$1');
+
+        // Raw Materials
+        $routes->get('raw-materials', 'RawMaterials::index');
+        $routes->get('raw-materials/create', 'RawMaterials::create');
+        $routes->post('raw-materials/store', 'RawMaterials::store');
+        $routes->get('raw-materials/edit/(:num)', 'RawMaterials::edit/$1');
+        $routes->post('raw-materials/update/(:num)', 'RawMaterials::update/$1');
+        $routes->post('raw-materials/delete/(:num)', 'RawMaterials::delete/$1');
+
+        // Suppliers
+        $routes->get('suppliers', 'Suppliers::index');
+        $routes->get('suppliers/create', 'Suppliers::create');
+        $routes->post('suppliers/store', 'Suppliers::store');
+        $routes->get('suppliers/edit/(:num)', 'Suppliers::edit/$1');
+        $routes->post('suppliers/update/(:num)', 'Suppliers::update/$1');
+        $routes->post('suppliers/delete/(:num)', 'Suppliers::delete/$1');
+    });
+
+    // Transactions - Purchases
+    $routes->group('purchases', ['namespace' => 'App\Controllers\Transactions'], static function($routes) {
+        $routes->get('/', 'Purchases::index');
+        $routes->get('create', 'Purchases::create');
+        $routes->post('store', 'Purchases::store');
+        $routes->get('detail/(:num)', 'Purchases::detail/$1');
     });
 
 });
