@@ -10,8 +10,7 @@ class StockMovementModel extends Model
     protected $primaryKey    = 'id';
     protected $returnType    = 'array';
     protected $useSoftDeletes = false;
-    protected $useTimestamps = true;
-    protected $createdField = 'created_at';
+    protected $useTimestamps  = false; // table hanya punya created_at (diisi manual)
 
     protected $allowedFields = [
         'raw_material_id',
