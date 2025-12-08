@@ -10,6 +10,10 @@ class UnitsSeeder extends Seeder
     {
         $now = date('Y-m-d H:i:s');
 
+        if ($this->db->table('units')->countAllResults() > 0) {
+            return;
+        }
+
         $data = [
             [
                 'name'       => 'Gram',

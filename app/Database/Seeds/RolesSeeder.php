@@ -10,6 +10,10 @@ class RolesSeeder extends Seeder
     {
         $now = date('Y-m-d H:i:s');
 
+        if ($this->db->table('roles')->countAllResults() > 0) {
+            return;
+        }
+
         $data = [
             [
                 'name'        => 'owner',

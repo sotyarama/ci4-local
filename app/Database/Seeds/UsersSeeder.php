@@ -11,6 +11,10 @@ class UsersSeeder extends Seeder
         $now = date('Y-m-d H:i:s');
         $db  = $this->db;
 
+        if ($db->table('users')->where('username', 'owner')->countAllResults() > 0) {
+            return;
+        }
+
         // Ambil role owner
         $ownerRoleId = $db->table('roles')->where('name', 'owner')->get()->getRow('id');
 
