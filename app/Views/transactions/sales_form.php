@@ -17,6 +17,12 @@
         </a>
     </div>
 
+    <?php if (session()->getFlashdata('error')): ?>
+        <div style="padding:8px 10px; margin-bottom:12px; border-radius:6px; background:#3f1f1f; border:1px solid #b91c1c; color:#fecaca; font-size:12px;">
+            <?= session()->getFlashdata('error'); ?>
+        </div>
+    <?php endif; ?>
+
     <?php $errors = session('errors') ?? []; ?>
 
     <?php if (! empty($errors)): ?>

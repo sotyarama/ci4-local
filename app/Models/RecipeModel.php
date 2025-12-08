@@ -102,4 +102,14 @@ class RecipeModel extends Model
         ];
     }
 
+    public function getRecipeItems(int $recipeId): array
+    {
+        // Ambil semua baris recipe_items untuk satu resep
+        return $this->db->table('recipe_items')
+            ->where('recipe_id', $recipeId)
+            ->orderBy('id', 'ASC')
+            ->get()
+            ->getResultArray();
+    }
+
 }

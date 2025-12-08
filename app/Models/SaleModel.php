@@ -15,8 +15,8 @@ class SaleModel extends Model
         'invoice_no',
         'customer_name',
         'total_amount',
+        'total_cost',
         'notes',
-        'created_by',
     ];
 
     protected $useTimestamps = true; // pakai created_at & updated_at
