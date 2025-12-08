@@ -1,87 +1,129 @@
 # 📘 DEV_NOTES.md  
 POS Café System — Development Notes  
 Author: GS  
-Last updated: 2025-12-08
+Last updated: 2025-12-08 (Night Session)
 
 ---
 
 # 📌 Repository Overview
 
-Project ini adalah sistem POS lengkap untuk café kecil, dibangun dengan CodeIgniter 4.  
-Fokus sistem:
+Project ini adalah sistem POS lengkap untuk café kecil menggunakan CodeIgniter 4.  
+Tujuan utama:
 
 - POS penjualan  
-- Manajemen stok & bahan baku  
-- Perhitungan HPP & food cost  
-- Pembelian & supplier  
-- Overhead operasional  
-- Laporan penjualan / stok / profit  
-- Audit log (planned)  
+- Manajemen stok (IN/OUT)  
+- Perhitungan HPP (recipe-based)  
+- Master data menu, bahan baku, supplier  
+- Pembelian & average costing  
+- Laporan keuangan dasar (future)  
+- Audit log (future)  
+- POS touchscreen UI (future skin)
 
 ---
 
 # 🧱 Commit History Summary
 
-## 1. Initial Setup (579c5ce — 2025-12-06)
-- Install CI4 default project
-- Setup folder, configs, structure
+## 1) Initial Setup (579c5ce — 2025-12-06)
+- Fresh CI4 project
+- Struktur dasar & konfigurasi
 
-## 2. Initial POS App (3b3a527 — 2025-12-06)
-- Login & Auth Filter
+## 2) POS App Core (3b3a527 — 2025-12-06)
+- Auth system (login + filter)
 - Dashboard layout
-- CRUD Master Products
-- Migrations:
-  - roles, users, menu categories, menus, units, raw materials
+- CRUD Products
+- Migrations for:
+  - roles, users
+  - menu categories, menus
+  - raw materials, units
+- Seeds for initial data
 
-## 3. Suppliers + Purchases Module (32e2a4c — 2025-12-07)
-- CRUD Raw Materials (complete)
-- CRUD Suppliers (complete)
-- Purchases module (initial)
-- Migrations for suppliers, purchases, purchase_items
-- Stock movement (IN) working
-- Average cost & last cost logic working
+## 3) Purchasing System (32e2a4c — 2025-12-07)
+- CRUD Raw Materials & Suppliers
+- Purchases module
+- Stock IN movement
+- Average cost auto-update (cost_last & cost_avg)
+- Basic invoice/notes support
 
-## 4. Recipes Module + HPP (2025-12-08)
-- Migrations:
-  - recipes
-  - recipe_items
+## 4) Recipes + HPP Module (2025-12-08 Afternoon)
 - CRUD Recipes (header)
 - CRUD Recipe Items (detail)
-- HPP calculation for each recipe
-- Display HPP in recipe list
-- Prepared backend for future sales→HPP linking
+- HPP calculation per menu  
+- Display HPP per menu in recipe list
+- Recipe-based cost engine prepared
+
+## 5) Sales Backend Logic v1 (2025-12-08 Night)
+**Major milestone — core POS logic functional**
+
+- `sales` + `sale_items` migrations created via CLI  
+- Base models created (`SaleModel`, `SaleItemModel`)
+- SalesController:
+  - Create & store transactions
+  - Subtotal calculation
+  - Insert sale_items
+  - Calculate **HPP snapshot** per item (based on recipe)
+  - Sum **total_cost** for transaction
+  - Save revenue + cost into sales table
+  - Recipe-based **stock OUT** deduction
+  - Generate stock_movements:
+    - `movement_type = OUT`
+    - `ref_type = sale`
+    - `ref_id = sale_id`
+
+- Sales detail page completed:
+  - Tampilkan per-item:
+    - qty  
+    - price  
+    - subtotal  
+    - hpp per porsi  
+    - total hpp  
+    - margin per item  
+  - Ringkasan transaksi:
+    - total revenue  
+    - total HPP  
+    - gross margin (nominal)  
+    - gross margin (%)  
+
+Sales module **now works end-to-end**:
+Menu → Recipe → Purchase → Sale → HPP → Margin → Stok OUT.
 
 ---
 
 # 🧩 Current Modules Status
 
-| Module               | Status        | Notes                                          |
-|----------------------|--------------|------------------------------------------------|
-| Login / Auth         | ✔️ Complete   | Stable                                         |
-| Dashboard            | ✔️ Complete   | Layout OK                                      |
-| Master Products      | ✔️ Complete   | CRUD                                           |
-| Master Units         | ✔️ Complete   |                                                |
-| Master Raw Materials | ✔️ Complete   | CRUD + cost avg/last                           |
-| Master Suppliers     | ✔️ Complete   |                                                |
-| Purchases            | ✔️ Mostly     | Stock IN + cost logic OK                       |
-| Recipes              | ✔️ Phase 1    | CRUD + HPP per menu                            |
-| Sales                | 🟡 In Progress| Form complete; backend logic next              |
-| Stock Movement       | ✔️ Partial    | IN working; OUT pending                        |
-| POS UI Skin Modern   | ⏳ Planned    | Akan dibuat setelah backend sales stabil       |
-| Reports              | ⛔ Not started|                                                |
-| Audit Logs           | ⛔ Not started|                                                |
+| Module               | Status        | Notes                                           |
+|----------------------|--------------|--------------------------------------------------|
+| Auth / Login         | ✔️ Complete   | Stable                                           |
+| Dashboard            | ✔️ Complete   | Base layout                                      |
+| Master Products      | ✔️ Complete   | CRUD                                             |
+| Master Units         | ✔️ Complete   |                                                  |
+| Raw Materials        | ✔️ Complete   | CRUD + costing                                   |
+| Suppliers            | ✔️ Complete   |                                                  |
+| Purchases            | ✔️ Mostly     | Stock IN + costing OK                            |
+| Recipes              | ✔️ Phase 1    | CRUD + HPP computation                           |
+| Sales                | 🟢 **Backend v1 Complete** | HPP + stock OUT + detail page             |
+| Sales UI Skin        | ⏳ Planned    | New UI coming after backend stabilizes           |
+| Stock Movements      | ✔️ Partial    | IN + OUT working, audit view not yet built       |
+| Reports              | ⛔ Not started| Planned                                          |
+| Audit Logs           | ⛔ Not started| Planned                                          |
 
 ---
 
-# 🚀 NEXT TODOs (Short Term)
+# 🚀 NEXT TODOs (Short-Term — Priority)
 
-## 🔥 **Sales Backend (priority next session)**
-- [ ] Kurangi stok otomatis berdasarkan resep
-- [ ] Catat stock_movements type OUT
-- [ ] Validasi stok tidak cukup
-- [ ] Hitung HPP per sale item
-- [ ] Simpan total_cost ke sales
-- [ ] Tampilkan HPP / margin di sales detail
+## 🔥 Sales Backend Logic v2
+- [ ] Validasi stok tidak cukup saat penjualan
+- [ ] Menampilkan warning jika menu tanpa resep / bahan tidak lengkap
+- [ ] Tambah field `unit_cost_snapshot` (opsional)
+- [ ] Tambah tampilan daftar stock movements per item
+
+## 📊 Sales Detail (Enhancement)
+- [ ] Warna margin merah untuk minus
+- [ ] Breakdown bahan baku yang dipakai per item (optional)
+- [ ] Export PDF (optional, future)
+
+## 📦 Stok & Movement
+- [ ] Buat halaman "Riwayat Stok" (IN/OUT)
+- [ ] Filter per bahan baku
 
 ---
 
@@ -89,65 +131,62 @@ Fokus sistem:
 
 ## Recipes & HPP
 - [ ] Checklist bahan habis
-- [ ] Pilih sub-recipe (future)
-- [ ] Waste factor per menu
+- [ ] Sub-recipe support
+- [ ] Waste factor ringan
 
-## POS UI (Phase 2 — Modern Skin)
-- [ ] Mode touchscreen
-- [ ] Card-based item UI
-- [ ] Quick order buttons
-- [ ] Auto-calc change payment
-- [ ] Hold bill / resume bill
-*(Catatan: skin ini akan dikerjakan setelah logic backend selesai.)*
+## POS UI (Phase 2 — Modern Touchscreen Skin)
+*(Dikerjakan setelah backend final)*  
+- [ ] Grid menu item  
+- [ ] Quick order buttons  
+- [ ] Auto-calc pembulatan kembalian  
+- [ ] Shortcut function keys  
+- [ ] Simpan draft order / hold  
 
 ---
 
 # 🛒 NEXT TODOs (Long-Term)
 
-## POS Sales
-- [ ] Penjualan multi-item cepat
-- [ ] Draft order / hold
-- [ ] Cetak struk sederhana (optional)
-
 ## Reports
-- [ ] Laporan Penjualan harian/bulanan
-- [ ] Laporan Pembelian
-- [ ] Laporan Stok
-- [ ] Laporan Laba Rugi per menu atau per periode
+- [ ] Laporan penjualan harian/bulanan
+- [ ] Laporan margin per menu
+- [ ] Laporan pembelian
+- [ ] Laporan stok & selisih
 
-## Audit Log
-- [ ] Log perubahan harga menu
+## Audit Logs
 - [ ] Log perubahan resep
-- [ ] Log stok adjustment
-- [ ] Log user activity
+- [ ] Log perubahan harga menu
+- [ ] Log stok adjustment manual
 
 ---
 
 # 🧪 Testing Guideline
 
-Setiap modul harus dilakukan test:
-- [ ] Validasi input
+Setiap fitur harus lulus tes berikut:
+
+- [ ] Validasi form
 - [ ] CRUD lengkap
-- [ ] Migrasi fresh install bisa jalan
-- [ ] Stock IN/OUT konsisten
-- [ ] HPP akurat vs data bahan baku
-- [ ] Error handling sesuai standar
+- [ ] Hitungan HPP akurat
+- [ ] Stok konsisten (raw_materials.current_stock)
+- [ ] stock_movements IN/OUT sesuai
+- [ ] Sale → Recipe → Stock OUT tidak error
+- [ ] Migrasi bisa fresh install tanpa error
 
 ---
 
 # 🌱 Development Rules
 
-- 1 commit = 1 fitur kecil  
-- Jangan edit migration lama → buat migration baru  
-- Jangan commit .env  
-- Gunakan feature branch jika modul besar  
-- UI boleh sederhana dulu → backend harus kuat  
-- Skin POS modern akan dilakukan setelah semua logic dasar stabil  
+- Satu commit = satu fitur kecil  
+- Tidak edit migration lama setelah dipush  
+- UI boleh sederhana → backend harus solid  
+- Skin POS modern dilakukan setelah backend stabil  
+- Semua logika costing harus audit-friendly
 
 ---
 
 # 📝 Notes
 
-Dokumen ini memastikan kesinambungan development saat jeda pekerjaan 1–2 hari.  
-Jika ada perubahan arsitektur besar, tambahkan CHANGELOG.
+Sales backend logic sudah lengkap versi 1 — milestone besar.  
+Step berikutnya: validasi stok, laporan, dan UI POS modern.
+
+Dokumen ini menjaga kesinambungan meski ada jeda development 1–2 hari.
 
