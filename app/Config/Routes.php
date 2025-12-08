@@ -60,6 +60,16 @@ $routes->group('', ['filter' => 'auth'], static function($routes) {
         $routes->get('detail/(:num)', 'Purchases::detail/$1');
     });
 
+    // Transactions - Sales
+    $routes->group('transactions', ['filter' => 'auth'], static function($routes) {
+        // Sales
+        $routes->get('sales',               'Transactions\Sales::index');
+        $routes->get('sales/create',        'Transactions\Sales::create');
+        $routes->post('sales/store',        'Transactions\Sales::store');
+        $routes->get('sales/detail/(:num)', 'Transactions\Sales::detail/$1');
+
+    });
+
 });
 
 
