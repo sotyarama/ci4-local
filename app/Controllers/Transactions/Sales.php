@@ -133,14 +133,14 @@ class Sales extends BaseController
             // 1) Cek resep
             $recipe = $this->recipeModel->where('menu_id', $menuId)->first();
             if (! $recipe) {
-                $errors[] = "Menu <b>{$row['menu_name']}</b> belum memiliki resep.";
+                $errors[] = "Menu <b>{$row['menu_name']}</b> belum memiliki resep. Transaksi dibatalkan.";
                 continue;
             }
 
             $recipeItems = $this->recipeModel->getRecipeItems((int) $recipe['id']);
 
             if (empty($recipeItems)) {
-                $errors[] = "Menu <b>{$row['menu_name']}</b> tidak memiliki detail bahan baku.";
+                $errors[] = "Menu <b>{$row['menu_name']}</b> belum memiliki detail bahan. Transaksi dibatalkan.";
                 continue;
             }
 
@@ -312,6 +312,7 @@ class Sales extends BaseController
                         'ref_type'        => 'sale',
                         'ref_id'          => $saleId,
                         'note'            => 'Penjualan menu ID ' . $menuId . ' (sale_item ' . $saleItemId . ')',
+                        'created_at'      => date('Y-m-d H:i:s'),
                     ]);
                 }
             }
@@ -327,7 +328,13 @@ class Sales extends BaseController
         if (! $db->transStatus()) {
             $err = $db->error();   // ambil error mysql / mariadb
 
-            dd($err);              // tampilkan error asli
+            log_message('error', 'Gagal simpan transaksi penjualan: {error}', [
+                'error' => $err['message'] ?? 'unknown DB error',
+            ]);
+
+            return redirect()->back()
+                ->with('errors', ['Terjadi kesalahan saat menyimpan transaksi.'])
+                ->withInput();
         }
 
 

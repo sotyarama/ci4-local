@@ -131,7 +131,7 @@
         <a href="<?= site_url('master/recipes') ?>" class="nav-link small">Resep</a>
 
         <div class="nav-section-title">Transaksi</div>
-        <a href="<?= site_url('transactions/purchases') ?>" class="nav-link small">Pembelian Bahan</a>
+        <a href="<?= site_url('purchases') ?>" class="nav-link small">Pembelian Bahan</a>
         <a href="<?= site_url('transactions/sales') ?>" class="nav-link small">POS Penjualan</a>
 
         <div class="nav-section-title">Inventory</div>
