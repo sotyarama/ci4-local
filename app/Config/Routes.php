@@ -70,6 +70,13 @@ $routes->group('', ['filter' => 'auth'], static function($routes) {
 
     });
 
+    // Inventory - Stock Movements
+    $routes->get('inventory/stock-movements', 'Inventory\StockMovements::index');
+
+    // Reports - Sales Daily Summary
+    $routes->get('reports/sales/daily', 'Reports\SalesSummary::daily');
+
+
 });
 
 

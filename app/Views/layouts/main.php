@@ -128,17 +128,19 @@
         <a href="<?= site_url('master/categories') ?>" class="nav-link small">Kategori Menu</a>
         <a href="<?= site_url('master/raw-materials') ?>" class="nav-link small">Bahan Baku</a>
         <a href="<?= site_url('master/suppliers') ?>" class="nav-link small">Supplier</a>
-        
-        <div class="nav-section-title">Transaksi</div>
-        <a href="<?= site_url('purchases') ?>" class="nav-link small">Pembelian Bahan</a>
-        <a href="<?= site_url('pos/sales') ?>" class="nav-link small">POS Penjualan</a>
+        <a href="<?= site_url('master/recipes') ?>" class="nav-link small">Resep</a>
 
-        <div class="nav-section-title">Biaya</div>
-        <a href="<?= site_url('finance/overheads') ?>" class="nav-link small">Overhead</a>
+        <div class="nav-section-title">Transaksi</div>
+        <a href="<?= site_url('transactions/purchases') ?>" class="nav-link small">Pembelian Bahan</a>
+        <a href="<?= site_url('transactions/sales') ?>" class="nav-link small">POS Penjualan</a>
+
+        <div class="nav-section-title">Inventory</div>
+        <a href="<?= site_url('inventory/stock-movements') ?>" class="nav-link small">Riwayat Stok (IN/OUT)</a>
 
         <div class="nav-section-title">Laporan</div>
-        <a href="<?= site_url('reports/sales') ?>" class="nav-link small">Laporan Penjualan</a>
+        <a href="<?= site_url('reports/sales/daily') ?>" class="nav-link small">Penjualan Harian</a>
     </aside>
+
 
     <div class="main">
         <header class="topbar">
