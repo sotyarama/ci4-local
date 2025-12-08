@@ -72,11 +72,11 @@ $routes->group('', ['filter' => 'auth'], static function($routes) {
 
     // Inventory - Stock Movements
     $routes->get('inventory/stock-movements', 'Inventory\StockMovements::index');
+    $routes->get('inventory/stock-card', 'Inventory\StockMovements::card');
 
     // Reports - Sales Daily Summary
     $routes->get('reports/sales/daily', 'Reports\SalesSummary::daily');
 
 
 });
-
 

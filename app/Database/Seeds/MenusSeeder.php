@@ -10,6 +10,10 @@ class MenusSeeder extends Seeder
     {
         $now = date('Y-m-d H:i:s');
 
+        if ($this->db->table('menus')->countAllResults() > 0) {
+            return;
+        }
+
         $db = $this->db;
 
         $coffeeId     = $db->table('menu_categories')->where('name', 'Coffee')->get()->getRow('id');

@@ -34,15 +34,33 @@ class Sales extends BaseController
      */
     public function index()
     {
+        $today = date('Y-m-d');
+
+        $todayAgg = $this->saleModel
+            ->selectSum('total_amount', 'total_sales')
+            ->selectSum('total_cost', 'total_cost')
+            ->where('sale_date', $today)
+            ->first();
+
+        $totalSalesToday = (float) ($todayAgg['total_sales'] ?? 0);
+        $totalCostToday  = (float) ($todayAgg['total_cost'] ?? 0);
+        $marginToday     = $totalSalesToday - $totalCostToday;
+        $marginPctToday  = $totalSalesToday > 0 ? ($marginToday / $totalSalesToday * 100) : 0;
+
         $sales = $this->saleModel
             ->orderBy('sale_date', 'DESC')
             ->orderBy('id', 'DESC')
             ->findAll();
 
         $data = [
-            'title'   => 'Penjualan',
-            'subtitle'=> 'Riwayat transaksi penjualan',
-            'sales'   => $sales,
+            'title'           => 'Penjualan',
+            'subtitle'        => 'Riwayat transaksi penjualan',
+            'sales'           => $sales,
+            'todaySales'      => $totalSalesToday,
+            'todayCost'       => $totalCostToday,
+            'todayMargin'     => $marginToday,
+            'todayMarginPct'  => $marginPctToday,
+            'todayDate'       => $today,
         ];
 
         return view('transactions/sales_index', $data);

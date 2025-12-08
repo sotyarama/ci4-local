@@ -136,6 +136,7 @@
 
         <div class="nav-section-title">Inventory</div>
         <a href="<?= site_url('inventory/stock-movements') ?>" class="nav-link small">Riwayat Stok (IN/OUT)</a>
+        <a href="<?= site_url('inventory/stock-card') ?>" class="nav-link small">Kartu Stok per Bahan</a>
 
         <div class="nav-section-title">Laporan</div>
         <a href="<?= site_url('reports/sales/daily') ?>" class="nav-link small">Penjualan Harian</a>

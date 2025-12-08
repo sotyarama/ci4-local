@@ -62,4 +62,72 @@ class StockMovements extends BaseController
 
         return view('inventory/stock_movements_index', $data);
     }
+
+    /**
+     * Kartu stok per bahan: kronologi IN/OUT + saldo berjalan.
+     */
+    public function card()
+    {
+        $rawId          = (int) ($this->request->getGet('raw_material_id') ?? 0);
+        $dateFrom       = $this->request->getGet('date_from') ?: null;
+        $dateTo         = $this->request->getGet('date_to') ?: null;
+        $openingBalance = $this->request->getGet('opening_balance');
+        $openingBalance = $openingBalance !== null && $openingBalance !== '' ? (float) $openingBalance : null;
+
+        $materials = $this->rawModel
+            ->where('is_active', 1)
+            ->orderBy('name', 'ASC')
+            ->findAll();
+
+        $selectedMaterial = $rawId > 0 ? $this->rawModel->find($rawId) : null;
+
+        $movements = [];
+        $runningBalance = null;
+
+        if ($selectedMaterial) {
+            $builder = $this->movementModel
+                ->withMaterial()
+                ->where('stock_movements.raw_material_id', $rawId);
+
+            if ($dateFrom) {
+                $builder->where('DATE(stock_movements.created_at) >=', $dateFrom);
+            }
+            if ($dateTo) {
+                $builder->where('DATE(stock_movements.created_at) <=', $dateTo);
+            }
+
+            $movements = $builder
+                ->orderBy('stock_movements.created_at', 'ASC')
+                ->orderBy('stock_movements.id', 'ASC')
+                ->findAll();
+
+            $runningBalance = [];
+            $balance = $openingBalance ?? 0.0;
+
+            foreach ($movements as $mv) {
+                $qty = (float) ($mv['qty'] ?? 0);
+                if (strtoupper($mv['movement_type']) === 'IN') {
+                    $balance += $qty;
+                } else {
+                    $balance -= $qty;
+                }
+
+                $runningBalance[] = $balance;
+            }
+        }
+
+        $data = [
+            'title'            => 'Kartu Stok',
+            'subtitle'         => 'Kronologi IN/OUT dan saldo berjalan per bahan baku',
+            'materials'        => $materials,
+            'selectedMaterial' => $selectedMaterial,
+            'movements'        => $movements,
+            'runningBalance'   => $runningBalance,
+            'filterFrom'       => $dateFrom,
+            'filterTo'         => $dateTo,
+            'openingBalance'   => $openingBalance,
+        ];
+
+        return view('inventory/stock_card', $data);
+    }
 }

@@ -10,6 +10,10 @@ class MenuCategoriesSeeder extends Seeder
     {
         $now = date('Y-m-d H:i:s');
 
+        if ($this->db->table('menu_categories')->countAllResults() > 0) {
+            return;
+        }
+
         $data = [
             [
                 'name'        => 'Coffee',

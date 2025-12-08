@@ -16,6 +16,35 @@
         </a>
     </div>
 
+    <?php if (isset($todaySales)): ?>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:12px;">
+            <div style="padding:10px; border:1px solid #1f2937; border-radius:10px; background:#0b1220;">
+                <div style="font-size:11px; color:#9ca3af;">Tanggal</div>
+                <div style="font-size:14px; color:#e5e7eb; font-weight:600; margin-top:2px;"><?= esc($todayDate ?? date('Y-m-d')); ?></div>
+            </div>
+            <div style="padding:10px; border:1px solid #1f2937; border-radius:10px; background:#0b1220;">
+                <div style="font-size:11px; color:#9ca3af;">Total Penjualan (hari ini)</div>
+                <div style="font-size:16px; color:#e5e7eb; font-weight:700; margin-top:2px;">
+                    Rp <?= number_format((float) ($todaySales ?? 0), 0, ',', '.'); ?>
+                </div>
+            </div>
+            <div style="padding:10px; border:1px solid #1f2937; border-radius:10px; background:#0b1220;">
+                <div style="font-size:11px; color:#9ca3af;">Margin (hari ini)</div>
+                <?php
+                    $marginToday     = (float) ($todayMargin ?? 0);
+                    $marginPctToday  = (float) ($todayMarginPct ?? 0);
+                    $marginColorCard = $marginToday >= 0 ? '#bbf7d0' : '#fecaca';
+                ?>
+                <div style="font-size:16px; font-weight:700; margin-top:2px; color:<?= $marginColorCard; ?>;">
+                    Rp <?= number_format($marginToday, 0, ',', '.'); ?>
+                    <span style="font-size:11px; color:#9ca3af; margin-left:4px;">
+                        (<?= number_format($marginPctToday, 1, ',', '.'); ?>%)
+                    </span>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <?php if (session()->getFlashdata('message')): ?>
         <div style="padding:8px 10px; margin-bottom:12px; border-radius:6px; background:#022c22; border:1px solid #16a34a; color:#bbf7d0; font-size:12px;">
             <?= session()->getFlashdata('message'); ?>

@@ -13,6 +13,10 @@ class DatabaseSeeder extends Seeder
         $this->call('UnitsSeeder');
         $this->call('MenuCategoriesSeeder');
         $this->call('MenusSeeder');
+        $this->call('SuppliersSeeder');
+        $this->call('RawMaterialsSeeder');
+        $this->call('PurchasesDemoSeeder');
+        $this->call('RecipesDemoSeeder');
         $this->call('UsersSeeder');
     }
 }
