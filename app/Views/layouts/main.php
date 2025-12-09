@@ -125,7 +125,7 @@
     $roleAllow = [
         'owner'   => ['dashboard','master','transactions','inventory','reports','overhead'],
         'staff'   => ['dashboard','master','transactions','inventory','reports','overhead'],
-        'auditor' => ['dashboard','master','inventory','reports'], // read-only: sembunyikan transaksi & overhead
+        'auditor' => ['dashboard','master','transactions','inventory','reports','overhead'], // auditor boleh lihat semua tapi tetap read-only via filter
     ];
     $menuAllowed = static function(string $key) use ($role, $roleAllow): bool {
         if ($role === '') {
