@@ -99,7 +99,7 @@ Legenda: A=Access (view/read), I=Input/Create, U=Update, D=Delete/Nonaktifkan.
 | Modul/Fitur           | Owner         | Staff (target)                          | Staff (current)                                      | Auditor (target)   | Auditor (current)            |
 |-----------------------|---------------|-----------------------------------------|-------------------------------------------------------|--------------------|------------------------------|
 | Dashboard             | A             | A                                       | A                                                     | A                  | A                            |
-| Master Data (produk, kategori, bahan, supplier) | A/I/U/D (termasuk harga menu) | A, I/U resep; **tidak** U harga menu; D dibatasi | A; filter blok I/U/D di products/users/settings (form masih terbuka) | A                  | A (filter blok I/U/D)        |
+| Master Data (produk, kategori, bahan, supplier) | A/I/U/D (termasuk harga menu) | A/I/U menu & resep; D dibatasi                       | A/I/U menu & resep (blok hanya di users/settings)      | A                  | A (filter blok I/U/D)        |
 | Users & Settings      | A/I/U/D       | Tidak boleh                             | A; filter blok I/U/D                                  | A (view)           | A (filter blok I/U/D)        |
 | Resep                 | A/I/U/D       | A/I/U (butuh audit log)                 | A/I/U (filter tidak blok; audit log belum)           | A                  | A (filter blok I/U/D)        |
 | Penjualan             | A/I/U/D       | A/I (void belum)                        | A/I (filter izinkan)                                  | A (lihat)          | A (filter blok I/U/D)        |
@@ -143,9 +143,9 @@ Catatan gap:
 - [ ] Edit/nonaktif kategori overhead + tampilkan kategori nonaktif di filter (overhead lama tetap bisa difilter)
 
 ## 5) Access Control
-- [ ] Terapkan role Owner/Staff/Auditor pada route/controller: Staff dibatasi dari edit user, harga menu, settings; Auditor read-only (blok POST/PUT/DELETE)
+- [ ] Terapkan role Owner/Staff/Auditor pada route/controller: Staff dibatasi dari edit user & settings; Auditor read-only (blok POST/PUT/DELETE)
 - [ ] Audit log untuk edit resep/menu (harga & bahan) sebagai bagian pengamanan Staff
-- [ ] Staff: blokir akses GET ke form create/edit produk/user/setting (hanya list view); sidebar/link nonaktif untuk area sensitif
+- [ ] Staff: blokir akses GET ke form create/edit user/setting (produk dibiarkan, user/setting dibatasi); sidebar/link nonaktif untuk area sensitif
 - [ ] Void/retur penjualan atau catatan eksplisit belum didukung (untuk memenuhi rollback stok/margin)
 
 ---

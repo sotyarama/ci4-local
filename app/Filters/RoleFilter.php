@@ -30,11 +30,10 @@ class RoleFilter implements FilterInterface
             return $this->forbidden($request, 'Auditor bersifat read-only.');
         }
 
-        // Staff: blokir update area sensitif (user, settings, harga menu/master products)
+        // Staff: blokir update area sensitif (user, settings)
         if ($role === 'staff' && $method !== 'get') {
             $path = strtolower($request->uri->getPath());
             $blockedPrefixes = [
-                'master/products', // termasuk create/update harga menu
                 'users',
                 'settings',
             ];
