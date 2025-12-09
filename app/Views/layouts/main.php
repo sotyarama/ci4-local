@@ -158,6 +158,8 @@
             padding: 18px 20px;
             border: 1px solid #111827;
             box-shadow: 0 20px 40px rgba(0,0,0,0.45);
+            width: 100%;
+            box-sizing: border-box;
         }
         .disabled-link {
             opacity: 0.35;
