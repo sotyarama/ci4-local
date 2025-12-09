@@ -98,10 +98,12 @@ Tujuan utama:
 - [x] Blok transaksi jika menu belum punya resep/detail (no fallback HPP 0)
 - [x] Summary harian di Sales Index (total penjualan & margin hari ini)
 - [x] Validasi tambahan untuk override harga jual per transaksi
+- [ ] Dukungan void/retur penjualan (rollback stok & margin) atau catatan eksplisit belum didukung
 
 ## 2) Inventory & Stock Monitoring
 - [x] Kartu Stok per Bahan: filter tanggal, saldo berjalan, opening balance
 - [x] Kolom saldo akhir di list movement (opsional, atau cukup di kartu stok)
+- [ ] Guard waste_pct resep (batas wajar, mis: 0-100) dan precision stok (hindari selisih float besar)
 
 ## 3) Reports
 - [x] Laporan Penjualan per Menu:
@@ -111,6 +113,10 @@ Tujuan utama:
   - HPP total per menu
   - Margin per menu
 - [x] Export CSV laporan penjualan (harian & per menu)
+- [ ] Pagination/limit sederhana untuk laporan jika data besar
+
+## 4) Overhead
+- [ ] Edit/nonaktif kategori overhead + tampilkan kategori nonaktif di filter (overhead lama tetap bisa difilter)
 
 ---
 
