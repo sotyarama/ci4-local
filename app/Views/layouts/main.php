@@ -23,6 +23,9 @@
             border-right: 1px solid #111827;
             padding: 16px 14px;
             overflow-y: auto;
+            height: 100vh;
+            position: sticky;
+            top: 0;
         }
         .sidebar-title {
             font-size: 18px;
