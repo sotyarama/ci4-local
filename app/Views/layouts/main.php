@@ -149,6 +149,11 @@
     $role = strtolower((string) (session('role') ?? session('role_name') ?? ''));
     $uri = service('uri');
     $currentPath = strtolower(trim($uri->getPath(), '/'));
+    // fallback jika basepath/public mengganggu
+    $reqUri = strtolower(trim(parse_url(current_url(false), PHP_URL_PATH) ?? '', '/'));
+    if ($reqUri !== '') {
+        $currentPath = $reqUri;
+    }
     $flashError = session()->getFlashdata('error') ?? null;
     $roleAllow = [
         'owner'   => ['dashboard','master','transactions','inventory','reports','overhead'],
@@ -164,13 +169,10 @@
     $isActive = static function(array $paths) use ($currentPath): bool {
         foreach ($paths as $p) {
             $p = strtolower(trim($p, '/'));
-            if ($p === '') {
-                if ($currentPath === '') {
-                    return true;
-                }
-                continue;
+            if ($p === '' && $currentPath === '') {
+                return true;
             }
-            if ($currentPath === $p || str_starts_with($currentPath, $p)) {
+            if ($p !== '' && (strpos($currentPath, $p) === 0)) {
                 return true;
             }
         }
