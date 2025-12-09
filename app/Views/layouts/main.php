@@ -112,39 +112,58 @@
             border: 1px solid #111827;
             box-shadow: 0 20px 40px rgba(0,0,0,0.45);
         }
+        .disabled-link {
+            opacity: 0.35;
+            pointer-events: none;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
+<?php
+    $role = strtolower((string) (session('role') ?? session('role_name') ?? ''));
+    $roleAllow = [
+        'owner'   => ['dashboard','master','transactions','inventory','reports','overhead'],
+        'staff'   => ['dashboard','master','transactions','inventory','reports','overhead'],
+        'auditor' => ['dashboard','master','inventory','reports'], // read-only: sembunyikan transaksi & overhead
+    ];
+    $menuAllowed = static function(string $key) use ($role, $roleAllow): bool {
+        if ($role === '') {
+            return false;
+        }
+        return in_array($key, $roleAllow[$role] ?? [], true);
+    };
+?>
 <div class="layout">
     <aside class="sidebar">
         <div class="sidebar-title">Cafe POS</div>
-        <div class="sidebar-sub">CodeIgniter 4 • Local Dev</div>
+        <div class="sidebar-sub">CodeIgniter 4 Dev</div>
 
         <div class="nav-section-title">Main</div>
-        <a href="<?= site_url('/') ?>" class="nav-link">Dashboard</a>
+        <a href="<?= site_url('/') ?>" class="nav-link <?= $menuAllowed('dashboard') ? '' : 'disabled-link'; ?>">Dashboard</a>
 
         <div class="nav-section-title">Master</div>
-        <a href="<?= site_url('master/products') ?>" class="nav-link small">Menu / Produk</a>
-        <a href="<?= site_url('master/categories') ?>" class="nav-link small">Kategori Menu</a>
-        <a href="<?= site_url('master/raw-materials') ?>" class="nav-link small">Bahan Baku</a>
-        <a href="<?= site_url('master/suppliers') ?>" class="nav-link small">Supplier</a>
-        <a href="<?= site_url('master/recipes') ?>" class="nav-link small">Resep</a>
+        <a href="<?= site_url('master/products') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?>">Menu / Produk</a>
+        <a href="<?= site_url('master/categories') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?>">Kategori Menu</a>
+        <a href="<?= site_url('master/raw-materials') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?>">Bahan Baku</a>
+        <a href="<?= site_url('master/suppliers') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?>">Supplier</a>
+        <a href="<?= site_url('master/recipes') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?>">Resep</a>
 
         <div class="nav-section-title">Transaksi</div>
-        <a href="<?= site_url('purchases') ?>" class="nav-link small">Pembelian Bahan</a>
-        <a href="<?= site_url('transactions/sales') ?>" class="nav-link small">POS Penjualan</a>
+        <a href="<?= site_url('purchases') ?>" class="nav-link small <?= $menuAllowed('transactions') ? '' : 'disabled-link'; ?>">Pembelian Bahan</a>
+        <a href="<?= site_url('transactions/sales') ?>" class="nav-link small <?= $menuAllowed('transactions') ? '' : 'disabled-link'; ?>">POS Penjualan</a>
 
         <div class="nav-section-title">Inventory</div>
-        <a href="<?= site_url('inventory/stock-movements') ?>" class="nav-link small">Riwayat Stok (IN/OUT)</a>
-        <a href="<?= site_url('inventory/stock-card') ?>" class="nav-link small">Kartu Stok per Bahan</a>
+        <a href="<?= site_url('inventory/stock-movements') ?>" class="nav-link small <?= $menuAllowed('inventory') ? '' : 'disabled-link'; ?>">Riwayat Stok (IN/OUT)</a>
+        <a href="<?= site_url('inventory/stock-card') ?>" class="nav-link small <?= $menuAllowed('inventory') ? '' : 'disabled-link'; ?>">Kartu Stok per Bahan</a>
 
         <div class="nav-section-title">Laporan</div>
-        <a href="<?= site_url('reports/sales/daily') ?>" class="nav-link small">Penjualan Harian</a>
-        <a href="<?= site_url('reports/sales/menu') ?>" class="nav-link small">Penjualan per Menu</a>
+        <a href="<?= site_url('reports/sales/daily') ?>" class="nav-link small <?= $menuAllowed('reports') ? '' : 'disabled-link'; ?>">Penjualan Harian</a>
+        <a href="<?= site_url('reports/sales/menu') ?>" class="nav-link small <?= $menuAllowed('reports') ? '' : 'disabled-link'; ?>">Penjualan per Menu</a>
 
         <div class="nav-section-title">Overhead</div>
-        <a href="<?= site_url('overheads') ?>" class="nav-link small">Biaya Overhead</a>
-        <a href="<?= site_url('overhead-categories') ?>" class="nav-link small">Kategori Overhead</a>
+        <a href="<?= site_url('overheads') ?>" class="nav-link small <?= $menuAllowed('overhead') ? '' : 'disabled-link'; ?>">Biaya Overhead</a>
+        <a href="<?= site_url('overhead-categories') ?>" class="nav-link small <?= $menuAllowed('overhead') ? '' : 'disabled-link'; ?>">Kategori Overhead</a>
     </aside>
 
 
