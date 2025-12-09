@@ -162,6 +162,12 @@
             pointer-events: none;
             cursor: not-allowed;
         }
+        .table-scroll-wrap {
+            overflow: auto;
+            max-height: calc(80vh - 120px);
+            border: 1px solid #111827;
+            border-radius: 10px;
+        }
         .footer {
             position: fixed;
             left: var(--sidebar-width);
@@ -275,6 +281,20 @@
             });
         });
     })();
+</script>
+<script>
+    // Auto wrap table di dalam .card dengan container scroll, kecuali sudah punya pembungkus scroll
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.card table').forEach(function(tbl) {
+            if (tbl.closest('.table-scroll-wrap')) {
+                return;
+            }
+            var wrap = document.createElement('div');
+            wrap.className = 'table-scroll-wrap';
+            tbl.parentNode.insertBefore(wrap, tbl);
+            wrap.appendChild(tbl);
+        });
+    });
 </script>
 <div class="layout">
     <aside class="sidebar">
