@@ -136,7 +136,7 @@
     };
 ?>
 <?php if (! empty($flashError)): ?>
-    <div id="flash-error" style="position:fixed; top:12px; right:12px; z-index:9999; background:#3f1f1f; border:1px solid #b91c1c; color:#fecaca; padding:10px 12px; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.45); font-size:12px;">
+    <div id="flash-error" style="position:fixed; top:18px; left:50%; transform:translateX(-50%); z-index:9999; background:#3f1f1f; border:1px solid #b91c1c; color:#fecaca; padding:14px 18px; border-radius:12px; box-shadow:0 16px 40px rgba(0,0,0,0.55); font-size:13px; max-width:520px; width:calc(100% - 32px); text-align:center;">
         <?= esc($flashError); ?>
     </div>
     <script>
@@ -147,7 +147,7 @@
                 el.style.opacity = '0';
                 setTimeout(function(){ el.remove(); }, 700);
             }
-        }, 4000);
+        }, 4500);
     </script>
 <?php endif; ?>
 <div class="layout">
