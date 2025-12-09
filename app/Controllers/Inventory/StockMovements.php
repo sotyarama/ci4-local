@@ -25,6 +25,9 @@ class StockMovements extends BaseController
         $rawId    = (int) ($this->request->getGet('raw_material_id') ?? 0);
         $dateFrom = $this->request->getGet('date_from') ?: null;
         $dateTo   = $this->request->getGet('date_to') ?: null;
+        $openingBalance = $this->request->getGet('opening_balance');
+        $openingBalance = $openingBalance !== null && $openingBalance !== '' ? (float) $openingBalance : null;
+        $runningBalanceMap = [];
 
         $builder = $this->movementModel
             ->withMaterial()
@@ -45,6 +48,36 @@ class StockMovements extends BaseController
 
         $movements = $builder->findAll();
 
+        // Hitung saldo berjalan hanya bila filter bahan dipilih agar konteks jelas.
+        if ($rawId > 0 && ! empty($movements)) {
+            $ascBuilder = $this->movementModel
+                ->where('stock_movements.raw_material_id', $rawId);
+
+            if ($dateFrom) {
+                $ascBuilder->where('DATE(stock_movements.created_at) >=', $dateFrom);
+            }
+            if ($dateTo) {
+                $ascBuilder->where('DATE(stock_movements.created_at) <=', $dateTo);
+            }
+
+            $ascMovements = $ascBuilder
+                ->orderBy('stock_movements.created_at', 'ASC')
+                ->orderBy('stock_movements.id', 'ASC')
+                ->findAll();
+
+            $balance = $openingBalance ?? 0.0;
+            foreach ($ascMovements as $mv) {
+                $qty = (float) ($mv['qty'] ?? 0);
+                if (strtoupper($mv['movement_type']) === 'IN') {
+                    $balance += $qty;
+                } else {
+                    $balance -= $qty;
+                }
+
+                $runningBalanceMap[$mv['id']] = $balance;
+            }
+        }
+
         $materials = $this->rawModel
             ->where('is_active', 1)
             ->orderBy('name', 'ASC')
@@ -58,6 +91,8 @@ class StockMovements extends BaseController
             'filterRawId' => $rawId,
             'filterFrom'  => $dateFrom,
             'filterTo'    => $dateTo,
+            'openingBalance' => $openingBalance,
+            'runningBalanceMap' => $runningBalanceMap,
         ];
 
         return view('inventory/stock_movements_index', $data);

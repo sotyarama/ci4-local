@@ -140,6 +140,11 @@
 
         <div class="nav-section-title">Laporan</div>
         <a href="<?= site_url('reports/sales/daily') ?>" class="nav-link small">Penjualan Harian</a>
+        <a href="<?= site_url('reports/sales/menu') ?>" class="nav-link small">Penjualan per Menu</a>
+
+        <div class="nav-section-title">Overhead</div>
+        <a href="<?= site_url('overheads') ?>" class="nav-link small">Biaya Overhead</a>
+        <a href="<?= site_url('overhead-categories') ?>" class="nav-link small">Kategori Overhead</a>
     </aside>
 
 

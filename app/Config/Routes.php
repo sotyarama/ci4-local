@@ -76,7 +76,15 @@ $routes->group('', ['filter' => 'auth'], static function($routes) {
 
     // Reports - Sales Daily Summary
     $routes->get('reports/sales/daily', 'Reports\SalesSummary::daily');
+    $routes->get('reports/sales/menu', 'Reports\SalesSummary::perMenu');
+
+    // Overheads
+    $routes->get('overheads', 'Overheads::index');
+    $routes->get('overheads/create', 'Overheads::create');
+    $routes->post('overheads/store', 'Overheads::store');
+    $routes->get('overhead-categories', 'OverheadCategories::index');
+    $routes->get('overhead-categories/create', 'OverheadCategories::create');
+    $routes->post('overhead-categories/store', 'OverheadCategories::store');
 
 
 });
-

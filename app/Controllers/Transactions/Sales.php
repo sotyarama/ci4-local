@@ -118,7 +118,9 @@ class Sales extends BaseController
             if ($menuId > 0 && $qty > 0 && $price >= 0) {
                 $subtotal = $qty * $price;
 
-                $menuName = $this->menuModel->find($menuId)['name'] ?? 'Menu';
+                $menuData = $this->menuModel->find($menuId);
+                $menuName = $menuData['name'] ?? 'Menu';
+                $basePrice= (float) ($menuData['price'] ?? 0);
 
                 $items[] = [
                     'menu_id'   => $menuId,
@@ -126,6 +128,7 @@ class Sales extends BaseController
                     'qty'       => $qty,
                     'price'     => $price,
                     'subtotal'  => $subtotal,
+                    'base_price'=> $basePrice,
                 ];
             }
         }
@@ -133,6 +136,26 @@ class Sales extends BaseController
         if (empty($items)) {
             return redirect()->back()
                 ->with('errors', ['items' => 'Minimal satu baris item penjualan harus diisi.'])
+                ->withInput();
+        }
+
+        // Validasi override harga jual per item
+        $priceErrors = [];
+        foreach ($items as $row) {
+            if ($row['price'] <= 0) {
+                $priceErrors[] = "Harga jual untuk <b>{$row['menu_name']}</b> harus lebih dari 0.";
+                continue;
+            }
+
+            $basePrice = (float) ($row['base_price'] ?? 0);
+            if ($basePrice > 0 && $row['price'] < $basePrice) {
+                $priceErrors[] = "Harga jual untuk <b>{$row['menu_name']}</b> lebih rendah dari harga master (Rp " . number_format($basePrice, 0, ',', '.') . "). Ubah harga di master menu atau konfirmasi harga.";
+            }
+        }
+
+        if (! empty($priceErrors)) {
+            return redirect()->back()
+                ->with('errors', $priceErrors)
                 ->withInput();
         }
 
@@ -318,6 +341,19 @@ class Sales extends BaseController
                     // Update stok
                     $material = $this->rawModel->find($rawId);
                     if ($material) {
+                        // Optimistic guard: stok harus masih cukup pada saat eksekusi
+                        if ($material['current_stock'] < $qtyToDeduct) {
+                            $db->transRollback();
+
+                            return redirect()->back()
+                                ->with('errors', [
+                                    "Stok berubah saat penyimpanan. Bahan <b>{$material['name']}</b> butuh " .
+                                    number_format($qtyToDeduct, 3, ',', '.') . ' ' .
+                                    'namun stok tersisa ' . number_format($material['current_stock'], 3, ',', '.'),
+                                ])
+                                ->withInput();
+                        }
+
                         $newStock = $material['current_stock'] - $qtyToDeduct;
                         $this->rawModel->update($rawId, ['current_stock' => $newStock]);
                     }
@@ -351,7 +387,10 @@ class Sales extends BaseController
             ]);
 
             return redirect()->back()
-                ->with('errors', ['Terjadi kesalahan saat menyimpan transaksi.'])
+                ->with('errors', [
+                    'Terjadi kesalahan saat menyimpan transaksi.',
+                    'Detail: ' . ($err['message'] ?? 'unknown DB error'),
+                ])
                 ->withInput();
         }
 
