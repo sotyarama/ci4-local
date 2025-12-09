@@ -1,7 +1,7 @@
 # DEV_NOTES.md
 POS Cafe System — Development Notes  
 Author: GS  
-Last updated: 2025-12-09 (Afternoon)
+Last updated: 2025-12-09 (Night)
 
 ---
 
@@ -163,6 +163,13 @@ Setiap fitur/modul baru minimal cek:
 - Tidak mengedit migration lama setelah di-push → gunakan migration baru untuk perubahan struktur  
 - Backend (logic & data) diprioritaskan sebelum UI/skin  
 - Perubahan costing & stock harus traceable (stock_movements, receipts, dsb.)
+
+---
+
+# Tooling & Formatting
+
+- Prettier (`.prettierrc`): indent 4 spasi, single quotes, trailing comma `es5`, `semi: true`, `printWidth: 120`, `endOfLine: lf`.
+- VS Code (`.vscode/setting.json`): `tabSize: 4`, `insertSpaces: true`, `detectIndentation: false`, format-on-save aktif + trim trailing whitespace + final newline; default formatter Prettier, PHP pakai Intelephense, JS/TS/JSON/HTML pakai Prettier.
 
 ---
 
