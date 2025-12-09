@@ -42,6 +42,13 @@
                    value="<?= esc($filterTo); ?>"
                    style="padding:5px 8px; border-radius:6px; border:1px solid #374151; background:#020617; color:#e5e7eb; font-size:12px;">
         </div>
+        <div style="display:flex; flex-direction:column; font-size:12px;">
+            <label for="opening_balance" style="margin-bottom:2px; color:#d1d5db;">Opening Balance (opsional)</label>
+            <input type="number" step="0.001" name="opening_balance" id="opening_balance"
+                   value="<?= esc($openingBalance); ?>"
+                   placeholder="mis: 0"
+                   style="padding:5px 8px; border-radius:6px; border:1px solid #374151; background:#020617; color:#e5e7eb; font-size:12px;">
+        </div>
 
         <div style="display:flex; gap:6px;">
             <button type="submit"
@@ -61,6 +68,11 @@
             Belum ada data pergerakan stok untuk filter yang dipilih.
         </p>
     <?php else: ?>
+        <?php if ($openingBalance !== null && $filterRawId > 0): ?>
+            <div style="font-size:11px; color:#9ca3af; margin-bottom:6px;">
+                Opening balance: <span style="color:#e5e7eb; font-weight:600;"><?= number_format((float)$openingBalance, 3, ',', '.'); ?></span>
+            </div>
+        <?php endif; ?>
         <table style="width:100%; border-collapse:collapse; font-size:12px;">
             <thead>
             <tr>
@@ -68,6 +80,7 @@
                 <th style="text-align:left;  padding:6px 8px; border-bottom:1px solid #111827;">Bahan Baku</th>
                 <th style="text-align:center;padding:6px 8px; border-bottom:1px solid #111827;">Tipe</th>
                 <th style="text-align:right; padding:6px 8px; border-bottom:1px solid #111827;">Qty</th>
+                <th style="text-align:right; padding:6px 8px; border-bottom:1px solid #111827;">Saldo</th>
                 <th style="text-align:left;  padding:6px 8px; border-bottom:1px solid #111827;">Referensi</th>
                 <th style="text-align:left;  padding:6px 8px; border-bottom:1px solid #111827;">Catatan</th>
             </tr>
@@ -85,6 +98,7 @@
                     $qty   = (float) ($row['qty'] ?? 0);
                     $unit  = $row['unit_short'] ?? '';
                     $ref   = trim(($row['ref_type'] ?? '') . ' #' . ($row['ref_id'] ?? ''));
+                    $balance = $runningBalanceMap[$row['id']] ?? null;
                 ?>
                 <tr>
                     <td style="padding:6px 8px; border-bottom:1px solid #1f2937;">
@@ -107,6 +121,13 @@
                             <span style="color:#9ca3af; font-size:11px; margin-left:2px;"><?= esc($unit); ?></span>
                         <?php endif; ?>
                     </td>
+                    <td style="padding:6px 8px; border-bottom:1px solid #1f2937; text-align:right; font-weight:600;">
+                        <?php if ($balance !== null): ?>
+                            <?= number_format($balance, 3, ',', '.'); ?>
+                        <?php else: ?>
+                            <span style="color:#6b7280;">-</span>
+                        <?php endif; ?>
+                    </td>
                     <td style="padding:6px 8px; border-bottom:1px solid #1f2937;">
                         <?= esc($ref ?: '-'); ?>
                     </td>
@@ -121,7 +142,7 @@
 
     <div style="margin-top:10px; font-size:11px; color:#6b7280;">
         Sumber data: <code>stock_movements</code> (join <code>raw_materials</code> & <code>units</code>).  
-        Gunakan filter untuk analisa per bahan dan periode.
+        Saldo ditampilkan jika filter satu bahan dipilih; perhitungan mengikuti urutan data terfilter dan opening balance (jika diisi).
     </div>
 </div>
 

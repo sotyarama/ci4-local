@@ -86,7 +86,7 @@ Tujuan utama:
 | Stock Movements      | List Implemented    | IN/OUT list + filter                                           |
 | Stock Card           | Implemented         | Per bahan, filter tanggal + opening balance, saldo berjalan    |
 | Reports - Sales Daily| Implemented (v1)    | Ringkasan penjualan harian + grand total                       |
-| Overhead             | Not started         | Planned                                                        |
+| Overhead             | Basic               | Tabel overhead + kategori master; input & list dengan filter tanggal |
 | Audit Logs           | Not started         | Planned                                                        |
 | POS UI Skin          | Planned (Phase 2)   | Touchscreen-friendly, setelah backend stabil                   |
 
@@ -97,19 +97,20 @@ Tujuan utama:
 ## 1) Sales & HPP Enhancements
 - [x] Blok transaksi jika menu belum punya resep/detail (no fallback HPP 0)
 - [x] Summary harian di Sales Index (total penjualan & margin hari ini)
-- [ ] Validasi tambahan untuk override harga jual per transaksi
+- [x] Validasi tambahan untuk override harga jual per transaksi
 
 ## 2) Inventory & Stock Monitoring
 - [x] Kartu Stok per Bahan: filter tanggal, saldo berjalan, opening balance
-- [ ] Kolom saldo akhir di list movement (opsional, atau cukup di kartu stok)
+- [x] Kolom saldo akhir di list movement (opsional, atau cukup di kartu stok)
 
 ## 3) Reports
-- [ ] Laporan Penjualan per Menu:
+- [x] Laporan Penjualan per Menu:
   - Periode
   - Qty per menu
   - Omzet per menu
   - HPP total per menu
   - Margin per menu
+- [x] Export CSV laporan penjualan (harian & per menu)
 
 ---
 
