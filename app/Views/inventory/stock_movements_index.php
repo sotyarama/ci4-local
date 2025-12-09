@@ -73,6 +73,7 @@
                 Opening balance: <span style="color:#e5e7eb; font-weight:600;"><?= number_format((float)$openingBalance, 3, ',', '.'); ?></span>
             </div>
         <?php endif; ?>
+        <div style="overflow:auto; max-height: calc(80vh - 120px); border:1px solid #111827; border-radius:10px;">
         <table style="width:100%; border-collapse:collapse; font-size:12px;">
             <thead>
             <tr>
@@ -138,6 +139,7 @@
             <?php endforeach; ?>
             </tbody>
         </table>
+        </div>
     <?php endif; ?>
 
     <div style="margin-top:10px; font-size:11px; color:#6b7280;">
