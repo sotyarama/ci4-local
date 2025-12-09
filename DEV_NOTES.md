@@ -92,11 +92,27 @@ Tujuan utama:
 
 ---
 
-# Role & Access Control (Target)
+# Role & Access Control (Target & Current State)
 
-- Owner (Admin): akses penuh, boleh edit harga menu, resep, user & settings, lihat semua laporan termasuk P/L.
-- Staff: boleh input penjualan, pembelian bahan baku, overhead (kecuali gaji), stock adjustment; boleh lihat master; boleh edit resep (butuh audit log). Tidak boleh edit user, harga menu, setting sistem.
-- Auditor: read-only (tanpa ubah data), boleh lihat semua laporan dan audit log.
+Legenda: A=Access (view/read), I=Input/Create, U=Update, D=Delete/Nonaktifkan.
+
+| Modul/Fitur           | Owner         | Staff (target)                          | Staff (current)                                      | Auditor (target)   | Auditor (current)            |
+|-----------------------|---------------|-----------------------------------------|-------------------------------------------------------|--------------------|------------------------------|
+| Dashboard             | A             | A                                       | A                                                     | A                  | A                            |
+| Master Data (produk, kategori, bahan, supplier) | A/I/U/D (termasuk harga menu) | A, I/U resep; **tidak** U harga menu; D dibatasi | A; filter blok I/U/D di products/users/settings (form masih terbuka) | A                  | A (filter blok I/U/D)        |
+| Users & Settings      | A/I/U/D       | Tidak boleh                             | A; filter blok I/U/D                                  | A (view)           | A (filter blok I/U/D)        |
+| Resep                 | A/I/U/D       | A/I/U (butuh audit log)                 | A/I/U (filter tidak blok; audit log belum)           | A                  | A (filter blok I/U/D)        |
+| Penjualan             | A/I/U/D       | A/I (void belum)                        | A/I (filter izinkan)                                  | A (lihat)          | A (filter blok I/U/D)        |
+| Pembelian             | A/I/U/D       | A/I                                     | A/I (filter izinkan)                                  | A (lihat)          | A (filter blok I/U/D)        |
+| Stock Adjustment      | A/I/U/D       | A/I                                     | A/I (belum ada modul, asumsi)                         | A (lihat)          | A (filter blok I/U/D)        |
+| Overhead              | A/I/U/D       | A/I                                     | A/I (filter izinkan)                                  | A (lihat)          | A (filter blok I/U/D)        |
+| Laporan (Sales, dll.) | A             | A                                       | A                                                     | A                  | A                            |
+| Audit Log             | A             | A (view)                                | (belum ada modul)                                     | A (view)           | (belum ada modul)            |
+
+Catatan gap:
+- Staff masih bisa membuka form edit master/harga karena GET tidak diblok; filter hanya blok submit POST/PUT/DELETE di products/users/settings.
+- Audit log resep/menu belum ada. 
+- Void/retur penjualan belum ada.
 
 ---
 
