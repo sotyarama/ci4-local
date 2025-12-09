@@ -49,15 +49,31 @@ class Login extends BaseController
                 ->withInput();
         }
 
+        $roleName = $this->getRoleName((int) ($user['role_id'] ?? 0));
+
         // Simpan ke session
         $session->set([
             'user_id'     => $user['id'],
             'username'    => $user['username'],
             'full_name'   => $user['full_name'],
             'role_id'     => $user['role_id'],
+            'role'        => $roleName,
+            'role_name'   => $roleName,
             'isLoggedIn'  => true,
         ]);
 
         return redirect()->to('/'); // ke dashboard
+    }
+
+    private function getRoleName(int $roleId): string
+    {
+        if ($roleId <= 0) {
+            return '';
+        }
+
+        $db = \Config\Database::connect();
+        $row = $db->table('roles')->select('name')->where('id', $roleId)->get()->getRowArray();
+
+        return strtolower((string) ($row['name'] ?? ''));
     }
 }
