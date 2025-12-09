@@ -164,22 +164,35 @@
         <a href="<?= site_url('master/raw-materials') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?>">Bahan Baku</a>
         <a href="<?= site_url('master/suppliers') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?>">Supplier</a>
         <a href="<?= site_url('master/recipes') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?>">Resep</a>
+        <a href="#" class="nav-link small disabled-link" title="Planned">Audit Log (planned)</a>
 
         <div class="nav-section-title">Transaksi</div>
         <a href="<?= site_url('purchases') ?>" class="nav-link small <?= $menuAllowed('transactions') ? '' : 'disabled-link'; ?>">Pembelian Bahan</a>
         <a href="<?= site_url('transactions/sales') ?>" class="nav-link small <?= $menuAllowed('transactions') ? '' : 'disabled-link'; ?>">POS Penjualan</a>
+        <a href="#" class="nav-link small disabled-link" title="Planned">Retur Penjualan (planned)</a>
 
         <div class="nav-section-title">Inventory</div>
         <a href="<?= site_url('inventory/stock-movements') ?>" class="nav-link small <?= $menuAllowed('inventory') ? '' : 'disabled-link'; ?>">Riwayat Stok (IN/OUT)</a>
         <a href="<?= site_url('inventory/stock-card') ?>" class="nav-link small <?= $menuAllowed('inventory') ? '' : 'disabled-link'; ?>">Kartu Stok per Bahan</a>
+        <a href="#" class="nav-link small disabled-link" title="Planned">Stock Adjustment (planned)</a>
+        <a href="#" class="nav-link small disabled-link" title="Planned">Stock & Selisih Fisik (planned)</a>
 
         <div class="nav-section-title">Laporan</div>
         <a href="<?= site_url('reports/sales/daily') ?>" class="nav-link small <?= $menuAllowed('reports') ? '' : 'disabled-link'; ?>">Penjualan Harian</a>
         <a href="<?= site_url('reports/sales/menu') ?>" class="nav-link small <?= $menuAllowed('reports') ? '' : 'disabled-link'; ?>">Penjualan per Menu</a>
+        <a href="#" class="nav-link small disabled-link" title="Planned">Penjualan Bulanan (planned)</a>
+        <a href="#" class="nav-link small disabled-link" title="Planned">Margin per Kategori (planned)</a>
+        <a href="#" class="nav-link small disabled-link" title="Planned">Pembelian per Supplier (planned)</a>
+        <a href="#" class="nav-link small disabled-link" title="Planned">Stok & Selisih (planned)</a>
+        <a href="#" class="nav-link small disabled-link" title="Planned">Audit Log (planned)</a>
 
         <div class="nav-section-title">Overhead</div>
         <a href="<?= site_url('overheads') ?>" class="nav-link small <?= $menuAllowed('overhead') ? '' : 'disabled-link'; ?>">Biaya Overhead</a>
         <a href="<?= site_url('overhead-categories') ?>" class="nav-link small <?= $menuAllowed('overhead') ? '' : 'disabled-link'; ?>">Kategori Overhead</a>
+        <a href="#" class="nav-link small disabled-link" title="Planned">Overhead (Payroll) planned</a>
+
+        <div class="nav-section-title">POS UI (Phase 2)</div>
+        <a href="#" class="nav-link small disabled-link" title="Planned">Touchscreen POS (planned)</a>
     </aside>
 
 
