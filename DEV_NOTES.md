@@ -110,9 +110,9 @@ Legenda: A=Access (view/read), I=Input/Create, U=Update, D=Delete/Nonaktifkan.
 | Audit Log             | A             | A (view)                                | (belum ada modul)                                     | A (view)           | (belum ada modul)            |
 
 Catatan gap:
-- Staff masih bisa membuka form edit master/harga karena GET tidak diblok; filter hanya blok submit POST/PUT/DELETE di products/users/settings.
-- Audit log resep/menu belum ada. 
-- Void/retur penjualan belum ada.
+- Staff masih bisa membuka form edit master/harga karena GET tidak diblok; filter hanya blok submit POST/PUT/DELETE di products/users/settings. ✅ di-TO-DO: "Staff blok GET form master sensitif".
+- Audit log resep/menu belum ada. ✅ di-TO-DO: "Audit log edit resep/menu".
+- Void/retur penjualan belum ada. ✅ di-TO-DO: "Void/retur penjualan".
 
 ---
 
@@ -145,6 +145,8 @@ Catatan gap:
 ## 5) Access Control
 - [ ] Terapkan role Owner/Staff/Auditor pada route/controller: Staff dibatasi dari edit user, harga menu, settings; Auditor read-only (blok POST/PUT/DELETE)
 - [ ] Audit log untuk edit resep/menu (harga & bahan) sebagai bagian pengamanan Staff
+- [ ] Staff: blokir akses GET ke form create/edit produk/user/setting (hanya list view); sidebar/link nonaktif untuk area sensitif
+- [ ] Void/retur penjualan atau catatan eksplisit belum didukung (untuk memenuhi rollback stok/margin)
 
 ---
 
