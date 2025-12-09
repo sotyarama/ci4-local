@@ -53,6 +53,8 @@
             color: #e5e7eb;
             text-decoration: none;
             margin-bottom: 3px;
+            border: 1px solid transparent;
+            transition: background 0.15s ease, border-color 0.15s ease;
         }
         .nav-link:hover {
             background: #0f172a;
@@ -62,9 +64,11 @@
             color: #9ca3af;
         }
         .nav-link.active {
-            background: #0f172a;
-            border: 1px solid #1f2937;
+            background: linear-gradient(90deg, rgba(59,130,246,0.18), rgba(59,130,246,0.05));
+            border: 1px solid #3b82f6;
+            color: #bfdbfe;
             font-weight: 600;
+            box-shadow: 0 6px 18px rgba(59,130,246,0.25);
         }
         .nav-group {
             margin-bottom: 4px;
