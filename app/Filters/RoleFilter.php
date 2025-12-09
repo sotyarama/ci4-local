@@ -20,14 +20,14 @@ class RoleFilter implements FilterInterface
 
         $allowedRoles = $arguments ?? [];
         if (! empty($allowedRoles) && ! in_array($role, $allowedRoles, true)) {
-            return $this->forbidden();
+            return $this->forbidden($request, 'Akses ditolak untuk role ini.');
         }
 
         $method = strtolower($request->getMethod());
 
         // Auditor: read-only
         if ($role === 'auditor' && $method !== 'get') {
-            return $this->forbidden();
+            return $this->forbidden($request, 'Auditor bersifat read-only.');
         }
 
         // Staff: blokir update area sensitif (user, settings, harga menu/master products)
@@ -41,7 +41,7 @@ class RoleFilter implements FilterInterface
 
             foreach ($blockedPrefixes as $prefix) {
                 if (str_starts_with($path, $prefix)) {
-                    return $this->forbidden();
+                    return $this->forbidden($request, 'Akses dibatasi untuk Staff.');
                 }
             }
         }
@@ -54,10 +54,14 @@ class RoleFilter implements FilterInterface
         // no-op
     }
 
-    private function forbidden()
+    private function forbidden(RequestInterface $request, string $message)
     {
-        return Services::response()
-            ->setStatusCode(403)
-            ->setBody('Forbidden');
+        $session = session();
+        $session->setFlashdata('error', $message);
+
+        $referer = $request->getServer('HTTP_REFERER');
+        $target  = $referer ?: site_url('/');
+
+        return redirect()->to($target);
     }
 }

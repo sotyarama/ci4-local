@@ -122,6 +122,7 @@
 <body>
 <?php
     $role = strtolower((string) (session('role') ?? session('role_name') ?? ''));
+    $flashError = session()->getFlashdata('error') ?? null;
     $roleAllow = [
         'owner'   => ['dashboard','master','transactions','inventory','reports','overhead'],
         'staff'   => ['dashboard','master','transactions','inventory','reports','overhead'],
@@ -134,6 +135,21 @@
         return in_array($key, $roleAllow[$role] ?? [], true);
     };
 ?>
+<?php if (! empty($flashError)): ?>
+    <div id="flash-error" style="position:fixed; top:12px; right:12px; z-index:9999; background:#3f1f1f; border:1px solid #b91c1c; color:#fecaca; padding:10px 12px; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.45); font-size:12px;">
+        <?= esc($flashError); ?>
+    </div>
+    <script>
+        setTimeout(function() {
+            var el = document.getElementById('flash-error');
+            if (el) {
+                el.style.transition = 'opacity 0.6s ease';
+                el.style.opacity = '0';
+                setTimeout(function(){ el.remove(); }, 700);
+            }
+        }, 4000);
+    </script>
+<?php endif; ?>
 <div class="layout">
     <aside class="sidebar">
         <div class="sidebar-title">Cafe POS</div>
