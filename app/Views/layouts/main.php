@@ -154,6 +154,10 @@
     if ($reqUri !== '') {
         $currentPath = $reqUri;
     }
+    // normalisasi: buang prefix index.php/ jika ada
+    if (str_starts_with($currentPath, 'index.php/')) {
+        $currentPath = substr($currentPath, strlen('index.php/'));
+    }
     $flashError = session()->getFlashdata('error') ?? null;
     $roleAllow = [
         'owner'   => ['dashboard','master','transactions','inventory','reports','overhead'],
