@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
+        :root {
+            --sidebar-width: 220px;
+            --topbar-height: 56px;
+            --footer-height: 36px;
+        }
         * { box-sizing: border-box; }
         body {
             margin: 0;
@@ -16,9 +21,10 @@
         .layout {
             display: flex;
             min-height: 100vh;
+            overflow: hidden;
         }
         .sidebar {
-            width: 220px;
+            width: var(--sidebar-width);
             background: #020617;
             border-right: 1px solid #111827;
             padding: 16px 14px;
@@ -26,6 +32,7 @@
             height: 100vh;
             position: sticky;
             top: 0;
+            flex-shrink: 0;
         }
         .sidebar-title {
             font-size: 18px;
@@ -89,6 +96,8 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            min-height: 100vh;
+            margin-left: var(--sidebar-width);
         }
         .topbar {
             padding: 10px 18px;
@@ -97,8 +106,11 @@
             justify-content: space-between;
             align-items: center;
             background: #020617;
-            position: sticky;
+            position: fixed;
+            left: var(--sidebar-width);
+            right: 0;
             top: 0;
+            height: var(--topbar-height);
             z-index: 10;
         }
         .topbar-title {
@@ -130,6 +142,11 @@
 
         .content {
             padding: 18px 20px 32px;
+            overflow-y: auto;
+            flex: 1;
+            height: calc(100vh - var(--topbar-height) - var(--footer-height));
+            margin-top: var(--topbar-height);
+            margin-bottom: var(--footer-height);
         }
 
         /* Card default agar view lain tinggal pakai */
@@ -144,6 +161,21 @@
             opacity: 0.35;
             pointer-events: none;
             cursor: not-allowed;
+        }
+        .footer {
+            position: fixed;
+            left: var(--sidebar-width);
+            right: 0;
+            bottom: 0;
+            height: var(--footer-height);
+            border-top: 1px solid #111827;
+            background: #020617;
+            color: #6b7280;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 16px;
         }
     </style>
 </head>
@@ -341,5 +373,9 @@
         </main>
     </div>
 </div>
+<footer class="footer">
+    <span>POS Cafe System</span>
+    <span>CodeIgniter 4</span>
+</footer>
 </body>
 </html>
