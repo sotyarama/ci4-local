@@ -92,6 +92,14 @@ Tujuan utama:
 
 ---
 
+# Role & Access Control (Target)
+
+- Owner (Admin): akses penuh, boleh edit harga menu, resep, user & settings, lihat semua laporan termasuk P/L.
+- Staff: boleh input penjualan, pembelian bahan baku, overhead (kecuali gaji), stock adjustment; boleh lihat master; boleh edit resep (butuh audit log). Tidak boleh edit user, harga menu, setting sistem.
+- Auditor: read-only (tanpa ubah data), boleh lihat semua laporan dan audit log.
+
+---
+
 # NEXT TODOs (Short-Term — Backend Fokus)
 
 ## 1) Sales & HPP Enhancements
@@ -117,6 +125,10 @@ Tujuan utama:
 
 ## 4) Overhead
 - [ ] Edit/nonaktif kategori overhead + tampilkan kategori nonaktif di filter (overhead lama tetap bisa difilter)
+
+## 5) Access Control
+- [ ] Terapkan role Owner/Staff/Auditor pada route/controller: Staff dibatasi dari edit user, harga menu, settings; Auditor read-only (blok POST/PUT/DELETE)
+- [ ] Audit log untuk edit resep/menu (harga & bahan) sebagai bagian pengamanan Staff
 
 ---
 
