@@ -27,22 +27,29 @@
             width: var(--sidebar-width);
             background: #020617;
             border-right: 1px solid #111827;
-            padding: 16px 14px;
-            overflow-y: auto;
+            padding: 0 14px 16px 14px;
             height: 100vh;
             position: sticky;
             top: 0;
             flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
         }
         .sidebar-title {
             font-size: 18px;
             font-weight: 600;
-            margin-bottom: 16px;
+            margin-bottom: 8px;
+            padding: 16px 0 0 0;
         }
         .sidebar-sub {
             font-size: 11px;
             color: #6b7280;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+        }
+        .sidebar-scroll {
+            overflow-y: auto;
+            flex: 1;
+            padding-top: 8px;
         }
         .nav-section-title {
             font-size: 11px;
@@ -169,6 +176,35 @@
             max-height: calc(80vh - 120px);
             border: 1px solid #111827;
             border-radius: 10px;
+        }
+        /* Scrollbar styling */
+        .sidebar::-webkit-scrollbar,
+        .table-scroll-wrap::-webkit-scrollbar,
+        .content::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .sidebar::-webkit-scrollbar-track,
+        .table-scroll-wrap::-webkit-scrollbar-track,
+        .content::-webkit-scrollbar-track {
+            background: #0b1220;
+            border-radius: 10px;
+        }
+        .sidebar::-webkit-scrollbar-thumb,
+        .table-scroll-wrap::-webkit-scrollbar-thumb,
+        .content::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #1f2937, #0ea5e9);
+            border-radius: 10px;
+            border: 1px solid #0b1220;
+        }
+        .sidebar {
+            scrollbar-color: #0ea5e9 #0b1220;
+            scrollbar-width: thin;
+        }
+        .table-scroll-wrap,
+        .content {
+            scrollbar-color: #1f2937 #0b1220;
+            scrollbar-width: thin;
         }
         .footer {
             position: fixed;
@@ -302,72 +338,73 @@
     <aside class="sidebar">
         <div class="sidebar-title">Cafe POS</div>
         <div class="sidebar-sub">CodeIgniter 4 Dev</div>
+        <div class="sidebar-scroll">
+            <div class="nav-section-title collapsible" data-target="main">
+                Main <span class="collapse-arrow">▾</span>
+            </div>
+            <div class="nav-group" id="nav-main">
+                <a href="<?= site_url('/') ?>" class="nav-link <?= $menuAllowed('dashboard') ? '' : 'disabled-link'; ?> <?= $isActive(['','dashboard']) ? 'active' : ''; ?>">Dashboard</a>
+            </div>
 
-        <div class="nav-section-title collapsible" data-target="main">
-            Main <span class="collapse-arrow">▾</span>
-        </div>
-        <div class="nav-group" id="nav-main">
-            <a href="<?= site_url('/') ?>" class="nav-link <?= $menuAllowed('dashboard') ? '' : 'disabled-link'; ?> <?= $isActive(['','dashboard']) ? 'active' : ''; ?>">Dashboard</a>
-        </div>
+            <div class="nav-section-title collapsible" data-target="master">
+                Master <span class="collapse-arrow">▾</span>
+            </div>
+            <div class="nav-group" id="nav-master">
+                <a href="<?= site_url('master/products') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?> <?= $isActive(['master/products']) ? 'active' : ''; ?>">Menu / Produk</a>
+                <a href="<?= site_url('master/categories') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?> <?= $isActive(['master/categories']) ? 'active' : ''; ?>">Kategori Menu</a>
+                <a href="<?= site_url('master/raw-materials') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?> <?= $isActive(['master/raw-materials']) ? 'active' : ''; ?>">Bahan Baku</a>
+                <a href="<?= site_url('master/suppliers') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?> <?= $isActive(['master/suppliers']) ? 'active' : ''; ?>">Supplier</a>
+                <a href="<?= site_url('master/recipes') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?> <?= $isActive(['master/recipes']) ? 'active' : ''; ?>">Resep</a>
+                <a href="#" class="nav-link small disabled-link" title="Planned">Audit Log (planned)</a>
+            </div>
 
-        <div class="nav-section-title collapsible" data-target="master">
-            Master <span class="collapse-arrow">▾</span>
-        </div>
-        <div class="nav-group" id="nav-master">
-            <a href="<?= site_url('master/products') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?> <?= $isActive(['master/products']) ? 'active' : ''; ?>">Menu / Produk</a>
-            <a href="<?= site_url('master/categories') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?> <?= $isActive(['master/categories']) ? 'active' : ''; ?>">Kategori Menu</a>
-            <a href="<?= site_url('master/raw-materials') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?> <?= $isActive(['master/raw-materials']) ? 'active' : ''; ?>">Bahan Baku</a>
-            <a href="<?= site_url('master/suppliers') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?> <?= $isActive(['master/suppliers']) ? 'active' : ''; ?>">Supplier</a>
-            <a href="<?= site_url('master/recipes') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?> <?= $isActive(['master/recipes']) ? 'active' : ''; ?>">Resep</a>
-            <a href="#" class="nav-link small disabled-link" title="Planned">Audit Log (planned)</a>
-        </div>
+            <div class="nav-section-title collapsible" data-target="transactions">
+                Transaksi <span class="collapse-arrow">▾</span>
+            </div>
+            <div class="nav-group" id="nav-transactions">
+                <a href="<?= site_url('purchases') ?>" class="nav-link small <?= $menuAllowed('transactions') ? '' : 'disabled-link'; ?> <?= $isActive(['purchases']) ? 'active' : ''; ?>">Pembelian Bahan</a>
+                <a href="<?= site_url('transactions/sales') ?>" class="nav-link small <?= $menuAllowed('transactions') ? '' : 'disabled-link'; ?> <?= $isActive(['transactions/sales']) ? 'active' : ''; ?>">POS Penjualan</a>
+                <a href="#" class="nav-link small disabled-link" title="Planned">Retur Penjualan (planned)</a>
+            </div>
 
-        <div class="nav-section-title collapsible" data-target="transactions">
-            Transaksi <span class="collapse-arrow">▾</span>
-        </div>
-        <div class="nav-group" id="nav-transactions">
-            <a href="<?= site_url('purchases') ?>" class="nav-link small <?= $menuAllowed('transactions') ? '' : 'disabled-link'; ?> <?= $isActive(['purchases']) ? 'active' : ''; ?>">Pembelian Bahan</a>
-            <a href="<?= site_url('transactions/sales') ?>" class="nav-link small <?= $menuAllowed('transactions') ? '' : 'disabled-link'; ?> <?= $isActive(['transactions/sales']) ? 'active' : ''; ?>">POS Penjualan</a>
-            <a href="#" class="nav-link small disabled-link" title="Planned">Retur Penjualan (planned)</a>
-        </div>
+            <div class="nav-section-title collapsible" data-target="inventory">
+                Inventory <span class="collapse-arrow">▾</span>
+            </div>
+            <div class="nav-group" id="nav-inventory">
+                <a href="<?= site_url('inventory/stock-movements') ?>" class="nav-link small <?= $menuAllowed('inventory') ? '' : 'disabled-link'; ?> <?= $isActive(['inventory/stock-movements']) ? 'active' : ''; ?>">Riwayat Stok (IN/OUT)</a>
+                <a href="<?= site_url('inventory/stock-card') ?>" class="nav-link small <?= $menuAllowed('inventory') ? '' : 'disabled-link'; ?> <?= $isActive(['inventory/stock-card']) ? 'active' : ''; ?>">Kartu Stok per Bahan</a>
+                <a href="#" class="nav-link small disabled-link" title="Planned">Stock Adjustment (planned)</a>
+                <a href="#" class="nav-link small disabled-link" title="Planned">Stock & Selisih Fisik (planned)</a>
+            </div>
 
-        <div class="nav-section-title collapsible" data-target="inventory">
-            Inventory <span class="collapse-arrow">▾</span>
-        </div>
-        <div class="nav-group" id="nav-inventory">
-            <a href="<?= site_url('inventory/stock-movements') ?>" class="nav-link small <?= $menuAllowed('inventory') ? '' : 'disabled-link'; ?> <?= $isActive(['inventory/stock-movements']) ? 'active' : ''; ?>">Riwayat Stok (IN/OUT)</a>
-            <a href="<?= site_url('inventory/stock-card') ?>" class="nav-link small <?= $menuAllowed('inventory') ? '' : 'disabled-link'; ?> <?= $isActive(['inventory/stock-card']) ? 'active' : ''; ?>">Kartu Stok per Bahan</a>
-            <a href="#" class="nav-link small disabled-link" title="Planned">Stock Adjustment (planned)</a>
-            <a href="#" class="nav-link small disabled-link" title="Planned">Stock & Selisih Fisik (planned)</a>
-        </div>
+            <div class="nav-section-title collapsible" data-target="reports">
+                Laporan <span class="collapse-arrow">▾</span>
+            </div>
+            <div class="nav-group" id="nav-reports">
+                <a href="<?= site_url('reports/sales/daily') ?>" class="nav-link small <?= $menuAllowed('reports') ? '' : 'disabled-link'; ?> <?= $isActive(['reports/sales/daily']) ? 'active' : ''; ?>">Penjualan Harian</a>
+                <a href="<?= site_url('reports/sales/menu') ?>" class="nav-link small <?= $menuAllowed('reports') ? '' : 'disabled-link'; ?> <?= $isActive(['reports/sales/menu']) ? 'active' : ''; ?>">Penjualan per Menu</a>
+                <a href="#" class="nav-link small disabled-link" title="Planned">Penjualan Bulanan (planned)</a>
+                <a href="#" class="nav-link small disabled-link" title="Planned">Margin per Kategori (planned)</a>
+                <a href="#" class="nav-link small disabled-link" title="Planned">Pembelian per Supplier (planned)</a>
+                <a href="#" class="nav-link small disabled-link" title="Planned">Stok & Selisih (planned)</a>
+                <a href="#" class="nav-link small disabled-link" title="Planned">Audit Log (planned)</a>
+            </div>
 
-        <div class="nav-section-title collapsible" data-target="reports">
-            Laporan <span class="collapse-arrow">▾</span>
-        </div>
-        <div class="nav-group" id="nav-reports">
-            <a href="<?= site_url('reports/sales/daily') ?>" class="nav-link small <?= $menuAllowed('reports') ? '' : 'disabled-link'; ?> <?= $isActive(['reports/sales/daily']) ? 'active' : ''; ?>">Penjualan Harian</a>
-            <a href="<?= site_url('reports/sales/menu') ?>" class="nav-link small <?= $menuAllowed('reports') ? '' : 'disabled-link'; ?> <?= $isActive(['reports/sales/menu']) ? 'active' : ''; ?>">Penjualan per Menu</a>
-            <a href="#" class="nav-link small disabled-link" title="Planned">Penjualan Bulanan (planned)</a>
-            <a href="#" class="nav-link small disabled-link" title="Planned">Margin per Kategori (planned)</a>
-            <a href="#" class="nav-link small disabled-link" title="Planned">Pembelian per Supplier (planned)</a>
-            <a href="#" class="nav-link small disabled-link" title="Planned">Stok & Selisih (planned)</a>
-            <a href="#" class="nav-link small disabled-link" title="Planned">Audit Log (planned)</a>
-        </div>
+            <div class="nav-section-title collapsible" data-target="overhead">
+                Overhead <span class="collapse-arrow">▾</span>
+            </div>
+            <div class="nav-group" id="nav-overhead">
+                <a href="<?= site_url('overheads') ?>" class="nav-link small <?= $menuAllowed('overhead') ? '' : 'disabled-link'; ?> <?= $isActive(['overheads']) ? 'active' : ''; ?>">Biaya Overhead</a>
+                <a href="<?= site_url('overhead-categories') ?>" class="nav-link small <?= $menuAllowed('overhead') ? '' : 'disabled-link'; ?> <?= $isActive(['overhead-categories']) ? 'active' : ''; ?>">Kategori Overhead</a>
+                <a href="#" class="nav-link small disabled-link" title="Planned">Overhead (Payroll) planned</a>
+            </div>
 
-        <div class="nav-section-title collapsible" data-target="overhead">
-            Overhead <span class="collapse-arrow">▾</span>
-        </div>
-        <div class="nav-group" id="nav-overhead">
-            <a href="<?= site_url('overheads') ?>" class="nav-link small <?= $menuAllowed('overhead') ? '' : 'disabled-link'; ?> <?= $isActive(['overheads']) ? 'active' : ''; ?>">Biaya Overhead</a>
-            <a href="<?= site_url('overhead-categories') ?>" class="nav-link small <?= $menuAllowed('overhead') ? '' : 'disabled-link'; ?> <?= $isActive(['overhead-categories']) ? 'active' : ''; ?>">Kategori Overhead</a>
-            <a href="#" class="nav-link small disabled-link" title="Planned">Overhead (Payroll) planned</a>
-        </div>
-
-        <div class="nav-section-title collapsible" data-target="posui">
-            POS UI (Phase 2) <span class="collapse-arrow">▾</span>
-        </div>
-        <div class="nav-group" id="nav-posui">
-            <a href="#" class="nav-link small disabled-link" title="Planned">Touchscreen POS (planned)</a>
+            <div class="nav-section-title collapsible" data-target="posui">
+                POS UI (Phase 2) <span class="collapse-arrow">▾</span>
+            </div>
+            <div class="nav-group" id="nav-posui">
+                <a href="#" class="nav-link small disabled-link" title="Planned">Touchscreen POS (planned)</a>
+            </div>
         </div>
     </aside>
 
