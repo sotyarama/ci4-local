@@ -97,7 +97,6 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            margin-left: var(--sidebar-width);
         }
         .topbar {
             padding: 10px 18px;
@@ -147,8 +146,7 @@
             height: calc(100vh - var(--topbar-height) - var(--footer-height));
             margin-top: var(--topbar-height);
             margin-bottom: var(--footer-height);
-            width: calc(100vw - var(--sidebar-width));
-            margin-left: 0;
+            width: 100%;
         }
 
         /* Card default agar view lain tinggal pakai */
