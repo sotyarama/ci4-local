@@ -246,7 +246,8 @@
             menuSelect.addEventListener('change', function() {
                 const opt = menuSelect.options[menuSelect.selectedIndex];
                 const defPrice = parseFloat(opt.getAttribute('data-price') || '0');
-                if (defPrice && (!priceInput.value || priceInput.value === '0')) {
+                // Set harga sesuai menu yang dipilih; user tetap bisa override setelahnya.
+                if (! Number.isNaN(defPrice)) {
                     priceInput.value = defPrice;
                 }
                 recalcRow(tr);
