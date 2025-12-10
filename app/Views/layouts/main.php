@@ -238,6 +238,12 @@
             background-color: #111827 !important;
             color: #e5e7eb !important;
         }
+        .select2-results__option .opt-subtext,
+        .select2-selection__rendered .opt-subtext {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-left: 6px;
+        }
         .footer {
             position: fixed;
             left: var(--sidebar-width);
@@ -371,6 +377,16 @@
 <script>
     // Global Select2 init (non-multiple) dengan allowClear jika ada option kosong
     (function($) {
+        function formatWithSubtext(state) {
+            if (!state.id) {
+                return state.text;
+            }
+            const sub = $(state.element).data('subtext');
+            if (sub) {
+                return $('<span>' + state.text + '<span class="opt-subtext">' + sub + '</span></span>');
+            }
+            return state.text;
+        }
         function initSelect2(scope) {
             if (! window.jQuery || ! $.fn.select2) return;
             const $targets = (scope ? $(scope).find('select') : $('select'))
@@ -387,6 +403,8 @@
                     dropdownAutoWidth: true,
                     allowClear: hasEmpty,
                     placeholder: hasEmpty ? ($el.find('option[value=""]').first().text() || 'Pilih') : undefined,
+                    templateResult: formatWithSubtext,
+                    templateSelection: formatWithSubtext,
                 });
             });
         }
