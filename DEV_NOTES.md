@@ -146,7 +146,7 @@ Catatan gap:
 - [x] Pagination/limit sederhana untuk laporan jika data besar
 
 ## 4) Overhead
-- [ ] Edit/nonaktif kategori overhead + tampilkan kategori nonaktif di filter (overhead lama tetap bisa difilter)
+- [x] Edit/nonaktif kategori overhead + tampilkan kategori nonaktif di filter (overhead lama tetap bisa difilter)
 
 ## 5) Access Control
 - [ ] Terapkan role Owner/Staff/Auditor pada route/controller: Staff dibatasi dari edit user & settings; Auditor read-only (blok POST/PUT/DELETE)

@@ -87,6 +87,8 @@ $routes->group('', ['filter' => 'auth'], static function($routes) {
         $routes->get('overhead-categories', 'OverheadCategories::index');
         $routes->get('overhead-categories/create', 'OverheadCategories::create');
         $routes->post('overhead-categories/store', 'OverheadCategories::store');
+        $routes->get('overhead-categories/edit/(:num)', 'OverheadCategories::edit/$1');
+        $routes->post('overhead-categories/update/(:num)', 'OverheadCategories::update/$1');
 
     });
 

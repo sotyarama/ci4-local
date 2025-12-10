@@ -5,7 +5,7 @@
 <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <div>
-            <h2 style="margin:0; font-size:18px;">Tambah Kategori Overhead</h2>
+            <h2 style="margin:0; font-size:18px;"><?= esc($title ?? 'Kategori Overhead'); ?></h2>
             <p style="margin:2px 0 0; font-size:12px; color:#9ca3af;">
                 Masukkan nama kategori (non gaji), mis: sewa, listrik, internet.
             </p>
@@ -29,7 +29,9 @@
         </div>
     <?php endif; ?>
 
-    <form action="<?= site_url('overhead-categories/store'); ?>" method="post">
+    <form action="<?= ($mode ?? 'create') === 'edit'
+            ? site_url('overhead-categories/update/' . ($category['id'] ?? 0))
+            : site_url('overhead-categories/store'); ?>" method="post">
         <?= csrf_field() ?>
 
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:12px;">
@@ -38,7 +40,7 @@
                 <input type="text"
                        name="name"
                        required
-                       value="<?= old('name'); ?>"
+                       value="<?= old('name', $category['name'] ?? ''); ?>"
                        placeholder="mis: Sewa"
                        style="width:100%; padding:6px 8px; font-size:12px; background:#020617; border:1px solid #374151; border-radius:6px; color:#e5e7eb;">
             </div>
@@ -48,7 +50,10 @@
                     <input type="checkbox"
                            name="is_active"
                            value="1"
-                           <?= old('is_active', '1') ? 'checked' : ''; ?>
+                           <?php
+                           $isActive = old('is_active', $category['is_active'] ?? '1');
+                           echo ((int) $isActive === 1) ? 'checked' : '';
+                           ?>
                            style="margin-right:6px;">
                     Tandai aktif
                 </label>
@@ -58,7 +63,7 @@
         <div style="display:flex; justify-content:flex-end; gap:8px;">
             <button type="submit"
                     style="font-size:13px; padding:8px 16px; border-radius:999px; border:none; background:#22c55e; color:#022c22; cursor:pointer;">
-                Simpan
+                <?= ($mode ?? 'create') === 'edit' ? 'Simpan Perubahan' : 'Simpan'; ?>
             </button>
         </div>
     </form>

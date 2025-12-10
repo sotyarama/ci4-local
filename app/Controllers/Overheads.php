@@ -24,7 +24,7 @@ class Overheads extends BaseController
         $categoryFilter = $this->request->getGet('category_id') ?: null;
 
         $builder = $this->overheadModel
-            ->select('overheads.*, oc.name AS category_name')
+            ->select('overheads.*, oc.name AS category_name, oc.is_active AS category_active')
             ->join('overhead_categories oc', 'oc.id = overheads.category_id', 'left')
             ->orderBy('trans_date', 'DESC')
             ->orderBy('overheads.id', 'DESC');
@@ -44,7 +44,7 @@ class Overheads extends BaseController
         $total = array_sum(array_column($rows, 'amount'));
 
         $categories = $this->categoryModel
-            ->where('is_active', 1)
+            ->orderBy('is_active', 'DESC')
             ->orderBy('name', 'ASC')
             ->findAll();
 
