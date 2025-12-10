@@ -31,7 +31,7 @@ class RoleFilter implements FilterInterface
         }
 
         // Staff: blokir update area sensitif (user, settings)
-        if ($role === 'staff' && $method !== 'get') {
+        if ($role === 'staff') {
             $path = strtolower($request->uri->getPath());
             $blockedPrefixes = [
                 'users',
@@ -40,7 +40,11 @@ class RoleFilter implements FilterInterface
 
             foreach ($blockedPrefixes as $prefix) {
                 if (str_starts_with($path, $prefix)) {
-                    return $this->forbidden($request, 'Akses dibatasi untuk Staff.');
+                    if ($method === 'get') {
+                        return $this->forbidden($request, 'Akses halaman sensitif dibatasi untuk Staff.');
+                    }
+
+                    return $this->forbidden($request, 'Aksi ini dibatasi untuk Staff.');
                 }
             }
         }

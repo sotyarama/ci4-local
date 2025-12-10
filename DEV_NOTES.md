@@ -149,12 +149,12 @@ Catatan gap:
 - [x] Edit/nonaktif kategori overhead + tampilkan kategori nonaktif di filter (overhead lama tetap bisa difilter)
 
 ## 5) Access Control
-- [ ] Terapkan role Owner/Staff/Auditor pada route/controller: Staff dibatasi dari edit user & settings; Auditor read-only (blok POST/PUT/DELETE)
+- [x] Terapkan role Owner/Staff/Auditor pada route/controller: Staff dibatasi dari edit user & settings; Auditor read-only (blok POST/PUT/DELETE)
 - [ ] Audit log untuk edit resep/menu (harga & bahan) sebagai bagian pengamanan Staff
-- [ ] Staff: blokir akses GET ke form create/edit user/setting (produk dibiarkan, user/setting dibatasi); sidebar/link nonaktif untuk area sensitif
+- [x] Staff: blokir akses GET ke form create/edit user/setting (produk dibiarkan, user/setting dibatasi); sidebar/link nonaktif untuk area sensitif
 - [ ] Void/retur penjualan atau catatan eksplisit belum didukung (untuk memenuhi rollback stok/margin)
 - [x] Lanjutan UI/UX: scrollbar custom sesuai tema, sidebar collapsible + fixed header/footer, tabel auto-scroll wrapper (done)
-  - Catatan progres: Auditor sudah read-only via RoleFilter; Staff POST ke users/settings sudah diblok, GET form masih perlu dibatasi.
+  - Catatan progres: Auditor read-only via RoleFilter; Staff diblok untuk GET/POST area users/settings (belum ada modul user/setting, guard berbasis path).
 
 ---
 
