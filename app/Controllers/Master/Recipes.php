@@ -106,22 +106,35 @@ class Recipes extends BaseController
                 ->withInput();
         }
 
-        $itemsInput = $this->request->getPost('items') ?? [];
-        $items      = [];
+        $itemsInput   = $this->request->getPost('items') ?? [];
+        $items        = [];
+        $itemErrors   = [];
+        $materialName = $this->getMaterialNameMap();
 
-        foreach ($itemsInput as $row) {
+        foreach ($itemsInput as $idx => $row) {
             $rawId = (int) ($row['raw_material_id'] ?? 0);
             $qty   = (float) ($row['qty'] ?? 0);
             $waste = (float) ($row['waste_pct'] ?? 0);
+
+            if ($rawId > 0 && ($waste < 0 || $waste > 100)) {
+                $label = $materialName[$rawId] ?? 'baris ' . ($idx + 1);
+                $itemErrors[] = "Waste % untuk {$label} harus berada di antara 0 sampai 100.";
+            }
 
             if ($rawId > 0 && $qty > 0) {
                 $items[] = [
                     'raw_material_id' => $rawId,
                     'qty'             => $qty,
-                    'waste_pct'       => $waste,
+                    'waste_pct'       => round($waste, 3),
                     'note'            => $row['note'] ?? null,
                 ];
             }
+        }
+
+        if (! empty($itemErrors)) {
+            return redirect()->back()
+                ->with('errors', $itemErrors)
+                ->withInput();
         }
 
         if (empty($items)) {
@@ -217,22 +230,35 @@ class Recipes extends BaseController
                 ->withInput();
         }
 
-        $itemsInput = $this->request->getPost('items') ?? [];
-        $items      = [];
+        $itemsInput   = $this->request->getPost('items') ?? [];
+        $items        = [];
+        $itemErrors   = [];
+        $materialName = $this->getMaterialNameMap();
 
-        foreach ($itemsInput as $row) {
+        foreach ($itemsInput as $idx => $row) {
             $rawId = (int) ($row['raw_material_id'] ?? 0);
             $qty   = (float) ($row['qty'] ?? 0);
             $waste = (float) ($row['waste_pct'] ?? 0);
+
+            if ($rawId > 0 && ($waste < 0 || $waste > 100)) {
+                $label = $materialName[$rawId] ?? 'baris ' . ($idx + 1);
+                $itemErrors[] = "Waste % untuk {$label} harus berada di antara 0 sampai 100.";
+            }
 
             if ($rawId > 0 && $qty > 0) {
                 $items[] = [
                     'raw_material_id' => $rawId,
                     'qty'             => $qty,
-                    'waste_pct'       => $waste,
+                    'waste_pct'       => round($waste, 3),
                     'note'            => $row['note'] ?? null,
                 ];
             }
+        }
+
+        if (! empty($itemErrors)) {
+            return redirect()->back()
+                ->with('errors', $itemErrors)
+                ->withInput();
         }
 
         if (empty($items)) {
@@ -270,5 +296,22 @@ class Recipes extends BaseController
 
         return redirect()->to(site_url('master/recipes'))
             ->with('message', 'Resep menu berhasil diperbarui.');
+    }
+
+    /**
+     * Peta id bahan -> nama untuk pesan error yang lebih informatif.
+     */
+    private function getMaterialNameMap(): array
+    {
+        $rows = $this->rawModel
+            ->select('id, name')
+            ->findAll();
+
+        $map = [];
+        foreach ($rows as $row) {
+            $map[(int) $row['id']] = $row['name'];
+        }
+
+        return $map;
     }
 }

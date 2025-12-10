@@ -196,20 +196,20 @@ class Sales extends BaseController
             foreach ($recipeItems as $ri) {
                 $rawId    = (int) $ri['raw_material_id'];
                 $baseQty  = (float) $ri['qty'];
-                $wastePct = (float) $ri['waste_pct'];
+                $wastePct = $this->clampWastePct((float) ($ri['waste_pct'] ?? 0));
 
                 if ($rawId <= 0 || $baseQty <= 0) {
                     continue;
                 }
 
-                $effectivePerBatch = $baseQty * (1 + $wastePct / 100.0);
-                $needQty           = $effectivePerBatch * $factor;
+                $effectivePerBatch = $this->roundQty($baseQty * (1 + $wastePct / 100.0));
+                $needQty           = $this->roundQty($effectivePerBatch * $factor);
 
                 if (! isset($rawNeeds[$rawId])) {
                     $rawNeeds[$rawId] = 0;
                 }
 
-                $rawNeeds[$rawId] += $needQty;
+                $rawNeeds[$rawId] = $this->roundQty($rawNeeds[$rawId] + $needQty);
             }
         }
 
@@ -231,11 +231,14 @@ class Sales extends BaseController
                 continue;
             }
 
-            if ($rm['current_stock'] < $neededQty) {
+            $neededQty    = $this->roundQty($neededQty);
+            $currentStock = $this->roundQty((float) ($rm['current_stock'] ?? 0));
+
+            if ($currentStock < $neededQty) {
                 $shortages[] = [
                     'name'   => $rm['name'],
-                    'needed' => round($neededQty, 3),
-                    'stock'  => round($rm['current_stock'], 3),
+                    'needed' => $neededQty,
+                    'stock'  => $currentStock,
                 ];
             }
         }
@@ -245,7 +248,9 @@ class Sales extends BaseController
             $errors = [];
 
             foreach ($shortages as $s) {
-                $errors[] = "Stok tidak mencukupi untuk <b>{$s['name']}</b>: butuh {$s['needed']}, stok hanya {$s['stock']}";
+                $needed = number_format($s['needed'], 3, ',', '.');
+                $stock  = number_format($s['stock'], 3, ',', '.');
+                $errors[] = "Stok tidak mencukupi untuk <b>{$s['name']}</b>: butuh {$needed}, stok hanya {$stock}";
             }
 
             return redirect()->back()
@@ -329,32 +334,37 @@ class Sales extends BaseController
                 foreach ($recipeItems as $ri) {
                     $rawId    = (int) ($ri['raw_material_id'] ?? 0);
                     $baseQty  = (float) ($ri['qty'] ?? 0);
-                    $wastePct = (float) ($ri['waste_pct'] ?? 0);
+                    $wastePct = $this->clampWastePct((float) ($ri['waste_pct'] ?? 0));
 
                     if ($rawId <= 0 || $baseQty <= 0) {
                         continue;
                     }
 
-                    $effectivePerBatch = $baseQty * (1 + $wastePct / 100.0);
-                    $qtyToDeduct       = $effectivePerBatch * $factor;
+                    $effectivePerBatch = $this->roundQty($baseQty * (1 + $wastePct / 100.0));
+                    $qtyToDeduct       = $this->roundQty($effectivePerBatch * $factor);
 
                     // Update stok
                     $material = $this->rawModel->find($rawId);
                     if ($material) {
+                        $currentStock = $this->roundQty((float) ($material['current_stock'] ?? 0));
+
                         // Optimistic guard: stok harus masih cukup pada saat eksekusi
-                        if ($material['current_stock'] < $qtyToDeduct) {
+                        if ($currentStock < $qtyToDeduct) {
                             $db->transRollback();
 
                             return redirect()->back()
                                 ->with('errors', [
                                     "Stok berubah saat penyimpanan. Bahan <b>{$material['name']}</b> butuh " .
                                     number_format($qtyToDeduct, 3, ',', '.') . ' ' .
-                                    'namun stok tersisa ' . number_format($material['current_stock'], 3, ',', '.'),
+                                    'namun stok tersisa ' . number_format($currentStock, 3, ',', '.'),
                                 ])
                                 ->withInput();
                         }
 
-                        $newStock = $material['current_stock'] - $qtyToDeduct;
+                        $newStock = $this->roundQty($currentStock - $qtyToDeduct);
+                        if ($newStock < 0 && abs($newStock) < 0.000001) {
+                            $newStock = 0.0; // clamp noise float negatif tipis
+                        }
                         $this->rawModel->update($rawId, ['current_stock' => $newStock]);
                     }
 
@@ -373,6 +383,7 @@ class Sales extends BaseController
         }
 
         // UPDATE total_cost di header sales
+        $totalCost = round($totalCost, 6);
         $this->saleModel->update($saleId, [
             'total_cost' => $totalCost,
         ]);
@@ -424,5 +435,28 @@ class Sales extends BaseController
         ];
 
         return view('transactions/sales_detail', $data);
+    }
+
+    /**
+     * Batasi waste % supaya tidak negatif / di atas 100.
+     */
+    private function clampWastePct(float $value): float
+    {
+        if ($value < 0) {
+            return 0.0;
+        }
+        if ($value > 100) {
+            return 100.0;
+        }
+
+        return $value;
+    }
+
+    /**
+     * Normalisasi qty supaya tidak ada noise floating point berlebih.
+     */
+    private function roundQty(float $value): float
+    {
+        return round($value, 6);
     }
 }

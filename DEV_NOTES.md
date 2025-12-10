@@ -1,7 +1,7 @@
 # DEV_NOTES.md
 POS Cafe System — Development Notes  
 Author: GS  
-Last updated: 2025-12-09 (Night)
+Last updated: 2025-12-09 (Late Night)
 
 ---
 
@@ -67,6 +67,12 @@ Tujuan utama:
   - SuppliersSeeder, RawMaterialsSeeder, PurchasesDemoSeeder (2 PO + movement IN + update stock/cost), RecipesDemoSeeder (resep untuk menu SKU), UsersSeeder (owner) tetap.
   - DatabaseSeeder memanggil seluruh seeders; aman rerun karena guard.
 
+## 9) Stabilization Precision + Guard (2025-12-09 Late Night)
+- Recipes: validasi waste_pct dibatasi 0-100, rounding 3 desimal saat simpan.
+- HPP: clamp waste_pct dan rounding qty/cost (6 desimal) untuk kurangi noise float; total_cost & hpp_per_yield ikut di-round.
+- Sales: kebutuhan bahan & pengurangan stok di-round 6 desimal, guard stok pakai nilai yang sudah dinormalisasi, pesan shortage lebih jelas.
+- Stock Movements/Card: saldo berjalan & qty di-round per langkah untuk menghindari drift.
+
 ---
 
 # Current Modules Status
@@ -127,7 +133,7 @@ Catatan gap:
 ## 2) Inventory & Stock Monitoring
 - [x] Kartu Stok per Bahan: filter tanggal, saldo berjalan, opening balance
 - [x] Kolom saldo akhir di list movement (opsional, atau cukup di kartu stok)
-- [ ] Guard waste_pct resep (batas wajar, mis: 0-100) dan precision stok (hindari selisih float besar)
+- [x] Guard waste_pct resep (batas 0-100) + rounding qty/cost untuk hindari selisih float besar
 
 ## 3) Reports
 - [x] Laporan Penjualan per Menu:
@@ -147,7 +153,8 @@ Catatan gap:
 - [ ] Audit log untuk edit resep/menu (harga & bahan) sebagai bagian pengamanan Staff
 - [ ] Staff: blokir akses GET ke form create/edit user/setting (produk dibiarkan, user/setting dibatasi); sidebar/link nonaktif untuk area sensitif
 - [ ] Void/retur penjualan atau catatan eksplisit belum didukung (untuk memenuhi rollback stok/margin)
-- [ ] Lanjutan UI/UX: scrollbar custom sesuai tema, sidebar collapsible + fixed header/footer, tabel auto-scroll wrapper (done)
+- [x] Lanjutan UI/UX: scrollbar custom sesuai tema, sidebar collapsible + fixed header/footer, tabel auto-scroll wrapper (done)
+  - Catatan progres: Auditor sudah read-only via RoleFilter; Staff POST ke users/settings sudah diblok, GET form masih perlu dibatasi.
 
 ---
 

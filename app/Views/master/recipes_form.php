@@ -186,6 +186,8 @@
                             <input type="number"
                                    name="items[<?= $idx; ?>][waste_pct]"
                                    step="0.01"
+                                   min="0"
+                                   max="100"
                                    value="<?= esc($row['waste_pct'] ?? '0'); ?>"
                                    style="width:100%; padding:4px 6px; font-size:12px; background:#020617; border:1px solid #374151; border-radius:6px; color:#e5e7eb; text-align:right;">
                         </td>
@@ -199,6 +201,9 @@
                 <?php endforeach; ?>
             </tbody>
         </table>
+        <div style="font-size:11px; color:#9ca3af; margin-top:4px;">
+            Waste % dibatasi 0 - 100 agar perhitungan stok dan HPP tetap wajar.
+        </div>
 
         <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
             <a href="<?= site_url('master/recipes'); ?>"

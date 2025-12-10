@@ -72,12 +72,15 @@ class RecipeModel extends Model
         foreach ($items as $row) {
             $qty       = (float) ($row['qty'] ?? 0);
             $wastePct  = (float) ($row['waste_pct'] ?? 0);
+            $wastePct  = max(0.0, min(100.0, $wastePct)); // guard data out-of-range
             $unitCost  = (float) ($row['material_cost_avg'] ?? 0);
 
             // Qty efektif dengan waste (versi sederhana: qty × (1 + waste%))
             $effectiveQty = $qty * (1 + ($wastePct / 100.0));
+            $effectiveQty = round($effectiveQty, 6);
 
             $lineCost = $effectiveQty * $unitCost;
+            $lineCost = round($lineCost, 6);
             $totalCost += $lineCost;
 
             $row['effective_qty'] = $effectiveQty;
@@ -92,7 +95,9 @@ class RecipeModel extends Model
             $yieldQty = 1; // guard supaya tidak dibagi nol
         }
 
+        $totalCost   = round($totalCost, 6);
         $hppPerYield = $totalCost / $yieldQty;
+        $hppPerYield = round($hppPerYield, 6);
 
         return [
             'recipe'        => $recipe,
