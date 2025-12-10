@@ -321,7 +321,14 @@
             const idx = tbody.children.length;
             const newRow = createRow(idx);
             tbody.appendChild(newRow);
+            if (window.initSelect2) {
+                window.initSelect2(newRow);
+            }
         });
+
+        if (window.initSelect2) {
+            window.initSelect2(tbody);
+        }
     })();
 </script>
 

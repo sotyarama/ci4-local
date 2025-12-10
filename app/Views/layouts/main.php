@@ -5,6 +5,8 @@
     <title><?= esc($title ?? 'Cafe POS'); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+
     <style>
         :root {
             --sidebar-width: 220px;
@@ -206,17 +208,35 @@
             scrollbar-color: #1f2937 #0b1220;
             scrollbar-width: thin;
         }
-        /* Searchable select helper */
-        .searchable-select-wrapper { width: 100%; }
-        .searchable-select-input {
-            width: 100%;
-            padding: 4px 6px;
-            font-size: 12px;
-            background: #020617;
+        /* Select2 dark theme tweaks */
+        .select2-container { width: 100% !important; }
+        .select2-container--default .select2-selection--single {
+            background-color: #020617;
             border: 1px solid #374151;
             border-radius: 6px;
+            height: 32px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
             color: #e5e7eb;
-            margin-bottom: 6px;
+            line-height: 30px;
+            padding-left: 6px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 30px;
+            right: 6px;
+        }
+        .select2-dropdown {
+            background-color: #0b1220;
+            border: 1px solid #1f2937;
+            color: #e5e7eb;
+        }
+        .select2-results__option {
+            color: #e5e7eb;
+            padding: 6px 8px;
+        }
+        .select2-results__option--highlighted {
+            background-color: #111827 !important;
+            color: #e5e7eb !important;
         }
         .footer {
             position: fixed;
@@ -234,6 +254,8 @@
             padding: 6px 16px;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </head>
 <body>
 <?php
@@ -347,74 +369,32 @@
     });
 </script>
 <script>
-    // Searchable select: input filter di atas select (non-multiple)
-    document.addEventListener('DOMContentLoaded', function() {
-        const selects = Array.from(document.querySelectorAll('select'))
-            .filter(function(sel) { return !sel.multiple && !sel.dataset.searchableInitialized; });
+    // Global Select2 init (non-multiple) dengan allowClear jika ada option kosong
+    (function($) {
+        function initSelect2(scope) {
+            if (! window.jQuery || ! $.fn.select2) return;
+            const $targets = (scope ? $(scope).find('select') : $('select'))
+                .filter(function() { return !this.multiple && !this.dataset.noSelect2; });
 
-        selects.forEach(function(sel) {
-            sel.dataset.searchableInitialized = '1';
-            const wrapper = document.createElement('div');
-            wrapper.className = 'searchable-select-wrapper';
-            sel.parentNode.insertBefore(wrapper, sel);
-            wrapper.appendChild(sel);
-
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'searchable-select-input';
-            // copy inline style width if ada
-            const selStyle = sel.getAttribute('style');
-            if (selStyle) {
-                input.setAttribute('style', selStyle + '; margin-bottom:6px;');
-            }
-
-            wrapper.insertBefore(input, sel);
-
-            const options = Array.from(sel.options);
-
-            function filterOptions(term) {
-                const lower = term.toLowerCase();
-                let hasVisible = false;
-                options.forEach(function(opt) {
-                    if (lower === '') {
-                        opt.hidden = false;
-                        hasVisible = true;
-                        return;
-                    }
-                    const text = (opt.textContent || '').toLowerCase();
-                    const match = text.indexOf(lower) !== -1;
-                    opt.hidden = !match;
-                    if (match) {
-                        hasVisible = true;
-                    }
+            $targets.each(function() {
+                const $el = $(this);
+                if ($el.data('select2')) {
+                    $el.select2('destroy');
+                }
+                const hasEmpty = $el.find('option[value=""]').length > 0;
+                $el.select2({
+                    width: '100%',
+                    dropdownAutoWidth: true,
+                    allowClear: hasEmpty,
+                    placeholder: hasEmpty ? ($el.find('option[value=""]').first().text() || 'Pilih') : undefined,
                 });
-                // jika opsi terpilih tersembunyi, reset
-                const selected = sel.options[sel.selectedIndex];
-                if (selected && selected.hidden) {
-                    sel.value = '';
-                }
-                return hasVisible;
-            }
-
-            input.addEventListener('input', function() {
-                filterOptions(input.value.trim());
             });
-
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    // fokus ke select agar user bisa pilih dengan keyboard/klik
-                    sel.focus();
-                    e.preventDefault();
-                }
-            });
-
-            // sinkron saat select berubah (misal user pilih manual)
-            sel.addEventListener('change', function() {
-                const opt = sel.options[sel.selectedIndex];
-                input.value = opt ? (opt.textContent || '') : '';
-            });
+        }
+        window.initSelect2 = initSelect2;
+        $(function() {
+            initSelect2();
         });
-    });
+    })(jQuery);
 </script>
 <div class="layout">
     <aside class="sidebar">
