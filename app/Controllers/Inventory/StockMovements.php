@@ -65,15 +65,16 @@ class StockMovements extends BaseController
                 ->orderBy('stock_movements.id', 'ASC')
                 ->findAll();
 
-            $balance = $openingBalance ?? 0.0;
+            $balance = round($openingBalance ?? 0.0, 6);
             foreach ($ascMovements as $mv) {
-                $qty = (float) ($mv['qty'] ?? 0);
+                $qty = round((float) ($mv['qty'] ?? 0), 6);
                 if (strtoupper($mv['movement_type']) === 'IN') {
                     $balance += $qty;
                 } else {
                     $balance -= $qty;
                 }
 
+                $balance = round($balance, 6);
                 $runningBalanceMap[$mv['id']] = $balance;
             }
         }
@@ -137,16 +138,17 @@ class StockMovements extends BaseController
                 ->findAll();
 
             $runningBalance = [];
-            $balance = $openingBalance ?? 0.0;
+            $balance = round($openingBalance ?? 0.0, 6);
 
             foreach ($movements as $mv) {
-                $qty = (float) ($mv['qty'] ?? 0);
+                $qty = round((float) ($mv['qty'] ?? 0), 6);
                 if (strtoupper($mv['movement_type']) === 'IN') {
                     $balance += $qty;
                 } else {
                     $balance -= $qty;
                 }
 
+                $balance = round($balance, 6);
                 $runningBalance[] = $balance;
             }
         }
