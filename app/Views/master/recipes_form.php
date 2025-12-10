@@ -112,7 +112,13 @@
 
         <hr style="border-color:#111827; margin:14px 0;">
 
-        <h3 style="margin:0 0 8px; font-size:14px;">Komposisi Bahan</h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <h3 style="margin:0; font-size:14px;">Komposisi Bahan</h3>
+            <button type="button" id="btn-add-ingredient"
+                    style="font-size:12px; padding:4px 10px; border-radius:999px; border:1px solid #374151; background:#111827; color:#e5e7eb; cursor:pointer;">
+                + Tambah baris
+            </button>
+        </div>
         <p style="margin:0 0 10px; font-size:11px; color:#9ca3af;">
             Isi bahan baku yang digunakan untuk 1 resep (yield di atas).
         </p>
@@ -125,9 +131,10 @@
                     <th style="text-align:left; padding:6px 8px; border-bottom:1px solid #111827;">Satuan</th>
                     <th style="text-align:right; padding:6px 8px; border-bottom:1px solid #111827;">Waste %</th>
                     <th style="text-align:left; padding:6px 8px; border-bottom:1px solid #111827;">Catatan</th>
+                    <th style="text-align:center; padding:6px 8px; border-bottom:1px solid #111827; width:70px;">Aksi</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="recipe-items-body">
                 <?php
                 $oldItems = old('items');
                 if ($oldItems !== null) {
@@ -197,6 +204,13 @@
                                    value="<?= esc($row['note'] ?? ''); ?>"
                                    style="width:100%; padding:4px 6px; font-size:12px; background:#020617; border:1px solid #374151; border-radius:6px; color:#e5e7eb;">
                         </td>
+                        <td style="padding:6px 8px; border-bottom:1px solid #111827; text-align:center;">
+                            <button type="button"
+                                    class="btn-remove-row"
+                                    style="font-size:11px; padding:4px 8px; border-radius:8px; border:1px solid #4b5563; background:#111827; color:#e5e7eb; cursor:pointer;">
+                                Hapus
+                            </button>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -218,5 +232,97 @@
 
     </form>
 </div>
+
+<script>
+    (function() {
+        const materials = <?= json_encode(array_map(static function($m) {
+            return [
+                'id' => (int) $m['id'],
+                'name' => $m['name'],
+                'unit' => $m['unit_short'] ?? '',
+            ];
+        }, $materials ?? [])); ?>;
+
+        const tbody = document.getElementById('recipe-items-body');
+        const btnAdd = document.getElementById('btn-add-ingredient');
+
+        function buildOptions() {
+            return '<option value="">-- pilih bahan --</option>' + materials.map(function(m) {
+                const unit = m.unit ? ' (' + m.unit + ')' : '';
+                return '<option value="' + m.id + '">' + m.name + unit + '</option>';
+            }).join('');
+        }
+
+        function createRow(idx) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="padding:6px 8px; border-bottom:1px solid #111827;">
+                    <select name="items[${idx}][raw_material_id]"
+                            style="width:100%; padding:4px 6px; font-size:12px; background:#020617; border:1px solid #374151; border-radius:6px; color:#e5e7eb;">
+                        ${buildOptions()}
+                    </select>
+                </td>
+                <td style="padding:6px 8px; border-bottom:1px solid #111827; text-align:right;">
+                    <input type="number"
+                           name="items[${idx}][qty]"
+                           step="0.001"
+                           value=""
+                           style="width:100%; padding:4px 6px; font-size:12px; background:#020617; border:1px solid #374151; border-radius:6px; color:#e5e7eb; text-align:right;">
+                </td>
+                <td style="padding:6px 8px; border-bottom:1px solid #111827;">
+                    <span style="font-size:11px; color:#9ca3af;" class="unit-label"></span>
+                </td>
+                <td style="padding:6px 8px; border-bottom:1px solid #111827; text-align:right;">
+                    <input type="number"
+                           name="items[${idx}][waste_pct]"
+                           step="0.01"
+                           min="0"
+                           max="100"
+                           value="0"
+                           style="width:100%; padding:4px 6px; font-size:12px; background:#020617; border:1px solid #374151; border-radius:6px; color:#e5e7eb; text-align:right;">
+                </td>
+                <td style="padding:6px 8px; border-bottom:1px solid #111827;">
+                    <input type="text"
+                           name="items[${idx}][note]"
+                           value=""
+                           style="width:100%; padding:4px 6px; font-size:12px; background:#020617; border:1px solid #374151; border-radius:6px; color:#e5e7eb;">
+                </td>
+                <td style="padding:6px 8px; border-bottom:1px solid #111827; text-align:center;">
+                    <button type="button"
+                            class="btn-remove-row"
+                            style="font-size:11px; padding:4px 8px; border-radius:8px; border:1px solid #4b5563; background:#111827; color:#e5e7eb; cursor:pointer;">
+                        Hapus
+                    </button>
+                </td>
+            `;
+
+            const select = tr.querySelector('select');
+            const unitLabel = tr.querySelector('.unit-label');
+            select.addEventListener('change', function() {
+                const selected = materials.find(m => String(m.id) === this.value);
+                unitLabel.textContent = selected && selected.unit ? selected.unit : '';
+            });
+
+            const removeBtn = tr.querySelector('.btn-remove-row');
+            removeBtn.addEventListener('click', function() {
+                if (tbody.children.length > 1) {
+                    tr.remove();
+                } else {
+                    // kosongkan saja jika tinggal 1 baris
+                    tr.querySelectorAll('input, select').forEach(function(el) { el.value = ''; });
+                    unitLabel.textContent = '';
+                }
+            });
+
+            return tr;
+        }
+
+        btnAdd.addEventListener('click', function() {
+            const idx = tbody.children.length;
+            const newRow = createRow(idx);
+            tbody.appendChild(newRow);
+        });
+    })();
+</script>
 
 <?= $this->endSection() ?>
