@@ -150,7 +150,7 @@ Catatan gap:
 
 ## 5) Access Control
 - [x] Terapkan role Owner/Staff/Auditor pada route/controller: Staff dibatasi dari edit user & settings; Auditor read-only (blok POST/PUT/DELETE)
-- [ ] Audit log untuk edit resep/menu (harga & bahan) sebagai bagian pengamanan Staff
+- [x] Audit log untuk edit resep/menu (harga & bahan) sebagai bagian pengamanan Staff
 - [x] Staff: blokir akses GET ke form create/edit user/setting (produk dibiarkan, user/setting dibatasi); sidebar/link nonaktif untuk area sensitif
 - [x] Void penjualan tersedia; retur belum (rollback stok/margin via movement)
 - [x] Lanjutan UI/UX: scrollbar custom sesuai tema, sidebar collapsible + fixed header/footer, tabel auto-scroll wrapper (done)
@@ -183,8 +183,8 @@ Catatan gap:
 - [ ] Laporan stok & selisih (banding stok fisik)
 
 ## Audit Logs
-- [ ] Log perubahan: harga menu, resep, stok adjustment manual
-- [ ] Viewer audit log (filter by user, tanggal, entitas)
+- [x] Log perubahan: harga menu, resep (payload JSON)
+- [x] Viewer audit log (filter entity, tanggal) sederhana
 
 ---
 
