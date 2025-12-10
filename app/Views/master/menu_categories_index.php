@@ -37,7 +37,6 @@
             <tr>
                 <th style="text-align:left; padding:6px 8px; border-bottom:1px solid #111827;">Nama</th>
                 <th style="text-align:left; padding:6px 8px; border-bottom:1px solid #111827;">Deskripsi</th>
-                <th style="text-align:right; padding:6px 8px; border-bottom:1px solid #111827;">Urutan</th>
                 <th style="text-align:center; padding:6px 8px; border-bottom:1px solid #111827;">Aksi</th>
             </tr>
             </thead>
@@ -49,9 +48,6 @@
                     </td>
                     <td style="padding:6px 8px; border-bottom:1px solid #1f2937; color:#9ca3af;">
                         <?= esc($row['description'] ?? '-'); ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid #1f2937; text-align:right;">
-                        <?= (int) ($row['sort_order'] ?? 0); ?>
                     </td>
                     <td style="padding:6px 8px; border-bottom:1px solid #1f2937; text-align:center;">
                         <div style="display:flex; gap:8px; justify-content:center;">
