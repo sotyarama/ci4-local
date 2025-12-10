@@ -40,8 +40,14 @@
                     style="min-width:180px; padding:5px 8px; border-radius:6px; border:1px solid #374151; background:#020617; color:#e5e7eb; font-size:12px;">
                 <option value="">-- semua kategori --</option>
                 <?php foreach ($categories as $cat): ?>
+                    <?php
+                        $label = $cat['name'];
+                        if ((int) ($cat['is_active'] ?? 0) !== 1) {
+                            $label .= ' (Nonaktif)';
+                        }
+                    ?>
                     <option value="<?= $cat['id']; ?>" <?= (string)($filterCategory ?? '') === (string)$cat['id'] ? 'selected' : ''; ?>>
-                        <?= esc($cat['name']); ?>
+                        <?= esc($label); ?>
                     </option>
                 <?php endforeach; ?>
             </select>
@@ -87,7 +93,14 @@
                         <?= esc($row['trans_date']); ?>
                     </td>
                     <td style="padding:6px 8px; border-bottom:1px solid #1f2937;">
-                        <?= esc($row['category_name'] ?? $row['category'] ?? '-'); ?>
+                        <?php
+                            $catLabel = $row['category_name'] ?? $row['category'] ?? '-';
+                            $catActive = (int) ($row['category_active'] ?? 1) === 1;
+                        ?>
+                        <?= esc($catLabel); ?>
+                        <?php if (! $catActive): ?>
+                            <span style="font-size:10px; color:#fca5a5; margin-left:6px;">(Nonaktif)</span>
+                        <?php endif; ?>
                     </td>
                     <td style="padding:6px 8px; border-bottom:1px solid #1f2937;">
                         <?= esc($row['description'] ?? ''); ?>

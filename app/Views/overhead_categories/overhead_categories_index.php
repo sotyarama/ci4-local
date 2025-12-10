@@ -21,6 +21,11 @@
             <?= session()->getFlashdata('message'); ?>
         </div>
     <?php endif; ?>
+    <?php if (session()->getFlashdata('error')): ?>
+        <div style="padding:8px 10px; margin-bottom:12px; border-radius:6px; background:#3f1f1f; border:1px solid #b91c1c; color:#fecaca; font-size:12px;">
+            <?= session()->getFlashdata('error'); ?>
+        </div>
+    <?php endif; ?>
 
     <?php if (empty($rows)): ?>
         <p style="font-size:12px; color:#9ca3af; margin:8px 0 0;">
@@ -32,6 +37,7 @@
             <tr>
                 <th style="text-align:left;  padding:6px 8px; border-bottom:1px solid #111827;">Nama</th>
                 <th style="text-align:center;padding:6px 8px; border-bottom:1px solid #111827;">Aktif</th>
+                <th style="text-align:center;padding:6px 8px; border-bottom:1px solid #111827;">Aksi</th>
             </tr>
             </thead>
             <tbody>
@@ -46,6 +52,12 @@
                         <?php else: ?>
                             <span style="padding:2px 8px; border-radius:999px; background:#3f1f1f; color:#fecaca; border:1px solid #b91c1c;">Nonaktif</span>
                         <?php endif; ?>
+                    </td>
+                    <td style="padding:6px 8px; border-bottom:1px solid #1f2937; text-align:center;">
+                        <a href="<?= site_url('overhead-categories/edit/' . $row['id']); ?>"
+                           style="font-size:11px; color:#93c5fd; text-decoration:none; border:1px solid #1f2937; padding:4px 8px; border-radius:8px; background:#0b1220;">
+                            Edit
+                        </a>
                     </td>
                 </tr>
             <?php endforeach; ?>
