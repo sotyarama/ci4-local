@@ -26,6 +26,14 @@ $routes->group('', ['filter' => 'auth'], static function($routes) {
             $routes->post('products/update/(:num)', 'Products::update/$1');
             $routes->post('products/delete/(:num)', 'Products::delete/$1');
 
+            // Menu Categories
+            $routes->get('categories', 'MenuCategories::index');
+            $routes->get('categories/create', 'MenuCategories::create');
+            $routes->post('categories/store', 'MenuCategories::store');
+            $routes->get('categories/edit/(:num)', 'MenuCategories::edit/$1');
+            $routes->post('categories/update/(:num)', 'MenuCategories::update/$1');
+            $routes->post('categories/delete/(:num)', 'MenuCategories::delete/$1');
+
             // Raw Materials
             $routes->get('raw-materials', 'RawMaterials::index');
             $routes->get('raw-materials/create', 'RawMaterials::create');
