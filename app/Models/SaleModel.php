@@ -17,6 +17,9 @@ class SaleModel extends Model
         'total_amount',
         'total_cost',
         'notes',
+        'status',
+        'void_reason',
+        'voided_at',
     ];
 
     protected $useTimestamps = true; // pakai created_at & updated_at

@@ -29,6 +29,7 @@ class SalesSummary extends BaseController
 
         $baseBuilder = $db->table('sales')
             ->select('sale_date, SUM(total_amount) AS total_sales, SUM(total_cost) AS total_cost')
+            ->where('status !=', 'void')
             ->groupBy('sale_date')
             ->orderBy('sale_date', 'DESC');
 
@@ -91,6 +92,7 @@ class SalesSummary extends BaseController
             ->select('SUM(si.hpp_snapshot * si.qty) AS total_cost')
             ->join('sales s', 's.id = si.sale_id', 'inner')
             ->join('menus m', 'm.id = si.menu_id', 'left')
+            ->where('s.status !=', 'void')
             ->groupBy('si.menu_id, m.name')
             ->orderBy('total_sales', 'DESC');
 
@@ -255,7 +257,8 @@ class SalesSummary extends BaseController
         $db = \Config\Database::connect();
 
         $builder = $db->table('sales')
-            ->select('COUNT(DISTINCT sale_date) AS cnt');
+            ->select('COUNT(DISTINCT sale_date) AS cnt')
+            ->where('status !=', 'void');
 
         $this->applyDateFilter($builder, $dateFrom, $dateTo);
 
@@ -268,7 +271,8 @@ class SalesSummary extends BaseController
         $db = \Config\Database::connect();
 
         $builder = $db->table('sales')
-            ->select('SUM(total_amount) AS total_sales, SUM(total_cost) AS total_cost');
+            ->select('SUM(total_amount) AS total_sales, SUM(total_cost) AS total_cost')
+            ->where('status !=', 'void');
 
         $this->applyDateFilter($builder, $dateFrom, $dateTo);
 
@@ -281,7 +285,8 @@ class SalesSummary extends BaseController
 
         $builder = $db->table('sale_items si')
             ->select('COUNT(DISTINCT si.menu_id) AS cnt')
-            ->join('sales s', 's.id = si.sale_id', 'inner');
+            ->join('sales s', 's.id = si.sale_id', 'inner')
+            ->where('s.status !=', 'void');
 
         $this->applyDateFilter($builder, $dateFrom, $dateTo, 's.sale_date');
 
@@ -295,7 +300,8 @@ class SalesSummary extends BaseController
 
         $builder = $db->table('sale_items si')
             ->select('SUM(si.qty) AS total_qty, SUM(si.subtotal) AS total_sales, SUM(si.hpp_snapshot * si.qty) AS total_cost')
-            ->join('sales s', 's.id = si.sale_id', 'inner');
+            ->join('sales s', 's.id = si.sale_id', 'inner')
+            ->where('s.status !=', 'void');
 
         $this->applyDateFilter($builder, $dateFrom, $dateTo, 's.sale_date');
 

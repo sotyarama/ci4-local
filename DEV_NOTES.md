@@ -118,7 +118,7 @@ Legenda: A=Access (view/read), I=Input/Create, U=Update, D=Delete/Nonaktifkan.
 Catatan gap:
 - Staff masih bisa membuka form edit master/harga karena GET tidak diblok; filter hanya blok submit POST/PUT/DELETE di products/users/settings. ✅ di-TO-DO: "Staff blok GET form master sensitif".
 - Audit log resep/menu belum ada. ✅ di-TO-DO: "Audit log edit resep/menu".
-- Void/retur penjualan belum ada. ✅ di-TO-DO: "Void/retur penjualan".
+- Void sudah tersedia; retur penjualan belum ada. (TO-DO: "Retur penjualan").
 
 ---
 
@@ -128,7 +128,7 @@ Catatan gap:
 - [x] Blok transaksi jika menu belum punya resep/detail (no fallback HPP 0)
 - [x] Summary harian di Sales Index (total penjualan & margin hari ini)
 - [x] Validasi tambahan untuk override harga jual per transaksi
-- [ ] Dukungan void/retur penjualan (rollback stok & margin) atau catatan eksplisit belum didukung
+- [x] Void penjualan: status void, rollback stok via movement (retur belum)
 
 ## 2) Inventory & Stock Monitoring
 - [x] Kartu Stok per Bahan: filter tanggal, saldo berjalan, opening balance
@@ -152,7 +152,7 @@ Catatan gap:
 - [x] Terapkan role Owner/Staff/Auditor pada route/controller: Staff dibatasi dari edit user & settings; Auditor read-only (blok POST/PUT/DELETE)
 - [ ] Audit log untuk edit resep/menu (harga & bahan) sebagai bagian pengamanan Staff
 - [x] Staff: blokir akses GET ke form create/edit user/setting (produk dibiarkan, user/setting dibatasi); sidebar/link nonaktif untuk area sensitif
-- [ ] Void/retur penjualan atau catatan eksplisit belum didukung (untuk memenuhi rollback stok/margin)
+- [x] Void penjualan tersedia; retur belum (rollback stok/margin via movement)
 - [x] Lanjutan UI/UX: scrollbar custom sesuai tema, sidebar collapsible + fixed header/footer, tabel auto-scroll wrapper (done)
   - Catatan progres: Auditor read-only via RoleFilter; Staff diblok untuk GET/POST area users/settings (belum ada modul user/setting, guard berbasis path).
 

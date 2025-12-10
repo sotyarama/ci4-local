@@ -50,6 +50,11 @@
             <?= session()->getFlashdata('message'); ?>
         </div>
     <?php endif; ?>
+    <?php if (session()->getFlashdata('error')): ?>
+        <div style="padding:8px 10px; margin-bottom:12px; border-radius:6px; background:#3f1f1f; border:1px solid #b91c1c; color:#fecaca; font-size:12px;">
+            <?= session()->getFlashdata('error'); ?>
+        </div>
+    <?php endif; ?>
 
     <?php if (empty($sales)): ?>
         <p style="font-size:12px; color:#9ca3af;">Belum ada data penjualan.</p>
@@ -60,6 +65,7 @@
                 <th style="text-align:left;  padding:6px 8px; border-bottom:1px solid #111827;">Tanggal</th>
                 <th style="text-align:left;  padding:6px 8px; border-bottom:1px solid #111827;">Invoice</th>
                 <th style="text-align:left;  padding:6px 8px; border-bottom:1px solid #111827;">Customer</th>
+                <th style="text-align:left;  padding:6px 8px; border-bottom:1px solid #111827;">Status</th>
                 <th style="text-align:right; padding:6px 8px; border-bottom:1px solid #111827;">Total</th>
                 <th style="text-align:right; padding:6px 8px; border-bottom:1px solid #111827;">HPP</th>
                 <th style="text-align:right; padding:6px 8px; border-bottom:1px solid #111827;">Margin</th>
@@ -74,6 +80,12 @@
                     $margin  = $total - $cost;
                     $marginPct = $total > 0 ? ($margin / $total * 100) : 0;
                     $marginColor = $margin >= 0 ? '#bbf7d0' : '#fecaca';
+                    $status = $row['status'] ?? 'completed';
+                    $isVoid = $status === 'void';
+                    $statusLabel = $isVoid ? 'Void' : 'Completed';
+                    $statusStyle = $isVoid
+                        ? 'background:#3f1f1f; color:#fecaca; border:1px solid #b91c1c;'
+                        : 'background:#022c22; color:#22c55e; border:1px solid #16a34a;';
                 ?>
                 <tr>
                     <td style="padding:6px 8px; border-bottom:1px solid #1f2937;">
@@ -84,6 +96,11 @@
                     </td>
                     <td style="padding:6px 8px; border-bottom:1px solid #1f2937;">
                         <?= esc($row['customer_name'] ?? '-'); ?>
+                    </td>
+                    <td style="padding:6px 8px; border-bottom:1px solid #1f2937;">
+                        <span style="padding:2px 8px; border-radius:999px; font-size:11px; <?= $statusStyle; ?>">
+                            <?= $statusLabel; ?>
+                        </span>
                     </td>
                     <td style="padding:6px 8px; border-bottom:1px solid #1f2937; text-align:right;">
                         Rp <?= number_format($total, 0, ',', '.'); ?>
@@ -106,10 +123,20 @@
                         </span>
                     </td>
                     <td style="padding:6px 8px; border-bottom:1px solid #1f2937; text-align:center;">
-                        <a href="<?= site_url('transactions/sales/detail/' . $row['id']); ?>"
-                           style="font-size:11px; color:#60a5fa; text-decoration:none;">
-                            Detail
-                        </a>
+                        <div style="display:flex; justify-content:center; gap:8px;">
+                            <a href="<?= site_url('transactions/sales/detail/' . $row['id']); ?>"
+                               style="font-size:11px; color:#60a5fa; text-decoration:none;">
+                                Detail
+                            </a>
+                            <?php if (! $isVoid): ?>
+                                <form method="post" action="<?= site_url('transactions/sales/void/' . $row['id']); ?>" onsubmit="return confirm('Void transaksi ini? Stok akan dikembalikan.');" style="display:inline;">
+                                    <?= csrf_field(); ?>
+                                    <button type="submit" style="font-size:11px; color:#fca5a5; background:none; border:none; cursor:pointer; text-decoration:underline;">
+                                        Void
+                                    </button>
+                                </form>
+                            <?php endif; ?>
+                        </div>
                     </td>
                 </tr>
             <?php endforeach; ?>
