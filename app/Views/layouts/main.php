@@ -206,6 +206,18 @@
             scrollbar-color: #1f2937 #0b1220;
             scrollbar-width: thin;
         }
+        /* Searchable select helper */
+        .searchable-select-wrapper { width: 100%; }
+        .searchable-select-input {
+            width: 100%;
+            padding: 4px 6px;
+            font-size: 12px;
+            background: #020617;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            color: #e5e7eb;
+            margin-bottom: 6px;
+        }
         .footer {
             position: fixed;
             left: var(--sidebar-width);
@@ -331,6 +343,76 @@
             wrap.className = 'table-scroll-wrap';
             tbl.parentNode.insertBefore(wrap, tbl);
             wrap.appendChild(tbl);
+        });
+    });
+</script>
+<script>
+    // Searchable select: input filter di atas select (non-multiple)
+    document.addEventListener('DOMContentLoaded', function() {
+        const selects = Array.from(document.querySelectorAll('select'))
+            .filter(function(sel) { return !sel.multiple && !sel.dataset.searchableInitialized; });
+
+        selects.forEach(function(sel) {
+            sel.dataset.searchableInitialized = '1';
+            const wrapper = document.createElement('div');
+            wrapper.className = 'searchable-select-wrapper';
+            sel.parentNode.insertBefore(wrapper, sel);
+            wrapper.appendChild(sel);
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'searchable-select-input';
+            // copy inline style width if ada
+            const selStyle = sel.getAttribute('style');
+            if (selStyle) {
+                input.setAttribute('style', selStyle + '; margin-bottom:6px;');
+            }
+
+            wrapper.insertBefore(input, sel);
+
+            const options = Array.from(sel.options);
+
+            function filterOptions(term) {
+                const lower = term.toLowerCase();
+                let hasVisible = false;
+                options.forEach(function(opt) {
+                    if (lower === '') {
+                        opt.hidden = false;
+                        hasVisible = true;
+                        return;
+                    }
+                    const text = (opt.textContent || '').toLowerCase();
+                    const match = text.indexOf(lower) !== -1;
+                    opt.hidden = !match;
+                    if (match) {
+                        hasVisible = true;
+                    }
+                });
+                // jika opsi terpilih tersembunyi, reset
+                const selected = sel.options[sel.selectedIndex];
+                if (selected && selected.hidden) {
+                    sel.value = '';
+                }
+                return hasVisible;
+            }
+
+            input.addEventListener('input', function() {
+                filterOptions(input.value.trim());
+            });
+
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    // fokus ke select agar user bisa pilih dengan keyboard/klik
+                    sel.focus();
+                    e.preventDefault();
+                }
+            });
+
+            // sinkron saat select berubah (misal user pilih manual)
+            sel.addEventListener('change', function() {
+                const opt = sel.options[sel.selectedIndex];
+                input.value = opt ? (opt.textContent || '') : '';
+            });
         });
     });
 </script>
