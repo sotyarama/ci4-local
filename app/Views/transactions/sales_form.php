@@ -267,6 +267,10 @@
             });
 
             recalcRow(tr);
+
+            if (window.initSelect2) {
+                window.initSelect2(tr);
+            }
         }
 
         // Tambah 1 row default saat halaman dibuka
