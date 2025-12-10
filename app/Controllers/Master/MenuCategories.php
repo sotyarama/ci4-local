@@ -17,7 +17,6 @@ class MenuCategories extends BaseController
     public function index()
     {
         $rows = $this->categoryModel
-            ->orderBy('sort_order', 'ASC')
             ->orderBy('name', 'ASC')
             ->findAll();
 
@@ -57,7 +56,6 @@ class MenuCategories extends BaseController
         $data = [
             'name'        => $this->request->getPost('name'),
             'description' => $this->request->getPost('description') ?: null,
-            'sort_order'  => (int) ($this->request->getPost('sort_order') ?: 0),
         ];
 
         $this->categoryModel->insert($data);
@@ -105,7 +103,6 @@ class MenuCategories extends BaseController
         $data = [
             'name'        => $this->request->getPost('name'),
             'description' => $this->request->getPost('description') ?: null,
-            'sort_order'  => (int) ($this->request->getPost('sort_order') ?: 0),
         ];
 
         $this->categoryModel->update($id, $data);

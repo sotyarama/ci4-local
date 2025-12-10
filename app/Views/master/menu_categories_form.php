@@ -45,13 +45,6 @@
                        placeholder="mis: Makanan, Minuman"
                        style="width:100%; padding:6px 8px; font-size:12px; background:#020617; border:1px solid #374151; border-radius:6px; color:#e5e7eb;">
             </div>
-            <div>
-                <label style="font-size:11px; color:#9ca3af; display:block; margin-bottom:4px;">Urutan</label>
-                <input type="number"
-                       name="sort_order"
-                       value="<?= old('sort_order', $category['sort_order'] ?? 0); ?>"
-                       style="width:100%; padding:6px 8px; font-size:12px; background:#020617; border:1px solid #374151; border-radius:6px; color:#e5e7eb;">
-            </div>
         </div>
 
         <div style="margin-bottom:12px;">

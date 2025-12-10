@@ -14,15 +14,13 @@ class MenuCategoryModel extends Model
     protected $allowedFields = [
         'name',
         'description',
-        'sort_order',
         'created_at',
         'updated_at',
     ];
 
     public function getForDropdown(): array
     {
-        return $this->orderBy('sort_order', 'ASC')
-                    ->orderBy('name', 'ASC')
+        return $this->orderBy('name', 'ASC')
                     ->findAll();
     }
 }
