@@ -45,6 +45,6 @@ class AuditLogs extends BaseController
             'dateTo'      => $dateTo,
         ];
 
-        return view('audit_logs/index', $data);
+        return view('audit_logs/audit_logs_index', $data);
     }
 }
