@@ -167,7 +167,7 @@
                                         ? ($row['raw_material_id'] ?? null)
                                         : ($row['raw_material_id'] ?? $row['raw_material_id'] ?? null);
                                     ?>
-                                    <option value="<?= $m['id']; ?>"
+                                    <option value="<?= $m['id']; ?>" data-subtext="<?= esc($m['unit_short'] ?? ''); ?>"
                                         <?= (int)($selectedId ?? 0) === (int)$m['id'] ? 'selected' : ''; ?>>
                                         <?= esc($m['name']); ?>
                                     </option>
@@ -248,8 +248,7 @@
 
         function buildOptions() {
             return '<option value="">-- pilih bahan --</option>' + materials.map(function(m) {
-                const unit = m.unit ? ' (' + m.unit + ')' : '';
-                return '<option value="' + m.id + '">' + m.name + unit + '</option>';
+                return '<option value="' + m.id + '" data-subtext="' + (m.unit || '') + '">' + m.name + '</option>';
             }).join('');
         }
 
