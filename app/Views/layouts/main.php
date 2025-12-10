@@ -355,7 +355,7 @@
                 <a href="<?= site_url('master/raw-materials') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?> <?= $isActive(['master/raw-materials']) ? 'active' : ''; ?>">Bahan Baku</a>
                 <a href="<?= site_url('master/suppliers') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?> <?= $isActive(['master/suppliers']) ? 'active' : ''; ?>">Supplier</a>
                 <a href="<?= site_url('master/recipes') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?> <?= $isActive(['master/recipes']) ? 'active' : ''; ?>">Resep</a>
-                <a href="#" class="nav-link small disabled-link" title="Planned">Audit Log (planned)</a>
+                <a href="<?= site_url('audit-logs') ?>" class="nav-link small <?= $menuAllowed('master') ? '' : 'disabled-link'; ?> <?= $isActive(['audit-logs']) ? 'active' : ''; ?>">Audit Log</a>
             </div>
 
             <div class="nav-section-title collapsible" data-target="transactions">
@@ -387,7 +387,6 @@
                 <a href="#" class="nav-link small disabled-link" title="Planned">Margin per Kategori (planned)</a>
                 <a href="#" class="nav-link small disabled-link" title="Planned">Pembelian per Supplier (planned)</a>
                 <a href="#" class="nav-link small disabled-link" title="Planned">Stok & Selisih (planned)</a>
-                <a href="#" class="nav-link small disabled-link" title="Planned">Audit Log (planned)</a>
             </div>
 
             <div class="nav-section-title collapsible" data-target="overhead">
