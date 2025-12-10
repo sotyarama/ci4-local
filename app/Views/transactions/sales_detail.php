@@ -17,6 +17,22 @@
         </a>
     </div>
 
+    <?php if (session()->getFlashdata('message')): ?>
+        <div style="padding:8px 10px; margin-bottom:12px; border-radius:6px; background:#022c22; border:1px solid #16a34a; color:#bbf7d0; font-size:12px;">
+            <?= session()->getFlashdata('message'); ?>
+        </div>
+    <?php endif; ?>
+    <?php if (session()->getFlashdata('error')): ?>
+        <div style="padding:8px 10px; margin-bottom:12px; border-radius:6px; background:#3f1f1f; border:1px solid #b91c1c; color:#fecaca; font-size:12px;">
+            <?= session()->getFlashdata('error'); ?>
+        </div>
+    <?php endif; ?>
+
+    <?php
+        $status = $sale['status'] ?? 'completed';
+        $isVoid = $status === 'void';
+    ?>
+
     <!-- HEADER -->
     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:16px; font-size:12px; color:#e5e7eb;">
         <div style="padding:8px 10px; border-radius:8px; background:#020617; border:1px solid #1f2937;">
@@ -30,6 +46,19 @@
         <div style="padding:8px 10px; border-radius:8px; background:#020617; border:1px solid #1f2937;">
             <div style="color:#9ca3af; font-size:11px;">Customer</div>
             <div style="font-weight:600;"><?= esc($sale['customer_name'] ?? '-') ?></div>
+        </div>
+        <div style="padding:8px 10px; border-radius:8px; background:#020617; border:1px solid #1f2937;">
+            <div style="color:#9ca3af; font-size:11px;">Status</div>
+            <?php
+                $statusStyle = $isVoid
+                    ? 'background:#3f1f1f; color:#fecaca; border:1px solid #b91c1c;'
+                    : 'background:#022c22; color:#22c55e; border:1px solid #16a34a;';
+            ?>
+            <div style="font-weight:600;">
+                <span style="padding:2px 8px; border-radius:999px; font-size:11px; <?= $statusStyle; ?>">
+                    <?= $isVoid ? 'Void' : 'Completed'; ?>
+                </span>
+            </div>
         </div>
         <div style="padding:8px 10px; border-radius:8px; background:#022c22; border:1px solid #047857;">
             <div style="color:#a7f3d0; font-size:11px;">Total Penjualan</div>
@@ -150,6 +179,28 @@
         <div style="margin-top:16px; font-size:12px; color:#9ca3af;">
             <div style="font-weight:600; margin-bottom:4px;">Catatan:</div>
             <div><?= nl2br(esc($sale['notes'])); ?></div>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($isVoid): ?>
+        <div style="margin-top:16px; padding:10px 12px; border-radius:10px; background:#0b1220; border:1px solid #1f2937; font-size:12px; color:#fca5a5;">
+            <div style="font-weight:700; margin-bottom:4px;">Transaksi sudah di-void.</div>
+            <?php if (! empty($sale['void_reason'])): ?>
+                <div style="color:#e5e7eb; margin-bottom:4px;">Alasan: <?= nl2br(esc($sale['void_reason'])); ?></div>
+            <?php endif; ?>
+            <div style="color:#9ca3af;">Tanggal void: <?= esc($sale['voided_at'] ?? '-'); ?></div>
+        </div>
+    <?php else: ?>
+        <div style="margin-top:16px; padding:10px 12px; border-radius:10px; background:#1f2937; border:1px solid #4b5563; font-size:12px; color:#e5e7eb;">
+            <div style="font-weight:700; margin-bottom:6px; color:#fca5a5;">Void / Batalkan Transaksi</div>
+            <form method="post" action="<?= site_url('transactions/sales/void/' . $sale['id']); ?>" onsubmit="return confirm('Yakin void transaksi ini? Stok akan dikembalikan.');">
+                <?= csrf_field(); ?>
+                <label style="display:block; margin-bottom:4px; color:#9ca3af;">Alasan (opsional)</label>
+                <textarea name="void_reason" rows="2" style="width:100%; padding:6px 8px; font-size:12px; background:#020617; border:1px solid #374151; border-radius:6px; color:#e5e7eb; margin-bottom:8px;"></textarea>
+                <button type="submit" style="padding:8px 12px; border-radius:8px; border:1px solid #b91c1c; background:#3f1f1f; color:#fecaca; cursor:pointer; font-size:12px;">
+                    Void Transaksi
+                </button>
+            </form>
         </div>
     <?php endif; ?>
 

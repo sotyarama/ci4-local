@@ -69,6 +69,7 @@ $routes->group('', ['filter' => 'auth'], static function($routes) {
             $routes->get('sales/create',        'Transactions\Sales::create');
             $routes->post('sales/store',        'Transactions\Sales::store');
             $routes->get('sales/detail/(:num)', 'Transactions\Sales::detail/$1');
+            $routes->post('sales/void/(:num)',  'Transactions\Sales::void/$1');
 
         });
 

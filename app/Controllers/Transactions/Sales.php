@@ -39,6 +39,7 @@ class Sales extends BaseController
         $todayAgg = $this->saleModel
             ->selectSum('total_amount', 'total_sales')
             ->selectSum('total_cost', 'total_cost')
+            ->where('status', 'completed')
             ->where('sale_date', $today)
             ->first();
 
@@ -276,6 +277,7 @@ class Sales extends BaseController
             'total_amount'  => $totalAmount,
             'total_cost'    => 0, // akan di-update setelah hitung HPP
             'notes'         => $this->request->getPost('notes') ?: null,
+            'status'        => 'completed',
             // created_by sementara tidak dipakai (kolomnya sudah di-drop)
         ];
 
@@ -435,6 +437,89 @@ class Sales extends BaseController
         ];
 
         return view('transactions/sales_detail', $data);
+    }
+
+    /**
+     * Void / batalkan penjualan:
+     * - tandai status void + simpan alasan
+     * - rollback stok berdasarkan movement OUT yang terkait sale ini
+     */
+    public function void(int $id)
+    {
+        $sale = $this->saleModel->find($id);
+        if (! $sale) {
+            return redirect()->to(site_url('transactions/sales'))
+                ->with('error', 'Data penjualan tidak ditemukan.');
+        }
+
+        if (($sale['status'] ?? 'completed') === 'void') {
+            return redirect()->to(site_url('transactions/sales/detail/' . $id))
+                ->with('error', 'Transaksi sudah void.');
+        }
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        // Ambil movement OUT yang terkait sale ini agar rollback akurat
+        $movements = $this->movementModel
+            ->where('ref_type', 'sale')
+            ->where('ref_id', $id)
+            ->where('movement_type', 'OUT')
+            ->findAll();
+
+        $rollbackMap = [];
+        foreach ($movements as $mv) {
+            $rawId = (int) ($mv['raw_material_id'] ?? 0);
+            if ($rawId <= 0) {
+                continue;
+            }
+            $qty = $this->roundQty((float) ($mv['qty'] ?? 0));
+            if (! isset($rollbackMap[$rawId])) {
+                $rollbackMap[$rawId] = 0.0;
+            }
+            $rollbackMap[$rawId] = $this->roundQty($rollbackMap[$rawId] + $qty);
+        }
+
+        // Kembalikan stok dan catat movement IN
+        foreach ($rollbackMap as $rawId => $qty) {
+            $material = $this->rawModel->find($rawId);
+            if (! $material) {
+                continue;
+            }
+
+            $currentStock = $this->roundQty((float) ($material['current_stock'] ?? 0));
+            $newStock     = $this->roundQty($currentStock + $qty);
+
+            $this->rawModel->update($rawId, ['current_stock' => $newStock]);
+
+            $this->movementModel->insert([
+                'raw_material_id' => $rawId,
+                'movement_type'   => 'IN',
+                'qty'             => $qty,
+                'ref_type'        => 'sale_void',
+                'ref_id'          => $id,
+                'note'            => 'Void penjualan #' . $id,
+                'created_at'      => date('Y-m-d H:i:s'),
+            ]);
+        }
+
+        // Tandai sale void
+        $this->saleModel->update($id, [
+            'status'      => 'void',
+            'void_reason' => $this->request->getPost('void_reason') ?: null,
+            'voided_at'   => date('Y-m-d H:i:s'),
+        ]);
+
+        $db->transComplete();
+
+        if (! $db->transStatus()) {
+            return redirect()->back()
+                ->with('error', 'Gagal memproses void. Silakan coba lagi.')
+                ->withInput();
+        }
+
+        return redirect()->to(site_url('transactions/sales/detail/' . $id))
+            ->with('message', 'Transaksi berhasil di-void dan stok sudah dikembalikan.');
     }
 
     /**
