@@ -194,7 +194,7 @@
                             style="width:100%; padding:4px 6px; font-size:12px; background:#020617; border:1px solid #374151; border-radius:6px; color:#e5e7eb;">
                         <option value="">-- pilih menu --</option>
                         ${menus.map(m => `
-                            <option value="${m.id}" data-price="${m.price}" data-subtext="${formatRupiah(m.price)}">
+                            <option value="${m.id}" data-price="${m.price}">
                                 ${m.name}
                             </option>
                         `).join('')}
@@ -268,9 +268,6 @@
 
             recalcRow(tr);
 
-            if (window.initSelect2) {
-                window.initSelect2(tr);
-            }
         }
 
         // Tambah 1 row default saat halaman dibuka
