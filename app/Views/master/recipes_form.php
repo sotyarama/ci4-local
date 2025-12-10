@@ -167,7 +167,7 @@
                                         ? ($row['raw_material_id'] ?? null)
                                         : ($row['raw_material_id'] ?? $row['raw_material_id'] ?? null);
                                     ?>
-                                    <option value="<?= $m['id']; ?>" data-subtext="<?= esc($m['unit_short'] ?? ''); ?>"
+                                    <option value="<?= $m['id']; ?>"
                                         <?= (int)($selectedId ?? 0) === (int)$m['id'] ? 'selected' : ''; ?>>
                                         <?= esc($m['name']); ?>
                                     </option>
@@ -248,7 +248,7 @@
 
         function buildOptions() {
             return '<option value="">-- pilih bahan --</option>' + materials.map(function(m) {
-                return '<option value="' + m.id + '" data-subtext="' + (m.unit || '') + '">' + m.name + '</option>';
+                return '<option value="' + m.id + '">' + m.name + (m.unit ? ' (' + m.unit + ')' : '') + '</option>';
             }).join('');
         }
 
@@ -320,14 +320,7 @@
             const idx = tbody.children.length;
             const newRow = createRow(idx);
             tbody.appendChild(newRow);
-            if (window.initSelect2) {
-                window.initSelect2(newRow);
-            }
         });
-
-        if (window.initSelect2) {
-            window.initSelect2(tbody);
-        }
     })();
 </script>
 

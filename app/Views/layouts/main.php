@@ -5,8 +5,6 @@
     <title><?= esc($title ?? 'Cafe POS'); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
-
     <style>
         :root {
             --sidebar-width: 220px;
@@ -208,42 +206,6 @@
             scrollbar-color: #1f2937 #0b1220;
             scrollbar-width: thin;
         }
-        /* Select2 dark theme tweaks */
-        .select2-container { width: 100% !important; }
-        .select2-container--default .select2-selection--single {
-            background-color: #020617;
-            border: 1px solid #374151;
-            border-radius: 6px;
-            height: 32px;
-        }
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            color: #e5e7eb;
-            line-height: 30px;
-            padding-left: 6px;
-        }
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: 30px;
-            right: 6px;
-        }
-        .select2-dropdown {
-            background-color: #0b1220;
-            border: 1px solid #1f2937;
-            color: #e5e7eb;
-        }
-        .select2-results__option {
-            color: #e5e7eb;
-            padding: 6px 8px;
-        }
-        .select2-results__option--highlighted {
-            background-color: #111827 !important;
-            color: #e5e7eb !important;
-        }
-        .select2-results__option .opt-subtext,
-        .select2-selection__rendered .opt-subtext {
-            font-size: 11px;
-            color: #9ca3af;
-            margin-left: 6px;
-        }
         .footer {
             position: fixed;
             left: var(--sidebar-width);
@@ -260,8 +222,6 @@
             padding: 6px 16px;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </head>
 <body>
 <?php
@@ -373,46 +333,6 @@
             wrap.appendChild(tbl);
         });
     });
-</script>
-<script>
-    // Global Select2 init (non-multiple) dengan allowClear jika ada option kosong
-    (function($) {
-        function formatWithSubtext(state) {
-            if (!state.id) {
-                return state.text;
-            }
-            const sub = $(state.element).data('subtext');
-            if (sub) {
-                return $('<span>' + state.text + '<span class="opt-subtext">' + sub + '</span></span>');
-            }
-            return state.text;
-        }
-        function initSelect2(scope) {
-            if (! window.jQuery || ! $.fn.select2) return;
-            const $targets = (scope ? $(scope).find('select') : $('select'))
-                .filter(function() { return !this.multiple && !this.dataset.noSelect2; });
-
-            $targets.each(function() {
-                const $el = $(this);
-                if ($el.data('select2')) {
-                    $el.select2('destroy');
-                }
-                const hasEmpty = $el.find('option[value=""]').length > 0;
-                $el.select2({
-                    width: '100%',
-                    dropdownAutoWidth: true,
-                    allowClear: hasEmpty,
-                    placeholder: hasEmpty ? ($el.find('option[value=""]').first().text() || 'Pilih') : undefined,
-                    templateResult: formatWithSubtext,
-                    templateSelection: formatWithSubtext,
-                });
-            });
-        }
-        window.initSelect2 = initSelect2;
-        $(function() {
-            initSelect2();
-        });
-    })(jQuery);
 </script>
 <div class="layout">
     <aside class="sidebar">
