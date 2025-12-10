@@ -21,27 +21,38 @@ class SalesSummary extends BaseController
     {
         $dateFrom = $this->request->getGet('date_from') ?: null;
         $dateTo   = $this->request->getGet('date_to') ?: null;
+        $perPage  = $this->sanitizePerPage($this->request->getGet('per_page'));
+        $page     = $this->sanitizePage($this->request->getGet('page'));
+        $wantCsv  = ($this->request->getGet('export') === 'csv');
 
         $db = \Config\Database::connect();
 
-        $builder = $db->table('sales')
+        $baseBuilder = $db->table('sales')
             ->select('sale_date, SUM(total_amount) AS total_sales, SUM(total_cost) AS total_cost')
             ->groupBy('sale_date')
             ->orderBy('sale_date', 'DESC');
 
-        if ($dateFrom) {
-            $builder->where('sale_date >=', $dateFrom);
-        }
+        $this->applyDateFilter($baseBuilder, $dateFrom, $dateTo);
 
-        if ($dateTo) {
-            $builder->where('sale_date <=', $dateTo);
-        }
-
-        $rows = $builder->get()->getResultArray();
-
-        if ($this->request->getGet('export') === 'csv') {
+        if ($wantCsv) {
+            $rows = (clone $baseBuilder)->get()->getResultArray();
             return $this->exportDailyCsv($rows, $dateFrom, $dateTo);
         }
+
+        $totalRows = $this->countDailyRows($dateFrom, $dateTo);
+        $totalPages = max(1, (int) ceil($totalRows / $perPage));
+        if ($page > $totalPages) {
+            $page = $totalPages;
+        }
+        $offset = ($page - 1) * $perPage;
+
+        $rows = (clone $baseBuilder)
+            ->limit($perPage, $offset)
+            ->get()
+            ->getResultArray();
+
+        $totals = $this->aggregateDailyTotals($dateFrom, $dateTo);
+
 
         $data = [
             'title'     => 'Laporan Penjualan Harian',
@@ -49,6 +60,12 @@ class SalesSummary extends BaseController
             'rows'      => $rows,
             'dateFrom'  => $dateFrom,
             'dateTo'    => $dateTo,
+            'perPage'   => $perPage,
+            'page'      => $page,
+            'totalRows' => $totalRows,
+            'totalPages'=> $totalPages,
+            'totalSalesAll' => (float) ($totals['total_sales'] ?? 0),
+            'totalCostAll'  => (float) ($totals['total_cost'] ?? 0),
         ];
 
         return view('reports/sales_daily', $data);
@@ -61,10 +78,13 @@ class SalesSummary extends BaseController
     {
         $dateFrom = $this->request->getGet('date_from') ?: null;
         $dateTo   = $this->request->getGet('date_to') ?: null;
+        $perPage  = $this->sanitizePerPage($this->request->getGet('per_page'));
+        $page     = $this->sanitizePage($this->request->getGet('page'));
+        $wantCsv  = ($this->request->getGet('export') === 'csv');
 
         $db = \Config\Database::connect();
 
-        $builder = $db->table('sale_items si')
+        $baseBuilder = $db->table('sale_items si')
             ->select('si.menu_id, COALESCE(m.name, "Menu (hapus)") AS menu_name')
             ->select('SUM(si.qty) AS total_qty')
             ->select('SUM(si.subtotal) AS total_sales')
@@ -74,19 +94,27 @@ class SalesSummary extends BaseController
             ->groupBy('si.menu_id, m.name')
             ->orderBy('total_sales', 'DESC');
 
-        if ($dateFrom) {
-            $builder->where('s.sale_date >=', $dateFrom);
-        }
+        $this->applyDateFilter($baseBuilder, $dateFrom, $dateTo, 's.sale_date');
 
-        if ($dateTo) {
-            $builder->where('s.sale_date <=', $dateTo);
-        }
-
-        $rows = $builder->get()->getResultArray();
-
-        if ($this->request->getGet('export') === 'csv') {
+        if ($wantCsv) {
+            $rows = (clone $baseBuilder)->get()->getResultArray();
             return $this->exportPerMenuCsv($rows, $dateFrom, $dateTo);
         }
+
+        $totalRows = $this->countMenuRows($dateFrom, $dateTo);
+        $totalPages = max(1, (int) ceil($totalRows / $perPage));
+        if ($page > $totalPages) {
+            $page = $totalPages;
+        }
+        $offset = ($page - 1) * $perPage;
+
+        $rows = (clone $baseBuilder)
+            ->limit($perPage, $offset)
+            ->get()
+            ->getResultArray();
+
+        $totals = $this->aggregateMenuTotals($dateFrom, $dateTo);
+
 
         $data = [
             'title'     => 'Penjualan per Menu',
@@ -94,6 +122,13 @@ class SalesSummary extends BaseController
             'rows'      => $rows,
             'dateFrom'  => $dateFrom,
             'dateTo'    => $dateTo,
+            'perPage'   => $perPage,
+            'page'      => $page,
+            'totalRows' => $totalRows,
+            'totalPages'=> $totalPages,
+            'totalQtyAll'   => (float) ($totals['total_qty'] ?? 0),
+            'totalSalesAll' => (float) ($totals['total_sales'] ?? 0),
+            'totalCostAll'  => (float) ($totals['total_cost'] ?? 0),
         ];
 
         return view('reports/sales_menu', $data);
@@ -185,5 +220,85 @@ class SalesSummary extends BaseController
 
         // Tanpa filter, tetap sertakan tanggal ekspor agar unik
         return 'all_' . $exportDate;
+    }
+
+    private function sanitizePerPage($input): int
+    {
+        $allowed = [20, 50, 100, 200];
+        $default = 50;
+        $val = (int) ($input ?? 0);
+        if (in_array($val, $allowed, true)) {
+            return $val;
+        }
+        return $default;
+    }
+
+    private function sanitizePage($input): int
+    {
+        $page = (int) ($input ?? 1);
+        return $page > 0 ? $page : 1;
+    }
+
+    private function applyDateFilter($builder, ?string $dateFrom, ?string $dateTo, string $field = 'sale_date')
+    {
+        if ($dateFrom) {
+            $builder->where($field . ' >=', $dateFrom);
+        }
+
+        if ($dateTo) {
+            $builder->where($field . ' <=', $dateTo);
+        }
+    }
+
+    private function countDailyRows(?string $dateFrom, ?string $dateTo): int
+    {
+        $db = \Config\Database::connect();
+
+        $builder = $db->table('sales')
+            ->select('COUNT(DISTINCT sale_date) AS cnt');
+
+        $this->applyDateFilter($builder, $dateFrom, $dateTo);
+
+        $row = $builder->get()->getRowArray();
+        return (int) ($row['cnt'] ?? 0);
+    }
+
+    private function aggregateDailyTotals(?string $dateFrom, ?string $dateTo): array
+    {
+        $db = \Config\Database::connect();
+
+        $builder = $db->table('sales')
+            ->select('SUM(total_amount) AS total_sales, SUM(total_cost) AS total_cost');
+
+        $this->applyDateFilter($builder, $dateFrom, $dateTo);
+
+        return $builder->get()->getRowArray() ?? ['total_sales' => 0, 'total_cost' => 0];
+    }
+
+    private function countMenuRows(?string $dateFrom, ?string $dateTo): int
+    {
+        $db = \Config\Database::connect();
+
+        $builder = $db->table('sale_items si')
+            ->select('COUNT(DISTINCT si.menu_id) AS cnt')
+            ->join('sales s', 's.id = si.sale_id', 'inner');
+
+        $this->applyDateFilter($builder, $dateFrom, $dateTo, 's.sale_date');
+
+        $row = $builder->get()->getRowArray();
+        return (int) ($row['cnt'] ?? 0);
+    }
+
+    private function aggregateMenuTotals(?string $dateFrom, ?string $dateTo): array
+    {
+        $db = \Config\Database::connect();
+
+        $builder = $db->table('sale_items si')
+            ->select('SUM(si.qty) AS total_qty, SUM(si.subtotal) AS total_sales, SUM(si.hpp_snapshot * si.qty) AS total_cost')
+            ->join('sales s', 's.id = si.sale_id', 'inner');
+
+        $this->applyDateFilter($builder, $dateFrom, $dateTo, 's.sale_date');
+
+        return $builder->get()->getRowArray() ?? ['total_qty' => 0, 'total_sales' => 0, 'total_cost' => 0];
     }
 }

@@ -143,7 +143,7 @@ Catatan gap:
   - HPP total per menu
   - Margin per menu
 - [x] Export CSV laporan penjualan (harian & per menu)
-- [ ] Pagination/limit sederhana untuk laporan jika data besar
+- [x] Pagination/limit sederhana untuk laporan jika data besar
 
 ## 4) Overhead
 - [ ] Edit/nonaktif kategori overhead + tampilkan kategori nonaktif di filter (overhead lama tetap bisa difilter)

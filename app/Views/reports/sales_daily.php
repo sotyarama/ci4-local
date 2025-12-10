@@ -45,6 +45,16 @@
                    style="padding:5px 8px; border-radius:6px; border:1px solid #374151; background:#020617; color:#e5e7eb; font-size:12px;">
         </div>
 
+        <div style="display:flex; flex-direction:column; font-size:12px;">
+            <label for="per_page" style="margin-bottom:2px; color:#d1d5db;">Baris per halaman</label>
+            <select name="per_page" id="per_page"
+                    style="min-width:120px; padding:5px 8px; border-radius:6px; border:1px solid #374151; background:#020617; color:#e5e7eb; font-size:12px;">
+                <?php foreach ([20, 50, 100, 200] as $opt): ?>
+                    <option value="<?= $opt; ?>" <?= ((int)$perPage === $opt) ? 'selected' : ''; ?>><?= $opt; ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
         <div style="display:flex; gap:6px;">
             <button type="submit"
                     style="margin-top:18px; padding:6px 10px; border-radius:999px; border:none; font-size:12px; background:#2563eb; color:#e5e7eb; cursor:pointer;">
@@ -74,19 +84,12 @@
             </tr>
             </thead>
             <tbody>
-            <?php
-                $grandSales = 0;
-                $grandCost  = 0;
-            ?>
             <?php foreach ($rows as $r): ?>
                 <?php
                     $sales = (float) ($r['total_sales'] ?? 0);
                     $cost  = (float) ($r['total_cost'] ?? 0);
                     $margin = $sales - $cost;
                     $marginPct = $sales > 0 ? ($margin / $sales * 100.0) : 0;
-
-                    $grandSales += $sales;
-                    $grandCost  += $cost;
 
                     $marginColor = $margin >= 0 ? '#6ee7b7' : '#fecaca';
                 ?>
@@ -110,13 +113,15 @@
             <?php endforeach; ?>
 
             <?php
+                $grandSales = (float) $totalSalesAll;
+                $grandCost  = (float) $totalCostAll;
                 $grandMargin = $grandSales - $grandCost;
                 $grandMarginPct = $grandSales > 0 ? ($grandMargin / $grandSales * 100.0) : 0;
                 $grandColor = $grandMargin >= 0 ? '#6ee7b7' : '#fecaca';
             ?>
             <tr>
                 <td style="padding:6px 8px; border-top:1px solid #4b5563; font-weight:bold;">
-                    TOTAL
+                    TOTAL (filter)
                 </td>
                 <td style="padding:6px 8px; border-top:1px solid #4b5563; text-align:right; font-weight:bold;">
                     Rp <?= number_format($grandSales, 0, ',', '.'); ?>
@@ -133,6 +138,44 @@
             </tr>
             </tbody>
         </table>
+
+        <?php
+            $queryBase = [
+                'date_from' => $dateFrom,
+                'date_to'   => $dateTo,
+                'per_page'  => $perPage,
+            ];
+            $buildUrl = static function(int $targetPage) use ($queryBase): string {
+                $params = array_merge($queryBase, ['page' => $targetPage]);
+                $params = array_filter($params, static function($v) {
+                    return $v !== null && $v !== '';
+                });
+                $qs = http_build_query($params);
+                return current_url() . ($qs ? '?' . $qs : '');
+            };
+            $startRow = ($page - 1) * $perPage + 1;
+            $endRow   = min($startRow + $perPage - 1, $totalRows);
+        ?>
+        <div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#9ca3af;">
+            <div>
+                <?= $totalRows > 0
+                    ? "Menampilkan {$startRow}-{$endRow} dari {$totalRows} tanggal"
+                    : "Tidak ada data untuk filter ini"; ?>
+            </div>
+            <div style="display:flex; gap:6px;">
+                <a href="<?= $buildUrl(max(1, $page - 1)); ?>"
+                   style="padding:6px 10px; border-radius:8px; border:1px solid #374151; background:<?= $page > 1 ? '#111827' : '#0b1220'; ?>; color:<?= $page > 1 ? '#e5e7eb' : '#4b5563'; ?>; text-decoration:none; pointer-events:<?= $page > 1 ? 'auto' : 'none'; ?>;">
+                    ‹ Prev
+                </a>
+                <span style="padding:6px 10px; border-radius:8px; border:1px solid #374151; background:#0b1220; color:#e5e7eb;">
+                    Halaman <?= $page; ?> / <?= max(1, $totalPages); ?>
+                </span>
+                <a href="<?= $buildUrl(min($totalPages, $page + 1)); ?>"
+                   style="padding:6px 10px; border-radius:8px; border:1px solid #374151; background:<?= $page < $totalPages ? '#111827' : '#0b1220'; ?>; color:<?= $page < $totalPages ? '#e5e7eb' : '#4b5563'; ?>; text-decoration:none; pointer-events:<?= $page < $totalPages ? 'auto' : 'none'; ?>;">
+                    Next ›
+                </a>
+            </div>
+        </div>
     <?php endif; ?>
 </div>
 
