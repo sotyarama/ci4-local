@@ -91,6 +91,9 @@ $routes->group('', ['filter' => 'auth'], static function($routes) {
         $routes->get('overhead-categories/edit/(:num)', 'OverheadCategories::edit/$1');
         $routes->post('overhead-categories/update/(:num)', 'OverheadCategories::update/$1');
 
+        // Audit Logs
+        $routes->get('audit-logs', 'AuditLogs::index');
+
     });
 
 

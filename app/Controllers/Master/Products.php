@@ -5,16 +5,19 @@ namespace App\Controllers\Master;
 use App\Controllers\BaseController;
 use App\Models\MenuModel;
 use App\Models\MenuCategoryModel;
+use App\Models\AuditLogModel;
 
 class Products extends BaseController
 {
     protected MenuModel $menuModel;
     protected MenuCategoryModel $categoryModel;
+    protected AuditLogModel $auditLogModel;
 
     public function __construct()
     {
         $this->menuModel     = new MenuModel();
         $this->categoryModel = new MenuCategoryModel();
+        $this->auditLogModel = new AuditLogModel();
     }
 
     public function index()
@@ -73,6 +76,9 @@ class Products extends BaseController
         ];
 
         $this->menuModel->insert($data);
+        $newId = $this->menuModel->getInsertID();
+
+        $this->logMenuChange((int) $newId, 'create', $data);
 
         return redirect()->to(site_url('master/products'))
             ->with('message', 'Produk berhasil ditambahkan.');
@@ -130,6 +136,7 @@ class Products extends BaseController
         ];
 
         $this->menuModel->update($id, $data);
+        $this->logMenuChange($id, 'update', $data);
 
         return redirect()->to(site_url('master/products'))
             ->with('message', 'Produk berhasil diperbarui.');
@@ -147,5 +154,20 @@ class Products extends BaseController
 
         return redirect()->to(site_url('master/products'))
             ->with('message', 'Produk berhasil dihapus.');
+    }
+
+    private function logMenuChange(int $menuId, string $action, array $data): void
+    {
+        $userId = (int) (session('user_id') ?? 0);
+
+        $this->auditLogModel->insert([
+            'entity_type' => 'menu',
+            'entity_id'   => $menuId,
+            'action'      => $action,
+            'description' => 'Menu ' . $action . ' #' . $menuId,
+            'payload'     => json_encode($data),
+            'user_id'     => $userId > 0 ? $userId : null,
+            'created_at'  => date('Y-m-d H:i:s'),
+        ]);
     }
 }

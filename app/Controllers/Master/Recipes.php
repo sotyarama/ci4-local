@@ -7,6 +7,7 @@ use App\Models\MenuModel;
 use App\Models\RecipeModel;
 use App\Models\RecipeItemModel;
 use App\Models\RawMaterialModel;
+use App\Models\AuditLogModel;
 
 class Recipes extends BaseController
 {
@@ -14,6 +15,7 @@ class Recipes extends BaseController
     protected RecipeModel $recipeModel;
     protected RecipeItemModel $itemModel;
     protected RawMaterialModel $rawModel;
+    protected AuditLogModel $auditLogModel;
 
     public function __construct()
     {
@@ -21,6 +23,7 @@ class Recipes extends BaseController
         $this->recipeModel = new RecipeModel();
         $this->itemModel   = new RecipeItemModel();
         $this->rawModel    = new RawMaterialModel();
+        $this->auditLogModel = new AuditLogModel();
     }
 
     public function index()
@@ -168,6 +171,8 @@ class Recipes extends BaseController
                 ->withInput();
         }
 
+        $this->logRecipeChange($recipeId, 'create', $recipeData, $items);
+
         return redirect()->to(site_url('master/recipes'))
             ->with('message', 'Resep menu berhasil disimpan.');
     }
@@ -294,6 +299,8 @@ class Recipes extends BaseController
                 ->withInput();
         }
 
+        $this->logRecipeChange($id, 'update', $updateData, $items);
+
         return redirect()->to(site_url('master/recipes'))
             ->with('message', 'Resep menu berhasil diperbarui.');
     }
@@ -313,5 +320,25 @@ class Recipes extends BaseController
         }
 
         return $map;
+    }
+
+    private function logRecipeChange(int $recipeId, string $action, array $data, array $items): void
+    {
+        $userId = (int) (session('user_id') ?? 0);
+
+        $payload = [
+            'recipe' => $data,
+            'items'  => $items,
+        ];
+
+        $this->auditLogModel->insert([
+            'entity_type' => 'recipe',
+            'entity_id'   => $recipeId,
+            'action'      => $action,
+            'description' => 'Recipe ' . $action . ' for menu #' . ($data['menu_id'] ?? ''),
+            'payload'     => json_encode($payload),
+            'user_id'     => $userId > 0 ? $userId : null,
+            'created_at'  => date('Y-m-d H:i:s'),
+        ]);
     }
 }
