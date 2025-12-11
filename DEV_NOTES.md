@@ -80,6 +80,7 @@ Tujuan utama:
 - Margin/margin% di laporan & sales detail pakai `--tr-primary-deep` untuk kontras; void notice diperjelas.
 - Tabel/aksi dirapikan: padding header/body diperbesar, tombol “Detail” di pembelian diperkecil & center untuk proporsi lebih rapi.
 - Laporan baru: Pembelian per Supplier (`reports/purchases/supplier`) dengan filter tanggal & supplier, ringkasan jumlah PO + total pembelian per pemasok + grand total, link di sidebar Reports.
+- Laporan baru: Penjualan per Kategori (`reports/sales/category`) dengan filter tanggal + pagination + export CSV; sidebar Reports menaut ke laporan ini (menggantikan placeholder “Margin per Kategori”).
 
 ---
 
