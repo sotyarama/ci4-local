@@ -14,6 +14,13 @@ More information about the plans for version 4 can be found in [CodeIgniter 4](h
 You can read the [user guide](https://codeigniter.com/user_guide/)
 corresponding to the latest version of the framework.
 
+## Temu Rasa UI Theme
+
+- Tema POS menggunakan palet Temu Rasa via `public/css/theme-temurasa.css` (CSS variables: primary sage, soft cream background, beige/green surfaces, accent brown, charcoal text).
+- Layout utama & login sudah memuat stylesheet ini; view memakai warna melalui variabel CSS.
+- Kustomisasi warna: ubah nilai di blok `:root` dalam `public/css/theme-temurasa.css`, lalu reload browser (tidak perlu re-build).
+- Scope perubahan hanya tampilan; logika backend/route tidak tersentuh.
+
 ## Installation & updates
 
 `composer create-project codeigniter4/appstarter` then `composer update` whenever

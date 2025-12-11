@@ -385,9 +385,9 @@
             <div class="nav-group" id="nav-reports">
                 <a href="<?= site_url('reports/sales/daily') ?>" class="nav-link small <?= $menuAllowed('reports') ? '' : 'disabled-link'; ?> <?= $isActive(['reports/sales/daily']) ? 'active' : ''; ?>">Penjualan Harian</a>
                 <a href="<?= site_url('reports/sales/menu') ?>" class="nav-link small <?= $menuAllowed('reports') ? '' : 'disabled-link'; ?> <?= $isActive(['reports/sales/menu']) ? 'active' : ''; ?>">Penjualan per Menu</a>
+                <a href="<?= site_url('reports/purchases/supplier') ?>" class="nav-link small <?= $menuAllowed('reports') ? '' : 'disabled-link'; ?> <?= $isActive(['reports/purchases/supplier']) ? 'active' : ''; ?>">Pembelian per Supplier</a>
                 <a href="#" class="nav-link small disabled-link" title="Planned">Penjualan Bulanan (planned)</a>
                 <a href="#" class="nav-link small disabled-link" title="Planned">Margin per Kategori (planned)</a>
-                <a href="#" class="nav-link small disabled-link" title="Planned">Pembelian per Supplier (planned)</a>
                 <a href="#" class="nav-link small disabled-link" title="Planned">Stok & Selisih (planned)</a>
             </div>
 
@@ -439,5 +439,3 @@
 </footer>
 </body>
 </html>
-
-
