@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <title><?= esc($title ?? 'Login'); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="<?= base_url('css/theme-temurasa.css'); ?>">
 
     <style>
-        * { box-sizing: border-box; }
         body {
             margin: 0;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background: #020617;
-            color: #e5e7eb;
+            background: var(--tr-bg);
+            color: var(--tr-text);
         }
         .wrapper {
             min-height: 100vh;
@@ -21,11 +21,11 @@
             padding: 16px;
         }
         .card {
-            background: #020617;
             border-radius: 16px;
             padding: 24px 24px 20px;
-            border: 1px solid #111827;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            border: 1px solid var(--tr-border);
+            background: var(--tr-surface);
+            box-shadow: var(--tr-shadow);
             max-width: 360px;
             width: 100%;
         }
@@ -36,7 +36,7 @@
         .subtitle {
             margin: 0 0 18px;
             font-size: 13px;
-            color: #9ca3af;
+            color: var(--tr-muted-text);
         }
         label {
             display: block;
@@ -48,45 +48,35 @@
             width: 100%;
             padding: 8px 10px;
             border-radius: 8px;
-            border: 1px solid #1f2937;
-            background: #020617;
-            color: #e5e7eb;
+            border: 1px solid var(--tr-border);
+            background: #fff;
+            color: var(--tr-text);
             font-size: 13px;
         }
         input:focus {
-            outline: 1px solid #3b82f6;
-            border-color: #3b82f6;
+            outline: 2px solid rgba(122, 154, 108, 0.35);
+            border-color: var(--tr-primary);
         }
         .field {
             margin-bottom: 12px;
         }
         .btn {
             width: 100%;
-            padding: 9px 10px;
-            border-radius: 999px;
-            border: none;
-            background: #3b82f6;
-            color: white;
             font-size: 14px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        .btn:hover {
-            background: #2563eb;
         }
         .hint {
             margin-top: 10px;
             font-size: 11px;
-            color: #9ca3af;
+            color: var(--tr-muted-text);
         }
         .alert {
-            background: #7f1d1d;
+            background: var(--tr-secondary-beige);
             border-radius: 8px;
             padding: 8px 10px;
-            border: 1px solid #b91c1c;
+            border: 1px solid var(--tr-accent-brown);
             font-size: 12px;
             margin-bottom: 12px;
-            color: #fee2e2;
+            color: var(--tr-text);
         }
     </style>
 </head>
@@ -128,7 +118,7 @@
                 >
             </div>
 
-            <button type="submit" class="btn">Masuk</button>
+            <button type="submit" class="btn btn-primary">Masuk</button>
         </form>
 
         <div class="hint">
@@ -139,3 +129,5 @@
 </div>
 </body>
 </html>
+
+

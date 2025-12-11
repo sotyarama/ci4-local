@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title><?= esc($title ?? 'Cafe POS'); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="<?= base_url('css/theme-temurasa.css'); ?>">
 
     <style>
         :root {
@@ -11,12 +12,10 @@
             --topbar-height: 56px;
             --footer-height: 36px;
         }
-        * { box-sizing: border-box; }
         body {
             margin: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background: #020617;
-            color: #e5e7eb;
+            background: var(--tr-bg);
+            color: var(--tr-text);
         }
         .layout {
             display: flex;
@@ -25,8 +24,8 @@
         }
         .sidebar {
             width: var(--sidebar-width);
-            background: #020617;
-            border-right: 1px solid #111827;
+            background: var(--tr-secondary-beige);
+            border-right: 1px solid var(--tr-border);
             padding: 0 14px 16px 14px;
             height: 100vh;
             position: sticky;
@@ -34,16 +33,18 @@
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
+            color: var(--tr-text);
         }
         .sidebar-title {
             font-size: 18px;
             font-weight: 600;
             margin-bottom: 8px;
             padding: 16px 0 0 0;
+            color: var(--tr-primary);
         }
         .sidebar-sub {
             font-size: 11px;
-            color: #6b7280;
+            color: var(--tr-muted-text);
             margin-bottom: 16px;
         }
         .sidebar-scroll {
@@ -54,7 +55,7 @@
         .nav-section-title {
             font-size: 11px;
             text-transform: uppercase;
-            color: #6b7280;
+            color: var(--tr-muted-text);
             letter-spacing: .08em;
             margin: 16px 0 6px;
             display: flex;
@@ -67,25 +68,26 @@
             padding: 7px 8px;
             border-radius: 8px;
             font-size: 13px;
-            color: #e5e7eb;
+            color: var(--tr-text);
             text-decoration: none;
             margin-bottom: 3px;
             border: 1px solid transparent;
             transition: background 0.15s ease, border-color 0.15s ease;
         }
         .nav-link:hover {
-            background: #0f172a;
+            background: var(--tr-secondary-green);
+            border-color: var(--tr-border);
         }
         .nav-link.small {
             font-size: 12px;
-            color: #9ca3af;
+            color: var(--tr-muted-text);
         }
         .nav-link.active {
-            background: #f9fafb;
-            border: 1px solid #3b82f6;
-            color: #2563eb;
+            background: var(--tr-secondary-beige);
+            border: 1px solid var(--tr-primary);
+            color: var(--tr-primary);
             font-weight: 600;
-            box-shadow: 0 6px 18px rgba(59,130,246,0.25);
+            box-shadow: 0 6px 18px rgba(122, 154, 108, 0.28);
         }
         .nav-group {
             margin-bottom: 4px;
@@ -93,7 +95,7 @@
         .collapse-arrow {
             font-size: 12px;
             transition: transform 0.2s ease;
-            color: #6b7280;
+            color: var(--tr-muted-text);
         }
         .collapsed .collapse-arrow {
             transform: rotate(-90deg);
@@ -107,42 +109,46 @@
         }
         .topbar {
             padding: 10px 18px;
-            border-bottom: 1px solid #111827;
+            border-bottom: 1px solid var(--tr-border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #020617;
+            background: var(--tr-primary);
             position: fixed;
             left: var(--sidebar-width);
             right: 0;
             top: 0;
             height: var(--topbar-height);
             z-index: 10;
+            color: #fff;
         }
         .topbar-title {
             font-size: 16px;
             font-weight: 500;
+            color: #fff;
         }
         .topbar-subtitle {
             font-size: 12px;
-            color: #9ca3af;
+            color: rgba(255, 255, 255, 0.82);
         }
         .topbar-right {
             font-size: 12px;
-            color: #9ca3af;
+            color: rgba(255, 255, 255, 0.82);
         }
         .topbar-pill {
             display: inline-flex;
             align-items: center;
             padding: 4px 8px;
             border-radius: 999px;
-            border: 1px solid #1f2937;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
         }
         .dot {
             width: 7px;
             height: 7px;
             border-radius: 999px;
-            background: #22c55e;
+            background: var(--tr-accent-brown);
             margin-right: 6px;
         }
 
@@ -158,13 +164,10 @@
 
         /* Card default agar view lain tinggal pakai */
         .card {
-            background: #020617;
             border-radius: 16px;
-            padding: 18px 20px;
-            border: 1px solid #111827;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.45);
-            width: 100%;
-            box-sizing: border-box;
+            background: var(--tr-surface);
+            border: 1px solid var(--tr-border);
+            box-shadow: var(--tr-shadow);
         }
         .disabled-link {
             opacity: 0.35;
@@ -172,10 +175,9 @@
             cursor: not-allowed;
         }
         .table-scroll-wrap {
-            overflow: auto;
-            max-height: calc(80vh - 120px);
-            border: 1px solid #111827;
+            border: 1px solid var(--tr-border);
             border-radius: 10px;
+            background: #fff;
         }
         /* Scrollbar styling */
         .sidebar::-webkit-scrollbar,
@@ -187,23 +189,23 @@
         .sidebar::-webkit-scrollbar-track,
         .table-scroll-wrap::-webkit-scrollbar-track,
         .content::-webkit-scrollbar-track {
-            background: #0b1220;
+            background: var(--tr-secondary-beige);
             border-radius: 10px;
         }
         .sidebar::-webkit-scrollbar-thumb,
         .table-scroll-wrap::-webkit-scrollbar-thumb,
         .content::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, #1f2937, #0ea5e9);
+            background: linear-gradient(180deg, var(--tr-primary), var(--tr-secondary-green));
             border-radius: 10px;
-            border: 1px solid #0b1220;
+            border: 1px solid var(--tr-secondary-beige);
         }
         .sidebar {
-            scrollbar-color: #0ea5e9 #0b1220;
+            scrollbar-color: var(--tr-primary) var(--tr-secondary-beige);
             scrollbar-width: thin;
         }
         .table-scroll-wrap,
         .content {
-            scrollbar-color: #1f2937 #0b1220;
+            scrollbar-color: var(--tr-secondary-green) var(--tr-secondary-beige);
             scrollbar-width: thin;
         }
         .footer {
@@ -212,9 +214,9 @@
             right: 0;
             bottom: 0;
             height: var(--footer-height);
-            border-top: 1px solid #111827;
-            background: #020617;
-            color: #6b7280;
+            border-top: 1px solid var(--tr-border);
+            background: var(--tr-secondary-beige);
+            color: var(--tr-muted-text);
             font-size: 12px;
             display: flex;
             align-items: center;
@@ -263,7 +265,7 @@
     };
 ?>
 <?php if (! empty($flashError)): ?>
-    <div id="flash-error" style="position:fixed; top:18px; left:50%; transform:translateX(-50%); z-index:9999; background:#3f1f1f; border:1px solid #b91c1c; color:#fecaca; padding:14px 18px; border-radius:12px; box-shadow:0 16px 40px rgba(0,0,0,0.55); font-size:13px; max-width:520px; width:calc(100% - 32px); text-align:center;">
+    <div id="flash-error" style="position:fixed; top:18px; left:50%; transform:translateX(-50%); z-index:9999; background:var(--tr-secondary-beige); border:1px solid var(--tr-accent-brown); color:var(--tr-text); padding:14px 18px; border-radius:12px; box-shadow:0 16px 40px rgba(58,58,58,0.24); font-size:13px; max-width:520px; width:calc(100% - 32px); text-align:center;">
         <?= esc($flashError); ?>
     </div>
     <script>
@@ -420,7 +422,7 @@
                 <span class="topbar-pill" style="margin-right: 8px;">
                     <?= esc(session('full_name') ?? session('username') ?? ''); ?>
                 </span>
-                <a href="<?= site_url('logout'); ?>" style="font-size:12px; color:#9ca3af; text-decoration:none;">
+                <a href="<?= site_url('logout'); ?>" style="font-size:12px; color:rgba(255,255,255,0.9); text-decoration:none;">
                     Logout
                 </a>
             </div>
@@ -437,3 +439,5 @@
 </footer>
 </body>
 </html>
+
+

@@ -6,7 +6,7 @@
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
         <div>
             <h2 style="margin:0; font-size:18px;">Laporan Penjualan Harian</h2>
-            <p style="margin:2px 0 0; font-size:12px; color:#9ca3af;">
+            <p style="margin:2px 0 0; font-size:12px; color:var(--tr-muted-text);">
                 Ringkasan omzet, HPP, dan margin per tanggal.
             </p>
         </div>
@@ -22,7 +22,7 @@
             $csvUrl = current_url() . ($csvQuery ? '?' . $csvQuery : '');
         ?>
         <a href="<?= $csvUrl; ?>"
-           style="font-size:11px; padding:6px 10px; border-radius:999px; border:1px solid #4b5563; background:#111827; color:#e5e7eb; text-decoration:none;">
+           style="font-size:11px; padding:6px 10px; border-radius:999px; border:1px solid var(--tr-muted-text); background:var(--tr-border); color:var(--tr-text); text-decoration:none;">
             Export CSV
         </a>
     </div>
@@ -32,23 +32,23 @@
           style="margin-bottom:12px; display:flex; flex-wrap:wrap; gap:8px; align-items:flex-end;">
 
         <div style="display:flex; flex-direction:column; font-size:12px;">
-            <label for="date_from" style="margin-bottom:2px; color:#d1d5db;">Dari Tanggal</label>
+            <label for="date_from" style="margin-bottom:2px; color:var(--tr-muted-text);">Dari Tanggal</label>
             <input type="date" name="date_from" id="date_from"
                    value="<?= esc($dateFrom); ?>"
-                   style="padding:5px 8px; border-radius:6px; border:1px solid #374151; background:#020617; color:#e5e7eb; font-size:12px;">
+                   style="padding:5px 8px; border-radius:6px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:12px;">
         </div>
 
         <div style="display:flex; flex-direction:column; font-size:12px;">
-            <label for="date_to" style="margin-bottom:2px; color:#d1d5db;">Sampai Tanggal</label>
+            <label for="date_to" style="margin-bottom:2px; color:var(--tr-muted-text);">Sampai Tanggal</label>
             <input type="date" name="date_to" id="date_to"
                    value="<?= esc($dateTo); ?>"
-                   style="padding:5px 8px; border-radius:6px; border:1px solid #374151; background:#020617; color:#e5e7eb; font-size:12px;">
+                   style="padding:5px 8px; border-radius:6px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:12px;">
         </div>
 
         <div style="display:flex; flex-direction:column; font-size:12px;">
-            <label for="per_page" style="margin-bottom:2px; color:#d1d5db;">Baris per halaman</label>
+            <label for="per_page" style="margin-bottom:2px; color:var(--tr-muted-text);">Baris per halaman</label>
             <select name="per_page" id="per_page"
-                    style="min-width:120px; padding:5px 8px; border-radius:6px; border:1px solid #374151; background:#020617; color:#e5e7eb; font-size:12px;">
+                    style="min-width:120px; padding:5px 8px; border-radius:6px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:12px;">
                 <?php foreach ([20, 50, 100, 200] as $opt): ?>
                     <option value="<?= $opt; ?>" <?= ((int)$perPage === $opt) ? 'selected' : ''; ?>><?= $opt; ?></option>
                 <?php endforeach; ?>
@@ -57,30 +57,30 @@
 
         <div style="display:flex; gap:6px;">
             <button type="submit"
-                    style="margin-top:18px; padding:6px 10px; border-radius:999px; border:none; font-size:12px; background:#2563eb; color:#e5e7eb; cursor:pointer;">
+                    style="margin-top:18px; padding:6px 10px; border-radius:999px; border:none; font-size:12px; background:var(--tr-primary); color:var(--tr-text); cursor:pointer;">
                 Terapkan Filter
             </button>
 
             <a href="<?= site_url('reports/sales/daily'); ?>"
-               style="margin-top:18px; padding:6px 10px; border-radius:999px; border:1px solid #4b5563; font-size:12px; background:#020617; color:#9ca3af; text-decoration:none;">
+               style="margin-top:18px; padding:6px 10px; border-radius:999px; border:1px solid var(--tr-muted-text); font-size:12px; background:var(--tr-bg); color:var(--tr-muted-text); text-decoration:none;">
                 Reset
             </a>
         </div>
     </form>
 
     <?php if (empty($rows)): ?>
-        <p style="font-size:12px; color:#9ca3af; margin:8px 0 0;">
+        <p style="font-size:12px; color:var(--tr-muted-text); margin:8px 0 0;">
             Belum ada data penjualan untuk periode ini.
         </p>
     <?php else: ?>
         <table style="width:100%; border-collapse:collapse; font-size:12px;">
             <thead>
             <tr>
-                <th style="text-align:left;  padding:6px 8px; border-bottom:1px solid #111827;">Tanggal</th>
-                <th style="text-align:right; padding:6px 8px; border-bottom:1px solid #111827;">Total Penjualan</th>
-                <th style="text-align:right; padding:6px 8px; border-bottom:1px solid #111827;">Total HPP</th>
-                <th style="text-align:right; padding:6px 8px; border-bottom:1px solid #111827;">Margin</th>
-                <th style="text-align:right; padding:6px 8px; border-bottom:1px solid #111827;">Margin %</th>
+                <th style="text-align:left;  padding:6px 8px; border-bottom:1px solid var(--tr-border);">Tanggal</th>
+                <th style="text-align:right; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Total Penjualan</th>
+                <th style="text-align:right; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Total HPP</th>
+                <th style="text-align:right; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Margin</th>
+                <th style="text-align:right; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Margin %</th>
             </tr>
             </thead>
             <tbody>
@@ -91,22 +91,22 @@
                     $margin = $sales - $cost;
                     $marginPct = $sales > 0 ? ($margin / $sales * 100.0) : 0;
 
-                    $marginColor = $margin >= 0 ? '#6ee7b7' : '#fecaca';
+                    $marginColor = $margin >= 0 ? 'var(--tr-primary-deep)' : 'var(--tr-accent-brown)';
                 ?>
                 <tr>
-                    <td style="padding:6px 8px; border-bottom:1px solid #1f2937;">
+                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
                         <?= esc($r['sale_date']); ?>
                     </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid #1f2937; text-align:right;">
+                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
                         Rp <?= number_format($sales, 0, ',', '.'); ?>
                     </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid #1f2937; text-align:right;">
+                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
                         Rp <?= number_format($cost, 0, ',', '.'); ?>
                     </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid #1f2937; text-align:right; color:<?= $marginColor; ?>">
+                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right; color:<?= $marginColor; ?>">
                         Rp <?= number_format($margin, 0, ',', '.'); ?>
                     </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid #1f2937; text-align:right; color:<?= $marginColor; ?>">
+                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right; color:<?= $marginColor; ?>">
                         <?= number_format($marginPct, 1, ',', '.'); ?>%
                     </td>
                 </tr>
@@ -117,22 +117,22 @@
                 $grandCost  = (float) $totalCostAll;
                 $grandMargin = $grandSales - $grandCost;
                 $grandMarginPct = $grandSales > 0 ? ($grandMargin / $grandSales * 100.0) : 0;
-                $grandColor = $grandMargin >= 0 ? '#6ee7b7' : '#fecaca';
+                $grandColor = $grandMargin >= 0 ? 'var(--tr-primary-deep)' : 'var(--tr-accent-brown)';
             ?>
             <tr>
-                <td style="padding:6px 8px; border-top:1px solid #4b5563; font-weight:bold;">
+                <td style="padding:6px 8px; border-top:1px solid var(--tr-muted-text); font-weight:bold;">
                     TOTAL (filter)
                 </td>
-                <td style="padding:6px 8px; border-top:1px solid #4b5563; text-align:right; font-weight:bold;">
+                <td style="padding:6px 8px; border-top:1px solid var(--tr-muted-text); text-align:right; font-weight:bold;">
                     Rp <?= number_format($grandSales, 0, ',', '.'); ?>
                 </td>
-                <td style="padding:6px 8px; border-top:1px solid #4b5563; text-align:right; font-weight:bold;">
+                <td style="padding:6px 8px; border-top:1px solid var(--tr-muted-text); text-align:right; font-weight:bold;">
                     Rp <?= number_format($grandCost, 0, ',', '.'); ?>
                 </td>
-                <td style="padding:6px 8px; border-top:1px solid #4b5563; text-align:right; font-weight:bold; color:<?= $grandColor; ?>">
+                <td style="padding:6px 8px; border-top:1px solid var(--tr-muted-text); text-align:right; font-weight:bold; color:<?= $grandColor; ?>">
                     Rp <?= number_format($grandMargin, 0, ',', '.'); ?>
                 </td>
-                <td style="padding:6px 8px; border-top:1px solid #4b5563; text-align:right; font-weight:bold; color:<?= $grandColor; ?>">
+                <td style="padding:6px 8px; border-top:1px solid var(--tr-muted-text); text-align:right; font-weight:bold; color:<?= $grandColor; ?>">
                     <?= number_format($grandMarginPct, 1, ',', '.'); ?>%
                 </td>
             </tr>
@@ -156,7 +156,7 @@
             $startRow = ($page - 1) * $perPage + 1;
             $endRow   = min($startRow + $perPage - 1, $totalRows);
         ?>
-        <div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#9ca3af;">
+        <div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--tr-muted-text);">
             <div>
                 <?= $totalRows > 0
                     ? "Menampilkan {$startRow}-{$endRow} dari {$totalRows} tanggal"
@@ -164,14 +164,14 @@
             </div>
             <div style="display:flex; gap:6px;">
                 <a href="<?= $buildUrl(max(1, $page - 1)); ?>"
-                   style="padding:6px 10px; border-radius:8px; border:1px solid #374151; background:<?= $page > 1 ? '#111827' : '#0b1220'; ?>; color:<?= $page > 1 ? '#e5e7eb' : '#4b5563'; ?>; text-decoration:none; pointer-events:<?= $page > 1 ? 'auto' : 'none'; ?>;">
+                   style="padding:6px 10px; border-radius:8px; border:1px solid var(--tr-border); background:<?= $page > 1 ? 'var(--tr-border)' : 'var(--tr-secondary-beige)'; ?>; color:<?= $page > 1 ? 'var(--tr-text)' : 'var(--tr-muted-text)'; ?>; text-decoration:none; pointer-events:<?= $page > 1 ? 'auto' : 'none'; ?>;">
                     ‹ Prev
                 </a>
-                <span style="padding:6px 10px; border-radius:8px; border:1px solid #374151; background:#0b1220; color:#e5e7eb;">
+                <span style="padding:6px 10px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-secondary-beige); color:var(--tr-text);">
                     Halaman <?= $page; ?> / <?= max(1, $totalPages); ?>
                 </span>
                 <a href="<?= $buildUrl(min($totalPages, $page + 1)); ?>"
-                   style="padding:6px 10px; border-radius:8px; border:1px solid #374151; background:<?= $page < $totalPages ? '#111827' : '#0b1220'; ?>; color:<?= $page < $totalPages ? '#e5e7eb' : '#4b5563'; ?>; text-decoration:none; pointer-events:<?= $page < $totalPages ? 'auto' : 'none'; ?>;">
+                   style="padding:6px 10px; border-radius:8px; border:1px solid var(--tr-border); background:<?= $page < $totalPages ? 'var(--tr-border)' : 'var(--tr-secondary-beige)'; ?>; color:<?= $page < $totalPages ? 'var(--tr-text)' : 'var(--tr-muted-text)'; ?>; text-decoration:none; pointer-events:<?= $page < $totalPages ? 'auto' : 'none'; ?>;">
                     Next ›
                 </a>
             </div>
@@ -180,3 +180,4 @@
 </div>
 
 <?= $this->endSection() ?>
+
