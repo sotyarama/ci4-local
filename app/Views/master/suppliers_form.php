@@ -8,12 +8,12 @@
     <h2 style="margin:0 0 8px; font-size:18px;">
         <?= esc($title ?? 'Form Supplier'); ?>
     </h2>
-    <p style="margin:0 0 16px; font-size:13px; color:#9ca3af;">
+    <p style="margin:0 0 16px; font-size:13px; color:var(--tr-muted-text);">
         <?= esc($subtitle ?? ''); ?>
     </p>
 
     <?php if (!empty($errors)): ?>
-        <div style="background:#7f1d1d; border-radius:8px; padding:8px 10px; border:1px solid #b91c1c; font-size:12px; color:#fee2e2; margin-bottom:12px;">
+        <div style="background:var(--tr-accent-brown); border-radius:8px; padding:8px 10px; border:1px solid var(--tr-accent-brown); font-size:12px; color:var(--tr-secondary-beige); margin-bottom:12px;">
             <strong>Terjadi kesalahan:</strong>
             <ul style="margin:4px 0 0 16px; padding:0;">
                 <?php foreach ($errors as $error): ?>
@@ -33,7 +33,7 @@
                     type="text"
                     name="name"
                     value="<?= esc(old('name', $supplier['name'] ?? '')); ?>"
-                    style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid #1f2937; background:#020617; color:#e5e7eb; font-size:13px;"
+                    style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:13px;"
                     required
                 >
             </div>
@@ -44,7 +44,7 @@
                     type="text"
                     name="phone"
                     value="<?= esc(old('phone', $supplier['phone'] ?? '')); ?>"
-                    style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid #1f2937; background:#020617; color:#e5e7eb; font-size:13px;"
+                    style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:13px;"
                 >
             </div>
         </div>
@@ -54,7 +54,7 @@
             <textarea
                 name="address"
                 rows="3"
-                style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid #1f2937; background:#020617; color:#e5e7eb; font-size:13px;"
+                style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:13px;"
             ><?= esc(old('address', $supplier['address'] ?? '')); ?></textarea>
         </div>
 
@@ -73,11 +73,11 @@
 
         <div style="margin-top:16px; display:flex; gap:8px;">
             <button type="submit"
-                    style="padding:8px 14px; border-radius:999px; border:none; background:#3b82f6; color:#fff; font-size:13px; cursor:pointer;">
+                    style="padding:8px 14px; border-radius:999px; border:none; background:var(--tr-primary); color:#fff; font-size:13px; cursor:pointer;">
                 Simpan
             </button>
             <a href="<?= site_url('master/suppliers'); ?>"
-               style="padding:8px 14px; border-radius:999px; border:1px solid #4b5563; font-size:13px; color:#e5e7eb; text-decoration:none;">
+               style="padding:8px 14px; border-radius:999px; border:1px solid var(--tr-muted-text); font-size:13px; color:var(--tr-text); text-decoration:none;">
                 Batal
             </a>
         </div>
@@ -85,3 +85,5 @@
 </div>
 
 <?= $this->endSection() ?>
+
+

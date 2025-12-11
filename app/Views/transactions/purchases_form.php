@@ -6,12 +6,12 @@
 
 <div class="card">
     <h2 style="margin:0 0 8px; font-size:18px;">Tambah Pembelian</h2>
-    <p style="margin:0 0 16px; font-size:13px; color:#9ca3af;">
+    <p style="margin:0 0 16px; font-size:13px; color:var(--tr-muted-text);">
         Input pembelian bahan baku. Minimal satu baris item diisi.
     </p>
 
     <?php if (!empty($errors)): ?>
-        <div style="background:#7f1d1d; border-radius:8px; padding:8px 10px; border:1px solid #b91c1c; font-size:12px; color:#fee2e2; margin-bottom:12px;">
+        <div style="background:var(--tr-accent-brown); border-radius:8px; padding:8px 10px; border:1px solid var(--tr-accent-brown); font-size:12px; color:var(--tr-secondary-beige); margin-bottom:12px;">
             <strong>Terjadi kesalahan:</strong>
             <ul style="margin:4px 0 0 16px; padding:0;">
                 <?php foreach ($errors as $e): ?>
@@ -28,7 +28,7 @@
             <div>
                 <label style="font-size:12px; display:block; margin-bottom:4px;">Supplier</label>
                 <select name="supplier_id"
-                        style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid #1f2937; background:#020617; color:#e5e7eb; font-size:13px;"
+                        style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:13px;"
                         required>
                     <option value="">-- pilih supplier --</option>
                     <?php foreach ($suppliers as $s): ?>
@@ -45,7 +45,7 @@
                 <input type="date"
                        name="purchase_date"
                        value="<?= esc(old('purchase_date', date('Y-m-d'))); ?>"
-                       style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid #1f2937; background:#020617; color:#e5e7eb; font-size:13px;"
+                       style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:13px;"
                        required>
             </div>
 
@@ -54,7 +54,7 @@
                 <input type="text"
                        name="invoice_no"
                        value="<?= esc(old('invoice_no', '')); ?>"
-                       style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid #1f2937; background:#020617; color:#e5e7eb; font-size:13px;">
+                       style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:13px;">
             </div>
         </div>
 
@@ -62,21 +62,21 @@
             <label style="font-size:12px; display:block; margin-bottom:4px;">Catatan (opsional)</label>
             <textarea name="notes"
                       rows="2"
-                      style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid #1f2937; background:#020617; color:#e5e7eb; font-size:13px;"><?= esc(old('notes', '')); ?></textarea>
+                      style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:13px;"><?= esc(old('notes', '')); ?></textarea>
         </div>
 
         <h3 style="margin:0 0 8px; font-size:14px;">Detail Item</h3>
-        <p style="margin:0 0 8px; font-size:11px; color:#6b7280;">
+        <p style="margin:0 0 8px; font-size:11px; color:var(--tr-muted-text);">
             Isi baris yang diperlukan saja, baris kosong akan diabaikan.
         </p>
 
         <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:12px;">
             <thead>
             <tr>
-                <th style="text-align:left; padding:6px 8px; border-bottom:1px solid #111827;">Bahan</th>
-                <th style="text-align:right; padding:6px 8px; border-bottom:1px solid #111827;">Qty</th>
-                <th style="text-align:left; padding:6px 8px; border-bottom:1px solid #111827;">Satuan</th>
-                <th style="text-align:right; padding:6px 8px; border-bottom:1px solid #111827;">Harga / Satuan</th>
+                <th style="text-align:left; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Bahan</th>
+                <th style="text-align:right; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Qty</th>
+                <th style="text-align:left; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Satuan</th>
+                <th style="text-align:right; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Harga / Satuan</th>
             </tr>
             </thead>
             <tbody>
@@ -86,9 +86,9 @@
                 $row = $oldItems[$i] ?? ['raw_material_id' => '', 'qty' => '', 'unit_cost' => ''];
                 ?>
                 <tr>
-                    <td style="padding:4px 8px; border-bottom:1px solid #111827;">
+                    <td style="padding:4px 8px; border-bottom:1px solid var(--tr-border);">
                         <select name="items[<?= $i; ?>][raw_material_id]"
-                                style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid #1f2937; background:#020617; color:#e5e7eb; font-size:12px;">
+                                style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:12px;">
                             <option value="">-- pilih bahan --</option>
                             <?php foreach ($materials as $m): ?>
                                 <option value="<?= $m['id']; ?>"
@@ -98,25 +98,25 @@
                             <?php endforeach; ?>
                         </select>
                     </td>
-                    <td style="padding:4px 8px; border-bottom:1px solid #111827; text-align:right;">
+                    <td style="padding:4px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
                         <input type="number"
                                step="0.001"
                                min="0"
                                name="items[<?= $i; ?>][qty]"
                                value="<?= esc($row['qty'] ?? ''); ?>"
-                               style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid #1f2937; background:#020617; color:#e5e7eb; font-size:12px;">
+                               style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:12px;">
                     </td>
-                    <td style="padding:4px 8px; border-bottom:1px solid #111827; font-size:11px; color:#9ca3af;">
+                    <td style="padding:4px 8px; border-bottom:1px solid var(--tr-border); font-size:11px; color:var(--tr-muted-text);">
                         <!-- hanya info satuan dari dropdown -->
                         &mdash;
                     </td>
-                    <td style="padding:4px 8px; border-bottom:1px solid #111827; text-align:right;">
+                    <td style="padding:4px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
                         <input type="number"
                                step="1"
                                min="0"
                                name="items[<?= $i; ?>][unit_cost]"
                                value="<?= esc($row['unit_cost'] ?? ''); ?>"
-                               style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid #1f2937; background:#020617; color:#e5e7eb; font-size:12px;">
+                               style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:12px;">
                     </td>
                 </tr>
             <?php endfor; ?>
@@ -125,11 +125,11 @@
 
         <div style="margin-top:16px; display:flex; gap:8px;">
             <button type="submit"
-                    style="padding:8px 14px; border-radius:999px; border:none; background:#3b82f6; color:#fff; font-size:13px; cursor:pointer;">
+                    style="padding:8px 14px; border-radius:999px; border:none; background:var(--tr-primary); color:#fff; font-size:13px; cursor:pointer;">
                 Simpan Pembelian
             </button>
             <a href="<?= site_url('purchases'); ?>"
-               style="padding:8px 14px; border-radius:999px; border:1px solid #4b5563; font-size:13px; color:#e5e7eb; text-decoration:none;">
+               style="padding:8px 14px; border-radius:999px; border:1px solid var(--tr-muted-text); font-size:13px; color:var(--tr-text); text-decoration:none;">
                 Batal
             </a>
         </div>
@@ -137,3 +137,5 @@
 </div>
 
 <?= $this->endSection() ?>
+
+

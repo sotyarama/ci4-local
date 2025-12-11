@@ -73,6 +73,13 @@ Tujuan utama:
 - Sales: kebutuhan bahan & pengurangan stok di-round 6 desimal, guard stok pakai nilai yang sudah dinormalisasi, pesan shortage lebih jelas.
 - Stock Movements/Card: saldo berjalan & qty di-round per langkah untuk menghindari drift.
 
+## Uncommitted (2025-12-10) - Temu Rasa UI Refresh
+- Brand theme file `public/css/theme-temurasa.css` dengan CSS variables + komponen dasar (card, input, button, table, scrollbar) sesuai palet Temu Rasa.
+- Layout utama & login: background softCream, topbar primary, surface beige/green, teks charcoal, scrollbar mengikuti tema.
+- View POS (master, transaksi, inventory, reports, overhead) dipetakan ke palette: tombol aksi kini solid (primary/accents), alert/badge/header tabel pakai secondary green/beige.
+- Margin/margin% di laporan & sales detail pakai `--tr-primary-deep` untuk kontras; void notice diperjelas.
+- Tabel/aksi dirapikan: padding header/body diperbesar, tombol “Detail” di pembelian diperkecil & center untuk proporsi lebih rapi.
+
 ---
 
 # Current Modules Status
