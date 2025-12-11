@@ -79,6 +79,7 @@ Tujuan utama:
 - View POS (master, transaksi, inventory, reports, overhead) dipetakan ke palette: tombol aksi kini solid (primary/accents), alert/badge/header tabel pakai secondary green/beige.
 - Margin/margin% di laporan & sales detail pakai `--tr-primary-deep` untuk kontras; void notice diperjelas.
 - Tabel/aksi dirapikan: padding header/body diperbesar, tombol “Detail” di pembelian diperkecil & center untuk proporsi lebih rapi.
+- Laporan baru: Pembelian per Supplier (`reports/purchases/supplier`) dengan filter tanggal & supplier, ringkasan jumlah PO + total pembelian per pemasok + grand total, link di sidebar Reports.
 
 ---
 
