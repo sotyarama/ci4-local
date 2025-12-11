@@ -171,7 +171,7 @@ Catatan gap:
 
 ## Recipes & Food Cost
 - [ ] Support sub-recipe (mis: syrup/base dipakai menu lain)
-- [ ] Indikator bahan hampir habis (min_stock)
+- [x] Indikator bahan hampir habis (min_stock) di master bahan + kartu stok
 - [ ] Warning di dashboard untuk bahan di bawah min_stock
 
 ## POS UI (Phase 2 — Modern Touchscreen Skin)
@@ -187,8 +187,8 @@ Catatan gap:
 
 ## Reports
 - [ ] Laporan penjualan bulanan + grafik sederhana
-- [ ] Laporan margin per kategori menu
-- [ ] Laporan pembelian per supplier
+- [x] Laporan margin per kategori menu
+- [x] Laporan pembelian per supplier
 - [ ] Laporan stok & selisih (banding stok fisik)
 
 ## Audit Logs

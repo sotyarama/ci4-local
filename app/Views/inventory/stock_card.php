@@ -65,6 +65,11 @@
     </form>
 
     <?php if ($selectedMaterial): ?>
+        <?php
+            $currentStock = (float) ($selectedMaterial['current_stock'] ?? 0);
+            $minStock     = (float) ($selectedMaterial['min_stock'] ?? 0);
+            $isLow        = $minStock > 0 && $currentStock < $minStock;
+        ?>
         <div style="padding:10px; border:1px solid var(--tr-border); border-radius:10px; background:var(--tr-secondary-beige); margin-bottom:12px;">
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:8px;">
                 <div>
@@ -74,7 +79,18 @@
                 <div>
                     <div style="font-size:11px; color:var(--tr-muted-text);">Stok saat ini (raw_materials)</div>
                     <div style="font-size:14px; color:var(--tr-text); font-weight:600; margin-top:2px;">
-                        <?= number_format((float) ($selectedMaterial['current_stock'] ?? 0), 3, ',', '.'); ?>
+                        <?= number_format($currentStock, 3, ',', '.'); ?>
+                        <?php if ($isLow): ?>
+                            <span style="margin-left:6px; padding:2px 8px; border-radius:999px; background:var(--tr-secondary-beige); color:var(--tr-accent-brown); border:1px solid var(--tr-accent-brown); font-size:10px; font-weight:700;">
+                                Low
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <div>
+                    <div style="font-size:11px; color:var(--tr-muted-text);">Min stok</div>
+                    <div style="font-size:14px; color:var(--tr-text); font-weight:600; margin-top:2px;">
+                        <?= number_format($minStock, 3, ',', '.'); ?>
                     </div>
                 </div>
                 <?php if (! empty($runningBalance)): ?>
@@ -159,4 +175,3 @@
 </div>
 
 <?= $this->endSection() ?>
-

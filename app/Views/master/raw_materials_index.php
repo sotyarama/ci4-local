@@ -54,11 +54,21 @@
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
                         <?= esc($m['unit_short'] ?? $m['unit_name'] ?? ''); ?>
                     </td>
+                    <?php
+                        $currentStock = (float) ($m['current_stock'] ?? 0);
+                        $minStock     = (float) ($m['min_stock'] ?? 0);
+                        $isLow        = $minStock > 0 && $currentStock < $minStock;
+                    ?>
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
-                        <?= number_format((float) $m['current_stock'], 3, ',', '.'); ?>
+                        <?= number_format($currentStock, 3, ',', '.'); ?>
+                        <?php if ($isLow): ?>
+                            <span style="margin-left:6px; padding:2px 8px; border-radius:999px; background:var(--tr-secondary-beige); color:var(--tr-accent-brown); border:1px solid var(--tr-accent-brown); font-size:10px; font-weight:700;">
+                                Low
+                            </span>
+                        <?php endif; ?>
                     </td>
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
-                        <?= number_format((float) $m['min_stock'], 3, ',', '.'); ?>
+                        <?= number_format($minStock, 3, ',', '.'); ?>
                     </td>
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
                         Rp <?= number_format((float) $m['cost_last'], 0, ',', '.'); ?>
@@ -105,4 +115,3 @@
 </div>
 
 <?= $this->endSection() ?>
-
