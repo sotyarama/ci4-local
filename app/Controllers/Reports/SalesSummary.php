@@ -136,6 +136,71 @@ class SalesSummary extends BaseController
         return view('reports/sales_menu', $data);
     }
 
+    /**
+     * Ringkasan penjualan per kategori menu (periode, qty, omzet, HPP total, margin).
+     */
+    public function perCategory()
+    {
+        $dateFrom = $this->request->getGet('date_from') ?: null;
+        $dateTo   = $this->request->getGet('date_to') ?: null;
+        $perPage  = $this->sanitizePerPage($this->request->getGet('per_page'));
+        $page     = $this->sanitizePage($this->request->getGet('page'));
+        $wantCsv  = ($this->request->getGet('export') === 'csv');
+
+        $db = \Config\Database::connect();
+
+        $baseBuilder = $db->table('sale_items si')
+            ->select('mc.id AS category_id')
+            ->select('COALESCE(mc.name, "Kategori (hapus)") AS category_name')
+            ->select('SUM(si.qty) AS total_qty')
+            ->select('SUM(si.subtotal) AS total_sales')
+            ->select('SUM(si.hpp_snapshot * si.qty) AS total_cost')
+            ->join('sales s', 's.id = si.sale_id', 'inner')
+            ->join('menus m', 'm.id = si.menu_id', 'left')
+            ->join('menu_categories mc', 'mc.id = m.menu_category_id', 'left')
+            ->where('s.status !=', 'void')
+            ->groupBy('mc.id, mc.name')
+            ->orderBy('total_sales', 'DESC');
+
+        $this->applyDateFilter($baseBuilder, $dateFrom, $dateTo, 's.sale_date');
+
+        if ($wantCsv) {
+            $rows = (clone $baseBuilder)->get()->getResultArray();
+            return $this->exportPerCategoryCsv($rows, $dateFrom, $dateTo);
+        }
+
+        $totalRows  = $this->countCategoryRows($dateFrom, $dateTo);
+        $totalPages = max(1, (int) ceil($totalRows / $perPage));
+        if ($page > $totalPages) {
+            $page = $totalPages;
+        }
+        $offset = ($page - 1) * $perPage;
+
+        $rows = (clone $baseBuilder)
+            ->limit($perPage, $offset)
+            ->get()
+            ->getResultArray();
+
+        $totals = $this->aggregateCategoryTotals($dateFrom, $dateTo);
+
+        $data = [
+            'title'     => 'Penjualan per Kategori Menu',
+            'subtitle'  => 'Qty, omzet, HPP, dan margin per kategori menu',
+            'rows'      => $rows,
+            'dateFrom'  => $dateFrom,
+            'dateTo'    => $dateTo,
+            'perPage'   => $perPage,
+            'page'      => $page,
+            'totalRows' => $totalRows,
+            'totalPages'=> $totalPages,
+            'totalQtyAll'   => (float) ($totals['total_qty'] ?? 0),
+            'totalSalesAll' => (float) ($totals['total_sales'] ?? 0),
+            'totalCostAll'  => (float) ($totals['total_cost'] ?? 0),
+        ];
+
+        return view('reports/sales_category', $data);
+    }
+
     private function exportDailyCsv(array $rows, ?string $dateFrom, ?string $dateTo)
     {
         $fh = fopen('php://temp', 'r+');
@@ -163,6 +228,42 @@ class SalesSummary extends BaseController
 
         $period = $this->formatPeriodLabel($dateFrom, $dateTo);
         $filename = 'sales_daily_' . $period . '.csv';
+
+        return $this->response
+            ->setHeader('Content-Type', 'text/csv')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->setBody($csv);
+    }
+
+    private function exportPerCategoryCsv(array $rows, ?string $dateFrom, ?string $dateTo)
+    {
+        $fh = fopen('php://temp', 'r+');
+
+        fputcsv($fh, ['Kategori', 'Qty', 'Omzet', 'HPP', 'Margin', 'Margin %']);
+
+        foreach ($rows as $r) {
+            $qty    = (float) ($r['total_qty'] ?? 0);
+            $sales  = (float) ($r['total_sales'] ?? 0);
+            $cost   = (float) ($r['total_cost'] ?? 0);
+            $margin = $sales - $cost;
+            $marginPct = $sales > 0 ? ($margin / $sales * 100.0) : 0;
+
+            fputcsv($fh, [
+                $r['category_name'] ?? '',
+                $qty,
+                $sales,
+                $cost,
+                $margin,
+                round($marginPct, 2),
+            ]);
+        }
+
+        rewind($fh);
+        $csv = stream_get_contents($fh);
+        fclose($fh);
+
+        $period = $this->formatPeriodLabel($dateFrom, $dateTo);
+        $filename = 'sales_per_category_' . $period . '.csv';
 
         return $this->response
             ->setHeader('Content-Type', 'text/csv')
@@ -301,6 +402,37 @@ class SalesSummary extends BaseController
         $builder = $db->table('sale_items si')
             ->select('SUM(si.qty) AS total_qty, SUM(si.subtotal) AS total_sales, SUM(si.hpp_snapshot * si.qty) AS total_cost')
             ->join('sales s', 's.id = si.sale_id', 'inner')
+            ->where('s.status !=', 'void');
+
+        $this->applyDateFilter($builder, $dateFrom, $dateTo, 's.sale_date');
+
+        return $builder->get()->getRowArray() ?? ['total_qty' => 0, 'total_sales' => 0, 'total_cost' => 0];
+    }
+
+    private function countCategoryRows(?string $dateFrom, ?string $dateTo): int
+    {
+        $db = \Config\Database::connect();
+
+        $builder = $db->table('sale_items si')
+            ->select('COUNT(DISTINCT m.menu_category_id) AS cnt')
+            ->join('sales s', 's.id = si.sale_id', 'inner')
+            ->join('menus m', 'm.id = si.menu_id', 'left')
+            ->where('s.status !=', 'void');
+
+        $this->applyDateFilter($builder, $dateFrom, $dateTo, 's.sale_date');
+
+        $row = $builder->get()->getRowArray();
+        return (int) ($row['cnt'] ?? 0);
+    }
+
+    private function aggregateCategoryTotals(?string $dateFrom, ?string $dateTo): array
+    {
+        $db = \Config\Database::connect();
+
+        $builder = $db->table('sale_items si')
+            ->select('SUM(si.qty) AS total_qty, SUM(si.subtotal) AS total_sales, SUM(si.hpp_snapshot * si.qty) AS total_cost')
+            ->join('sales s', 's.id = si.sale_id', 'inner')
+            ->join('menus m', 'm.id = si.menu_id', 'left')
             ->where('s.status !=', 'void');
 
         $this->applyDateFilter($builder, $dateFrom, $dateTo, 's.sale_date');
