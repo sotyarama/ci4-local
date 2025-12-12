@@ -55,6 +55,10 @@
             Belum ada data pembelian pada periode/filter ini.
         </p>
     <?php else: ?>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-size:12px; color:var(--tr-muted-text);">Filter supplier:</div>
+            <input type="text" id="purchases-supp-filter" placeholder="Cari supplier..." style="padding:6px 8px; font-size:12px; border:1px solid var(--tr-border); border-radius:8px; background:var(--tr-bg); color:var(--tr-text); min-width:200px;">
+        </div>
         <table style="width:100%; border-collapse:collapse; font-size:12px;">
             <thead>
             <tr>
@@ -63,9 +67,9 @@
                 <th style="text-align:right; padding:10px 8px; border-bottom:1px solid var(--tr-border);">Total Pembelian</th>
             </tr>
             </thead>
-            <tbody>
+            <tbody id="purchases-supp-table-body">
             <?php foreach ($rows as $row): ?>
-                <tr>
+                <tr data-supp="<?= esc(strtolower($row['supplier_name'])); ?>">
                     <td style="padding:10px 8px; border-bottom:1px solid var(--tr-border);">
                         <?= esc($row['supplier_name']); ?>
                     </td>
@@ -85,9 +89,30 @@
                     Rp <?= number_format($grandTotal, 0, ',', '.'); ?>
                 </td>
             </tr>
+            <tr id="purchases-supp-noresult" style="display:none;">
+                <td colspan="3" style="padding:8px; text-align:center; color:var(--tr-muted-text);">Tidak ada hasil.</td>
+            </tr>
             </tbody>
         </table>
     <?php endif; ?>
 </div>
+
+<script>
+    (function() {
+        function init() {
+            if (!window.App || !App.setupFilter) {
+                return setTimeout(init, 50);
+            }
+            App.setupFilter({
+                input: '#purchases-supp-filter',
+                rows: document.querySelectorAll('#purchases-supp-table-body tr:not(#purchases-supp-noresult)'),
+                noResult: '#purchases-supp-noresult',
+                fields: ['supp'],
+                debounce: 200
+            });
+        }
+        document.addEventListener('DOMContentLoaded', init);
+    })();
+</script>
 
 <?= $this->endSection() ?>
