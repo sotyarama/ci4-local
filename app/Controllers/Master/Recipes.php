@@ -443,7 +443,7 @@ class Recipes extends BaseController
     private function getRecipeOptions(?int $excludeId = null): array
     {
         $rows = $this->recipeModel
-            ->select('recipes.id, recipes.yield_qty, recipes.yield_unit, menus.name AS menu_name')
+            ->select('recipes.id, recipes.yield_qty, recipes.yield_unit, recipes.menu_id, menus.name AS menu_name')
             ->join('menus', 'menus.id = recipes.menu_id', 'left')
             ->orderBy('menu_name', 'ASC')
             ->findAll();
@@ -454,11 +454,13 @@ class Recipes extends BaseController
             if ($excludeId !== null && $id === $excludeId) {
                 continue;
             }
+            $hpp = $this->recipeModel->calculateHppForMenu((int) ($row['menu_id'] ?? 0));
             $list[] = [
                 'id'         => $id,
                 'menu_name'  => $row['menu_name'] ?? ('Resep #' . $id),
                 'yield_qty'  => $row['yield_qty'] ?? null,
                 'yield_unit' => $row['yield_unit'] ?? 'porsi',
+                'hpp_per_yield' => $hpp['hpp_per_yield'] ?? null,
             ];
         }
 
