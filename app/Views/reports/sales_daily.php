@@ -73,6 +73,10 @@
             Belum ada data penjualan untuk periode ini.
         </p>
     <?php else: ?>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-size:12px; color:var(--tr-muted-text);">Filter tanggal:</div>
+            <input type="text" id="salesdaily-filter" placeholder="Cari tanggal..." style="padding:6px 8px; font-size:12px; border:1px solid var(--tr-border); border-radius:8px; background:var(--tr-bg); color:var(--tr-text); min-width:200px;">
+        </div>
         <table style="width:100%; border-collapse:collapse; font-size:12px;">
             <thead>
             <tr>
@@ -83,7 +87,7 @@
                 <th style="text-align:right; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Margin %</th>
             </tr>
             </thead>
-            <tbody>
+            <tbody id="salesdaily-table-body">
             <?php foreach ($rows as $r): ?>
                 <?php
                     $sales = (float) ($r['total_sales'] ?? 0);
@@ -93,7 +97,7 @@
 
                     $marginColor = $margin >= 0 ? 'var(--tr-primary-deep)' : 'var(--tr-accent-brown)';
                 ?>
-                <tr>
+                <tr data-date="<?= esc(strtolower($r['sale_date'])); ?>">
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
                         <?= esc($r['sale_date']); ?>
                     </td>
@@ -138,6 +142,9 @@
             </tr>
             </tbody>
         </table>
+        <tr id="salesdaily-noresult" style="display:none;">
+            <td colspan="5" style="padding:8px; text-align:center; color:var(--tr-muted-text);">Tidak ada hasil.</td>
+        </tr>
 
         <?php
             $queryBase = [
@@ -179,5 +186,22 @@
     <?php endif; ?>
 </div>
 
-<?= $this->endSection() ?>
+<script>
+    (function() {
+        function init() {
+            if (!window.App || !App.setupFilter) {
+                return setTimeout(init, 50);
+            }
+            App.setupFilter({
+                input: '#salesdaily-filter',
+                rows: document.querySelectorAll('#salesdaily-table-body tr'),
+                noResult: '#salesdaily-noresult',
+                fields: ['date'],
+                debounce: 200
+            });
+        }
+        document.addEventListener('DOMContentLoaded', init);
+    })();
+</script>
 
+<?= $this->endSection() ?>
