@@ -56,6 +56,10 @@
             Belum ada data penjualan pada periode ini.
         </p>
     <?php else: ?>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-size:12px; color:var(--tr-muted-text);">Filter kategori:</div>
+            <input type="text" id="salescat-filter" placeholder="Cari kategori..." style="padding:6px 8px; font-size:12px; border:1px solid var(--tr-border); border-radius:8px; background:var(--tr-bg); color:var(--tr-text); min-width:200px;">
+        </div>
         <table style="width:100%; border-collapse:collapse; font-size:12px;">
             <thead>
             <tr>
@@ -67,7 +71,7 @@
                 <th style="text-align:right; padding:10px 8px; border-bottom:1px solid var(--tr-border);">Margin %</th>
             </tr>
             </thead>
-            <tbody>
+            <tbody id="salescat-table-body">
             <?php foreach ($rows as $row): ?>
                 <?php
                     $qty    = (float) ($row['total_qty'] ?? 0);
@@ -77,7 +81,7 @@
                     $marginPct = $sales > 0 ? ($margin / $sales * 100.0) : 0;
                     $marginColor = $margin >= 0 ? 'var(--tr-primary-deep)' : 'var(--tr-accent-brown)';
                 ?>
-                <tr>
+                <tr data-cat="<?= esc(strtolower($row['category_name'])); ?>">
                     <td style="padding:10px 8px; border-bottom:1px solid var(--tr-border);">
                         <?= esc($row['category_name']); ?>
                     </td>
@@ -121,6 +125,9 @@
                     <?= number_format($totalMarginPct, 1, ',', '.'); ?>%
                 </td>
             </tr>
+            <tr id="salescat-noresult" style="display:none;">
+                <td colspan="6" style="padding:8px; text-align:center; color:var(--tr-muted-text);">Tidak ada hasil.</td>
+            </tr>
             </tbody>
         </table>
 
@@ -144,5 +151,23 @@
         <?php endif; ?>
     <?php endif; ?>
 </div>
+
+<script>
+    (function() {
+        function init() {
+            if (!window.App || !App.setupFilter) {
+                return setTimeout(init, 50);
+            }
+            App.setupFilter({
+                input: '#salescat-filter',
+                rows: document.querySelectorAll('#salescat-table-body tr:not(#salescat-noresult)'),
+                noResult: '#salescat-noresult',
+                fields: ['cat'],
+                debounce: 200
+            });
+        }
+        document.addEventListener('DOMContentLoaded', init);
+    })();
+</script>
 
 <?= $this->endSection() ?>
