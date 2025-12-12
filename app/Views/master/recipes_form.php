@@ -258,7 +258,7 @@
                 <span id="hpp-live-per">Rp 0</span>
             </div>
             <div style="margin-top:4px; font-size:11px; color:var(--tr-muted-text);">
-                Sub-resep belum dihitung di sini (hanya bahan baku).
+                Sub-resep dihitung jika HPP-nya sudah ada; gunakan cost_avg bahan baku saat ini.
             </div>
         </div>
 
@@ -293,6 +293,7 @@
                 'name' => $r['menu_name'] ?? ('Resep #' . $r['id']),
                 'yield' => $r['yield_qty'] ?? null,
                 'unit' => $r['yield_unit'] ?? 'porsi',
+                'hpp'  => $r['hpp_per_yield'] ?? null,
             ];
         }, $recipes ?? [])); ?>;
 
@@ -451,15 +452,24 @@
             let total = 0;
             tbody.querySelectorAll('tr').forEach(function(tr) {
                 const type = tr.querySelector('.item-type')?.value || 'raw';
-                if (type !== 'raw') return; // skip sub-recipe untuk live calc
-                const rawId = tr.querySelector('.select-raw')?.value || '';
                 const qty = parseFloat(tr.querySelector('input[name*="[qty]"]')?.value || '0');
                 const waste = clampWaste(parseFloat(tr.querySelector('input[name*="[waste_pct]"]')?.value || '0'));
-                if (!rawId || !(qty > 0)) return;
-                const mat = findMaterial(rawId);
-                const cost = mat ? parseFloat(mat.cost || 0) : 0;
+                if (!(qty > 0)) return;
                 const effectiveQty = qty * (1 + waste / 100);
-                total += effectiveQty * cost;
+
+                if (type === 'raw') {
+                    const rawId = tr.querySelector('.select-raw')?.value || '';
+                    if (!rawId) return;
+                    const mat = findMaterial(rawId);
+                    const cost = mat ? parseFloat(mat.cost || 0) : 0;
+                    total += effectiveQty * cost;
+                } else if (type === 'recipe') {
+                    const childId = tr.querySelector('.select-recipe')?.value || '';
+                    if (!childId) return;
+                    const rec = findRecipe(childId);
+                    const childHpp = rec && rec.hpp ? parseFloat(rec.hpp) : 0;
+                    total += effectiveQty * childHpp;
+                }
             });
 
             const per = total / yieldQty;
