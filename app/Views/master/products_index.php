@@ -96,14 +96,19 @@
 
 <script>
     (function() {
-        if (!window.App || !App.setupFilter) return;
-        App.setupFilter({
-            input: '#products-filter',
-            rows: document.querySelectorAll('#products-table-body tr:not(#products-noresult)'),
-            noResult: '#products-noresult',
-            fields: ['name','cat','status'],
-            debounce: 200
-        });
+        function init() {
+            if (!window.App || !App.setupFilter) {
+                return setTimeout(init, 50);
+            }
+            App.setupFilter({
+                input: '#products-filter',
+                rows: document.querySelectorAll('#products-table-body tr:not(#products-noresult)'),
+                noResult: '#products-noresult',
+                fields: ['name','cat','status'],
+                debounce: 200
+            });
+        }
+        document.addEventListener('DOMContentLoaded', init);
     })();
 </script>
 
