@@ -35,6 +35,10 @@
 
     <?php
     $errors = session('errors') ?? [];
+    $recipeNames = [];
+    foreach ($recipes ?? [] as $r) {
+        $recipeNames[$r['id']] = $r['menu_name'] ?? ('Resep #' . $r['id']);
+    }
     ?>
 
     <?php if (! empty($errors)): ?>
@@ -113,7 +117,7 @@
         <hr style="border-color:var(--tr-border); margin:14px 0;">
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <h3 style="margin:0; font-size:14px;">Komposisi Bahan</h3>
+            <h3 style="margin:0; font-size:14px;">Komposisi Bahan / Sub-Resep</h3>
             <button type="button" id="btn-add-ingredient"
                     style="font-size:12px; padding:4px 10px; border-radius:999px; border:1px solid var(--tr-border); background:var(--tr-border); color:var(--tr-text); cursor:pointer;">
                 + Tambah baris
@@ -126,9 +130,9 @@
         <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:10px;">
             <thead>
                 <tr>
-                    <th style="text-align:left; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Bahan Baku</th>
+                    <th style="text-align:left; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Bahan / Sub-Resep</th>
                     <th style="text-align:right; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Qty</th>
-                    <th style="text-align:left; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Satuan</th>
+                    <th style="text-align:left; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Satuan / Info</th>
                     <th style="text-align:right; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Waste %</th>
                     <th style="text-align:left; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Catatan</th>
                     <th style="text-align:center; padding:6px 8px; border-bottom:1px solid var(--tr-border); width:70px;">Aksi</th>
@@ -145,7 +149,9 @@
                 } else {
                     // default 5 baris kosong
                     $rows = array_fill(0, 5, [
+                        'item_type'       => 'raw',
                         'raw_material_id' => '',
+                        'child_recipe_id' => '',
                         'qty'             => '',
                         'waste_pct'       => '',
                         'note'            => '',
@@ -156,23 +162,48 @@
                 ?>
 
                 <?php foreach ($rows as $idx => $row): ?>
+                    <?php
+                        $type         = $row['item_type'] ?? 'raw';
+                        $rawSelected  = $row['raw_material_id'] ?? '';
+                        $childSelected= $row['child_recipe_id'] ?? '';
+                        $unit         = $row['unit_short'] ?? '';
+
+                        if ($type === 'recipe' && ! empty($childSelected)) {
+                            $unit = 'Sub: ' . ($recipeNames[(int) $childSelected] ?? ('Resep #' . $childSelected));
+                        }
+                    ?>
                     <tr>
                         <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
-                            <select name="items[<?= $idx; ?>][raw_material_id]"
-                                    style="width:100%; padding:4px 6px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text);">
-                                <option value="">-- pilih bahan --</option>
-                                <?php foreach ($materials as $m): ?>
-                                    <?php
-                                    $selectedId = $oldItems !== null
-                                        ? ($row['raw_material_id'] ?? null)
-                                        : ($row['raw_material_id'] ?? $row['raw_material_id'] ?? null);
-                                    ?>
-                                    <option value="<?= $m['id']; ?>"
-                                        <?= (int)($selectedId ?? 0) === (int)$m['id'] ? 'selected' : ''; ?>>
-                                        <?= esc($m['name']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                            <div style="display:flex; flex-direction:column; gap:4px;">
+                                <select name="items[<?= $idx; ?>][item_type]"
+                                        class="item-type"
+                                        style="width:100%; padding:4px 6px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text);">
+                                    <option value="raw" <?= $type === 'raw' ? 'selected' : ''; ?>>Bahan baku</option>
+                                    <option value="recipe" <?= $type === 'recipe' ? 'selected' : ''; ?>>Sub-resep</option>
+                                </select>
+                                <select name="items[<?= $idx; ?>][raw_material_id]"
+                                        class="select-raw"
+                                        style="width:100%; padding:4px 6px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text); <?= $type === 'recipe' ? 'display:none;' : ''; ?>">
+                                    <option value="">-- pilih bahan --</option>
+                                    <?php foreach ($materials as $m): ?>
+                                        <option value="<?= $m['id']; ?>"
+                                            <?= (int)($rawSelected ?? 0) === (int)$m['id'] ? 'selected' : ''; ?>>
+                                            <?= esc($m['name']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <select name="items[<?= $idx; ?>][child_recipe_id]"
+                                        class="select-recipe"
+                                        style="width:100%; padding:4px 6px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text); <?= $type === 'recipe' ? '' : 'display:none;'; ?>">
+                                    <option value="">-- pilih sub-resep --</option>
+                                    <?php foreach (($recipes ?? []) as $r): ?>
+                                        <option value="<?= $r['id']; ?>"
+                                            <?= (int)($childSelected ?? 0) === (int)$r['id'] ? 'selected' : ''; ?>>
+                                            <?= esc($r['menu_name'] ?? ('Resep #' . $r['id'])); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                         </td>
                         <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
                             <input type="number"
@@ -182,10 +213,7 @@
                                    style="width:100%; padding:4px 6px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text); text-align:right;">
                         </td>
                         <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
-                            <?php
-                            $unit = $row['unit_short'] ?? '';
-                            ?>
-                            <span style="font-size:11px; color:var(--tr-muted-text);">
+                            <span class="unit-label" style="font-size:11px; color:var(--tr-muted-text);">
                                 <?= esc($unit); ?>
                             </span>
                         </td>
@@ -243,23 +271,62 @@
             ];
         }, $materials ?? [])); ?>;
 
+        const recipes = <?= json_encode(array_map(static function($r) {
+            return [
+                'id' => (int) $r['id'],
+                'name' => $r['menu_name'] ?? ('Resep #' . $r['id']),
+                'yield' => $r['yield_qty'] ?? null,
+                'unit' => $r['yield_unit'] ?? 'porsi',
+            ];
+        }, $recipes ?? [])); ?>;
+
         const tbody = document.getElementById('recipe-items-body');
         const btnAdd = document.getElementById('btn-add-ingredient');
 
-        function buildOptions() {
+        function buildRawOptions(selected) {
             return '<option value="">-- pilih bahan --</option>' + materials.map(function(m) {
-                return '<option value="' + m.id + '">' + m.name + (m.unit ? ' (' + m.unit + ')' : '') + '</option>';
+                const sel = String(selected || '') === String(m.id) ? ' selected' : '';
+                return '<option value="' + m.id + '"' + sel + '>' + m.name + (m.unit ? ' (' + m.unit + ')' : '') + '</option>';
             }).join('');
+        }
+
+        function buildRecipeOptions(selected) {
+            return '<option value="">-- pilih sub-resep --</option>' + recipes.map(function(r) {
+                const sel = String(selected || '') === String(r.id) ? ' selected' : '';
+                return '<option value="' + r.id + '"' + sel + '>' + r.name + '</option>';
+            }).join('');
+        }
+
+        function findMaterial(id) {
+            return materials.find(function(m) { return String(m.id) === String(id); });
+        }
+
+        function findRecipe(id) {
+            return recipes.find(function(r) { return String(r.id) === String(id); });
         }
 
         function createRow(idx) {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
-                    <select name="items[${idx}][raw_material_id]"
-                            style="width:100%; padding:4px 6px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text);">
-                        ${buildOptions()}
-                    </select>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <select name="items[${idx}][item_type]"
+                                class="item-type"
+                                style="width:100%; padding:4px 6px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text);">
+                            <option value="raw" selected>Bahan baku</option>
+                            <option value="recipe">Sub-resep</option>
+                        </select>
+                        <select name="items[${idx}][raw_material_id]"
+                                class="select-raw"
+                                style="width:100%; padding:4px 6px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text);">
+                            ${buildRawOptions()}
+                        </select>
+                        <select name="items[${idx}][child_recipe_id]"
+                                class="select-recipe"
+                                style="width:100%; padding:4px 6px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text); display:none;">
+                            ${buildRecipeOptions()}
+                        </select>
+                    </div>
                 </td>
                 <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
                     <input type="number"
@@ -295,26 +362,54 @@
                 </td>
             `;
 
-            const select = tr.querySelector('select');
-            const unitLabel = tr.querySelector('.unit-label');
-            select.addEventListener('change', function() {
-                const selected = materials.find(m => String(m.id) === this.value);
-                unitLabel.textContent = selected && selected.unit ? selected.unit : '';
-            });
+            wireRow(tr);
+
+            return tr;
+        }
+
+        function wireRow(tr) {
+            const typeSelect   = tr.querySelector('.item-type');
+            const rawSelect    = tr.querySelector('.select-raw');
+            const recipeSelect = tr.querySelector('.select-recipe');
+            const unitLabel    = tr.querySelector('.unit-label');
+
+            function sync() {
+                const type = typeSelect.value;
+                rawSelect.style.display    = type === 'raw' ? 'block' : 'none';
+                recipeSelect.style.display = type === 'recipe' ? 'block' : 'none';
+
+                if (type === 'raw') {
+                    const mat = findMaterial(rawSelect.value);
+                    unitLabel.textContent = mat && mat.unit ? mat.unit : '';
+                } else {
+                    const rec = findRecipe(recipeSelect.value);
+                    unitLabel.textContent = rec ? ('Sub: ' + rec.name) : '';
+                }
+            }
+
+            typeSelect.addEventListener('change', sync);
+            rawSelect.addEventListener('change', sync);
+            recipeSelect.addEventListener('change', sync);
+            sync();
 
             const removeBtn = tr.querySelector('.btn-remove-row');
             removeBtn.addEventListener('click', function() {
                 if (tbody.children.length > 1) {
                     tr.remove();
                 } else {
-                    // kosongkan saja jika tinggal 1 baris
                     tr.querySelectorAll('input, select').forEach(function(el) { el.value = ''; });
                     unitLabel.textContent = '';
+                    typeSelect.value = 'raw';
+                    rawSelect.style.display = 'block';
+                    recipeSelect.style.display = 'none';
                 }
             });
-
-            return tr;
         }
+
+        // Wire existing rows rendered from PHP
+        document.querySelectorAll('#recipe-items-body tr').forEach(function(tr) {
+            wireRow(tr);
+        });
 
         btnAdd.addEventListener('click', function() {
             const idx = tbody.children.length;
@@ -325,4 +420,3 @@
 </script>
 
 <?= $this->endSection() ?>
-

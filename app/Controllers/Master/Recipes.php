@@ -3,11 +3,11 @@
 namespace App\Controllers\Master;
 
 use App\Controllers\BaseController;
-use App\Models\MenuModel;
-use App\Models\RecipeModel;
-use App\Models\RecipeItemModel;
-use App\Models\RawMaterialModel;
 use App\Models\AuditLogModel;
+use App\Models\MenuModel;
+use App\Models\RawMaterialModel;
+use App\Models\RecipeItemModel;
+use App\Models\RecipeModel;
 
 class Recipes extends BaseController
 {
@@ -19,10 +19,10 @@ class Recipes extends BaseController
 
     public function __construct()
     {
-        $this->menuModel   = new MenuModel();
-        $this->recipeModel = new RecipeModel();
-        $this->itemModel   = new RecipeItemModel();
-        $this->rawModel    = new RawMaterialModel();
+        $this->menuModel     = new MenuModel();
+        $this->recipeModel   = new RecipeModel();
+        $this->itemModel     = new RecipeItemModel();
+        $this->rawModel      = new RawMaterialModel();
         $this->auditLogModel = new AuditLogModel();
     }
 
@@ -83,12 +83,15 @@ class Recipes extends BaseController
             ->orderBy('name', 'ASC')
             ->findAll();
 
+        $recipes = $this->getRecipeOptions();
+
         $data = [
             'title'     => 'Tambah Resep Menu',
             'subtitle'  => 'Definisikan komposisi bahan baku per menu',
             'mode'      => 'create',
             'menus'     => $menus,
             'materials' => $materials,
+            'recipes'   => $recipes,
             'recipe'    => null,
             'items'     => [],
         ];
@@ -113,24 +116,61 @@ class Recipes extends BaseController
         $items        = [];
         $itemErrors   = [];
         $materialName = $this->getMaterialNameMap();
+        $childIds     = [];
+        $recipeMap    = $this->getRecipeNameMap();
 
         foreach ($itemsInput as $idx => $row) {
+            $type  = $row['item_type'] ?? 'raw';
             $rawId = (int) ($row['raw_material_id'] ?? 0);
+            $child = (int) ($row['child_recipe_id'] ?? 0);
             $qty   = (float) ($row['qty'] ?? 0);
             $waste = (float) ($row['waste_pct'] ?? 0);
 
-            if ($rawId > 0 && ($waste < 0 || $waste > 100)) {
-                $label = $materialName[$rawId] ?? 'baris ' . ($idx + 1);
-                $itemErrors[] = "Waste % untuk {$label} harus berada di antara 0 sampai 100.";
-            }
+            if ($type === 'recipe') {
+                if ($child > 0 && ! isset($recipeMap[$child])) {
+                    $itemErrors[] = 'Sub-resep #' . $child . ' tidak ditemukan.';
+                }
+                if ($child <= 0 && $qty > 0) {
+                    $itemErrors[] = 'Sub-resep belum dipilih untuk baris ' . ($idx + 1) . '.';
+                }
+                if ($child > 0 && $qty <= 0) {
+                    $itemErrors[] = 'Qty untuk sub-resep baris ' . ($idx + 1) . ' harus lebih dari 0.';
+                }
+                if ($child > 0 && ($waste < 0 || $waste > 100)) {
+                    $itemErrors[] = "Waste % baris " . ($idx + 1) . " harus di antara 0 sampai 100.";
+                }
+                if ($child > 0 && $qty > 0) {
+                    $childIds[] = $child;
+                    $items[] = [
+                        'item_type'        => 'recipe',
+                        'child_recipe_id'  => $child,
+                        'raw_material_id'  => null,
+                        'qty'              => $qty,
+                        'waste_pct'        => round($waste, 3),
+                        'note'             => $row['note'] ?? null,
+                    ];
+                }
+            } else {
+                if ($rawId > 0 && ($waste < 0 || $waste > 100)) {
+                    $label = $materialName[$rawId] ?? 'baris ' . ($idx + 1);
+                    $itemErrors[] = "Waste % untuk {$label} harus berada di antara 0 sampai 100.";
+                }
 
-            if ($rawId > 0 && $qty > 0) {
-                $items[] = [
-                    'raw_material_id' => $rawId,
-                    'qty'             => $qty,
-                    'waste_pct'       => round($waste, 3),
-                    'note'            => $row['note'] ?? null,
-                ];
+                if ($rawId > 0 && $qty <= 0) {
+                    $label = $materialName[$rawId] ?? 'baris ' . ($idx + 1);
+                    $itemErrors[] = "Qty untuk {$label} harus lebih dari 0.";
+                }
+
+                if ($rawId > 0 && $qty > 0) {
+                    $items[] = [
+                        'item_type'       => 'raw',
+                        'raw_material_id' => $rawId,
+                        'child_recipe_id' => null,
+                        'qty'             => $qty,
+                        'waste_pct'       => round($waste, 3),
+                        'note'            => $row['note'] ?? null,
+                    ];
+                }
             }
         }
 
@@ -142,7 +182,7 @@ class Recipes extends BaseController
 
         if (empty($items)) {
             return redirect()->back()
-                ->with('errors', ['items' => 'Minimal satu bahan baku harus diisi.'])
+                ->with('errors', ['items' => 'Minimal satu bahan baku atau sub-resep harus diisi.'])
                 ->withInput();
         }
 
@@ -157,6 +197,14 @@ class Recipes extends BaseController
         ];
 
         $recipeId = $this->recipeModel->insert($recipeData, true);
+
+        // Cek siklus sub-recipe sebelum simpan detail
+        if ($this->createsCycle($recipeId, $childIds)) {
+            $db->transRollback();
+            return redirect()->back()
+                ->with('errors', ['Struktur sub-resep membentuk siklus. Periksa pilihan sub-resep.'])
+                ->withInput();
+        }
 
         foreach ($items as $item) {
             $item['recipe_id'] = $recipeId;
@@ -194,12 +242,13 @@ class Recipes extends BaseController
             ->orderBy('name', 'ASC')
             ->findAll();
 
+        $recipes = $this->getRecipeOptions($id);
         $items = $this->itemModel
             ->withMaterial()
             ->where('recipe_id', $id)
             ->findAll();
 
-        // 🔎 Hitung HPP untuk menu ini
+        // Hitung HPP untuk menu ini
         $hpp = $this->recipeModel->calculateHppForMenu($recipe['menu_id']);
 
         $data = [
@@ -208,9 +257,10 @@ class Recipes extends BaseController
             'mode'      => 'edit',
             'menus'     => [$menu],
             'materials' => $materials,
+            'recipes'   => $recipes,
             'recipe'    => $recipe,
             'items'     => $items,
-            'hpp'       => $hpp, // ⬅️ kirim ke view
+            'hpp'       => $hpp,
         ];
 
         return view('master/recipes_form', $data);
@@ -239,24 +289,64 @@ class Recipes extends BaseController
         $items        = [];
         $itemErrors   = [];
         $materialName = $this->getMaterialNameMap();
+        $childIds     = [];
+        $recipeMap    = $this->getRecipeNameMap();
 
         foreach ($itemsInput as $idx => $row) {
+            $type  = $row['item_type'] ?? 'raw';
             $rawId = (int) ($row['raw_material_id'] ?? 0);
+            $child = (int) ($row['child_recipe_id'] ?? 0);
             $qty   = (float) ($row['qty'] ?? 0);
             $waste = (float) ($row['waste_pct'] ?? 0);
 
-            if ($rawId > 0 && ($waste < 0 || $waste > 100)) {
-                $label = $materialName[$rawId] ?? 'baris ' . ($idx + 1);
-                $itemErrors[] = "Waste % untuk {$label} harus berada di antara 0 sampai 100.";
-            }
+            if ($type === 'recipe') {
+                if ($child > 0 && ! isset($recipeMap[$child])) {
+                    $itemErrors[] = 'Sub-resep #' . $child . ' tidak ditemukan.';
+                }
+                if ($child === $id) {
+                    $itemErrors[] = 'Sub-resep tidak boleh merujuk diri sendiri.';
+                }
+                if ($child <= 0 && $qty > 0) {
+                    $itemErrors[] = 'Sub-resep belum dipilih untuk baris ' . ($idx + 1) . '.';
+                }
+                if ($child > 0 && $qty <= 0) {
+                    $itemErrors[] = 'Qty untuk sub-resep baris ' . ($idx + 1) . ' harus lebih dari 0.';
+                }
+                if ($child > 0 && ($waste < 0 || $waste > 100)) {
+                    $itemErrors[] = "Waste % baris " . ($idx + 1) . " harus di antara 0 sampai 100.";
+                }
+                if ($child > 0 && $qty > 0) {
+                    $childIds[] = $child;
+                    $items[] = [
+                        'item_type'        => 'recipe',
+                        'child_recipe_id'  => $child,
+                        'raw_material_id'  => null,
+                        'qty'              => $qty,
+                        'waste_pct'        => round($waste, 3),
+                        'note'             => $row['note'] ?? null,
+                    ];
+                }
+            } else {
+                if ($rawId > 0 && ($waste < 0 || $waste > 100)) {
+                    $label = $materialName[$rawId] ?? 'baris ' . ($idx + 1);
+                    $itemErrors[] = "Waste % untuk {$label} harus berada di antara 0 sampai 100.";
+                }
 
-            if ($rawId > 0 && $qty > 0) {
-                $items[] = [
-                    'raw_material_id' => $rawId,
-                    'qty'             => $qty,
-                    'waste_pct'       => round($waste, 3),
-                    'note'            => $row['note'] ?? null,
-                ];
+                if ($rawId > 0 && $qty <= 0) {
+                    $label = $materialName[$rawId] ?? 'baris ' . ($idx + 1);
+                    $itemErrors[] = "Qty untuk {$label} harus lebih dari 0.";
+                }
+
+                if ($rawId > 0 && $qty > 0) {
+                    $items[] = [
+                        'item_type'       => 'raw',
+                        'raw_material_id' => $rawId,
+                        'child_recipe_id' => null,
+                        'qty'             => $qty,
+                        'waste_pct'       => round($waste, 3),
+                        'note'            => $row['note'] ?? null,
+                    ];
+                }
             }
         }
 
@@ -268,7 +358,7 @@ class Recipes extends BaseController
 
         if (empty($items)) {
             return redirect()->back()
-                ->with('errors', ['items' => 'Minimal satu bahan baku harus diisi.'])
+                ->with('errors', ['items' => 'Minimal satu bahan baku atau sub-resep harus diisi.'])
                 ->withInput();
         }
 
@@ -285,6 +375,14 @@ class Recipes extends BaseController
 
         // Hapus item lama, insert ulang (lebih simpel untuk skala kecil)
         $this->itemModel->where('recipe_id', $id)->delete();
+
+        // Cek siklus sebelum simpan baru
+        if ($this->createsCycle($id, $childIds)) {
+            $db->transRollback();
+            return redirect()->back()
+                ->with('errors', ['Struktur sub-resep membentuk siklus. Periksa pilihan sub-resep.'])
+                ->withInput();
+        }
 
         foreach ($items as $item) {
             $item['recipe_id'] = $id;
@@ -340,5 +438,100 @@ class Recipes extends BaseController
             'user_id'     => $userId > 0 ? $userId : null,
             'created_at'  => date('Y-m-d H:i:s'),
         ]);
+    }
+
+    private function getRecipeOptions(?int $excludeId = null): array
+    {
+        $rows = $this->recipeModel
+            ->select('recipes.id, recipes.yield_qty, recipes.yield_unit, menus.name AS menu_name')
+            ->join('menus', 'menus.id = recipes.menu_id', 'left')
+            ->orderBy('menu_name', 'ASC')
+            ->findAll();
+
+        $list = [];
+        foreach ($rows as $row) {
+            $id = (int) $row['id'];
+            if ($excludeId !== null && $id === $excludeId) {
+                continue;
+            }
+            $list[] = [
+                'id'         => $id,
+                'menu_name'  => $row['menu_name'] ?? ('Resep #' . $id),
+                'yield_qty'  => $row['yield_qty'] ?? null,
+                'yield_unit' => $row['yield_unit'] ?? 'porsi',
+            ];
+        }
+
+        return $list;
+    }
+
+    private function getRecipeNameMap(): array
+    {
+        $map = [];
+        foreach ($this->getRecipeOptions() as $row) {
+            $map[(int) $row['id']] = $row['menu_name'] ?? ('Resep #' . $row['id']);
+        }
+        return $map;
+    }
+
+    private function createsCycle(int $recipeId, array $childIds): bool
+    {
+        $edges = $this->getSubRecipeEdges();
+        $edges[$recipeId] = array_values(array_unique(array_filter($childIds)));
+
+        return $this->detectCycle($recipeId, $edges);
+    }
+
+    private function getSubRecipeEdges(): array
+    {
+        $rows = $this->itemModel
+            ->select('recipe_id, child_recipe_id')
+            ->where('child_recipe_id IS NOT NULL', null, false)
+            ->where('item_type', 'recipe')
+            ->findAll();
+
+        $edges = [];
+        foreach ($rows as $row) {
+            $parent = (int) ($row['recipe_id'] ?? 0);
+            $child  = (int) ($row['child_recipe_id'] ?? 0);
+            if ($parent > 0 && $child > 0) {
+                if (! isset($edges[$parent])) {
+                    $edges[$parent] = [];
+                }
+                $edges[$parent][] = $child;
+            }
+        }
+
+        return $edges;
+    }
+
+    private function detectCycle(int $start, array $edges): bool
+    {
+        $visited = [];
+        $stack   = [];
+
+        $dfs = function ($node) use (&$dfs, &$visited, &$stack, $edges): bool {
+            if (isset($stack[$node]) && $stack[$node] === true) {
+                return true;
+            }
+
+            if (isset($visited[$node])) {
+                return false;
+            }
+
+            $visited[$node] = true;
+            $stack[$node]   = true;
+
+            foreach ($edges[$node] ?? [] as $child) {
+                if ($dfs($child)) {
+                    return true;
+                }
+            }
+
+            $stack[$node] = false;
+            return false;
+        };
+
+        return $dfs($start);
     }
 }

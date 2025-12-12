@@ -1,7 +1,7 @@
 # DEV_NOTES.md
 POS Cafe System — Development Notes  
 Author: GS  
-Last updated: 2025-12-10 (Morning)
+Last updated: 2025-12-12 (Sub-recipe)
 
 ---
 
@@ -77,6 +77,12 @@ Tujuan utama:
 - Route `/brand-guide` menuju controller `BrandGuide` yang merender deck Reveal.js.
 - View `brand_presentation.php`: 14 slide brand/UI guideline (cover, essence, story, color palette, typography, logo meaning/usage, pattern, photography mood, POS cashier/dashboard, menu layout, tone of voice, closing).
 - Theme `public/css/temurasa-reveal.css`: palet Temu Rasa, typography Nunito/Inter/Poppins, carded slide layout, color grid, chips/divider, responsive tweak untuk mobile.
+
+## 11) Sub-Recipe Support (2025-12-12)
+- Migration `AddSubrecipeSupport`: `recipe_items` bisa `item_type=raw|recipe`, kolom `child_recipe_id` (nullable), `raw_material_id` sekarang boleh null.
+- Recipe form: pilih tipe baris (bahan baku atau sub-resep), dropdown sub-resep (daftar resep lain), unit label mengikuti pilihan; tambah guard siklus dan validasi qty/waste.
+- HPP engine: rekursif dengan raw breakdown per batch + guard siklus; sub-resep ikut dihitung ke HPP dan konsumsi bahan.
+- Sales flow: kebutuhan stok & pengurangan stok memakai raw breakdown (flatten) dari resep, jadi sub-resep ikut mengurangi stok bahan baku.
 
 ## Uncommitted (2025-12-10) - Temu Rasa UI Refresh
 - Brand theme file `public/css/theme-temurasa.css` dengan CSS variables + komponen dasar (card, input, button, table, scrollbar) sesuai palet Temu Rasa.
@@ -175,7 +181,7 @@ Catatan gap:
 # NEXT TODOs (Medium-Term)
 
 ## Recipes & Food Cost
-- [ ] Support sub-recipe (mis: syrup/base dipakai menu lain)
+- [x] Support sub-recipe (mis: syrup/base dipakai menu lain)
 - [x] Indikator bahan hampir habis (min_stock) di master bahan + kartu stok
 - [ ] Warning di dashboard untuk bahan di bawah min_stock
 

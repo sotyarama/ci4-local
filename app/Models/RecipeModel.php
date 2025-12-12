@@ -19,92 +19,18 @@ class RecipeModel extends Model
 
     protected $useTimestamps = true;
 
-        /**
-     * Hitung HPP untuk 1 menu berdasarkan resep & cost_avg bahan baku.
-     *
-     * @param int $menuId
-     * @return array|null
-     *
-     * Return contoh:
-     * [
-     *   'recipe'        => [...],
-     *   'items'         => [...],              // daftar bahan + cost line
-     *   'total_cost'    => 1234.56,           // total biaya 1 batch resep
-     *   'hpp_per_yield' => 12.34,             // HPP per yield (mis: per porsi)
-     * ]
+    /**
+     * Hitung HPP untuk 1 menu (mendukung sub-recipe).
      */
     public function calculateHppForMenu(int $menuId): ?array
     {
-        $db = \Config\Database::connect();
-
-        // Ambil resep untuk menu ini
         $recipe = $this->where('menu_id', $menuId)->first();
         if (! $recipe) {
             return null; // belum ada resep
         }
 
-        // Ambil item + cost_avg bahan
-        $builder = $db->table('recipe_items ri')
-            ->select('
-                ri.*,
-                rm.name       AS material_name,
-                rm.cost_avg   AS material_cost_avg,
-                u.short_name  AS unit_short
-            ')
-            ->join('raw_materials rm', 'rm.id = ri.raw_material_id', 'left')
-            ->join('units u', 'u.id = rm.unit_id', 'left')
-            ->where('ri.recipe_id', $recipe['id']);
-
-        $items = $builder->get()->getResultArray();
-
-        if (empty($items)) {
-            return [
-                'recipe'        => $recipe,
-                'items'         => [],
-                'total_cost'    => 0,
-                'hpp_per_yield' => 0,
-            ];
-        }
-
-        $totalCost = 0;
-        $itemsWithCost = [];
-
-        foreach ($items as $row) {
-            $qty       = (float) ($row['qty'] ?? 0);
-            $wastePct  = (float) ($row['waste_pct'] ?? 0);
-            $wastePct  = max(0.0, min(100.0, $wastePct)); // guard data out-of-range
-            $unitCost  = (float) ($row['material_cost_avg'] ?? 0);
-
-            // Qty efektif dengan waste (versi sederhana: qty × (1 + waste%))
-            $effectiveQty = $qty * (1 + ($wastePct / 100.0));
-            $effectiveQty = round($effectiveQty, 6);
-
-            $lineCost = $effectiveQty * $unitCost;
-            $lineCost = round($lineCost, 6);
-            $totalCost += $lineCost;
-
-            $row['effective_qty'] = $effectiveQty;
-            $row['unit_cost']     = $unitCost;
-            $row['line_cost']     = $lineCost;
-
-            $itemsWithCost[] = $row;
-        }
-
-        $yieldQty = (float) ($recipe['yield_qty'] ?? 1);
-        if ($yieldQty <= 0) {
-            $yieldQty = 1; // guard supaya tidak dibagi nol
-        }
-
-        $totalCost   = round($totalCost, 6);
-        $hppPerYield = $totalCost / $yieldQty;
-        $hppPerYield = round($hppPerYield, 6);
-
-        return [
-            'recipe'        => $recipe,
-            'items'         => $itemsWithCost,
-            'total_cost'    => $totalCost,
-            'hpp_per_yield' => $hppPerYield,
-        ];
+        $cache = [];
+        return $this->computeRecipeCost((int) $recipe['id'], $cache, []);
     }
 
     public function getRecipeItems(int $recipeId): array
@@ -117,4 +43,156 @@ class RecipeModel extends Model
             ->getResultArray();
     }
 
+    /**
+     * Rekursi perhitungan HPP, mendukung sub-recipe dengan guard siklus.
+     * Mengembalikan breakdown HPP per batch (sesuai yield_qty resep).
+     */
+    private function computeRecipeCost(int $recipeId, array &$cache = [], array $stack = []): ?array
+    {
+        if (isset($cache[$recipeId])) {
+            return $cache[$recipeId];
+        }
+
+        $recipe = $this->find($recipeId);
+        if (! $recipe) {
+            return null;
+        }
+
+        $db = \Config\Database::connect();
+
+        $items = $db->table('recipe_items ri')
+            ->select('
+                ri.*,
+                COALESCE(ri.item_type, "raw") AS item_type,
+                rm.name      AS material_name,
+                rm.cost_avg  AS material_cost_avg,
+                u.short_name AS unit_short,
+                cr.id        AS child_recipe_exists,
+                cm.name      AS child_menu_name
+            ')
+            ->join('raw_materials rm', 'rm.id = ri.raw_material_id', 'left')
+            ->join('units u', 'u.id = rm.unit_id', 'left')
+            ->join('recipes cr', 'cr.id = ri.child_recipe_id', 'left')
+            ->join('menus cm', 'cm.id = cr.menu_id', 'left')
+            ->where('ri.recipe_id', $recipeId)
+            ->orderBy('ri.id', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        if (empty($items)) {
+            $result = [
+                'recipe'        => $recipe,
+                'items'         => [],
+                'total_cost'    => 0,
+                'hpp_per_yield' => 0,
+                'raw_breakdown' => [],
+                'warnings'      => [],
+            ];
+            $cache[$recipeId] = $result;
+            return $result;
+        }
+
+        $totalCost      = 0;
+        $itemsWithCost  = [];
+        $rawBreakdown   = []; // per batch resep (sesuai yield_qty)
+        $warnings       = [];
+        $stackWithSelf  = array_merge($stack, [$recipeId]);
+
+        foreach ($items as $row) {
+            $itemType = $row['item_type'] ?? 'raw';
+            $qty      = (float) ($row['qty'] ?? 0);
+            $wastePct = $this->clampWastePct((float) ($row['waste_pct'] ?? 0));
+            $effectiveQty = $this->roundQty($qty * (1 + $wastePct / 100.0));
+
+            if ($effectiveQty <= 0) {
+                continue;
+            }
+
+            if ($itemType === 'recipe') {
+                $childId = (int) ($row['child_recipe_id'] ?? 0);
+
+                if ($childId <= 0) {
+                    $warnings[] = 'Baris sub-recipe tanpa child_recipe_id diabaikan.';
+                    continue;
+                }
+
+                if (in_array($childId, $stackWithSelf, true)) {
+                    $warnings[] = 'Siklus sub-resep terdeteksi, baris diabaikan.';
+                    continue;
+                }
+
+                $childCost = $this->computeRecipeCost($childId, $cache, $stackWithSelf);
+                if (! $childCost) {
+                    $warnings[] = 'Sub-resep #' . $childId . ' tidak ditemukan, baris diabaikan.';
+                    continue;
+                }
+
+                $childHpp   = (float) ($childCost['hpp_per_yield'] ?? 0);
+                $lineCost   = $this->roundQty($effectiveQty * $childHpp);
+                $totalCost  += $lineCost;
+
+                foreach ($childCost['raw_breakdown'] as $rawId => $rawQtyPerBatch) {
+                    if (! isset($rawBreakdown[$rawId])) {
+                        $rawBreakdown[$rawId] = 0.0;
+                    }
+                    $rawBreakdown[$rawId] = $this->roundQty($rawBreakdown[$rawId] + ($rawQtyPerBatch * $effectiveQty));
+                }
+
+                $row['effective_qty'] = $effectiveQty;
+                $row['unit_cost']     = $childHpp;
+                $row['line_cost']     = $lineCost;
+                $itemsWithCost[]      = $row;
+            } else {
+                $rawId    = (int) ($row['raw_material_id'] ?? 0);
+                $unitCost = (float) ($row['material_cost_avg'] ?? 0);
+                if ($rawId <= 0) {
+                    continue;
+                }
+
+                $lineCost  = $this->roundQty($effectiveQty * $unitCost);
+                $totalCost += $lineCost;
+
+                if (! isset($rawBreakdown[$rawId])) {
+                    $rawBreakdown[$rawId] = 0.0;
+                }
+                $rawBreakdown[$rawId] = $this->roundQty($rawBreakdown[$rawId] + $effectiveQty);
+
+                $row['effective_qty'] = $effectiveQty;
+                $row['unit_cost']     = $unitCost;
+                $row['line_cost']     = $lineCost;
+                $itemsWithCost[]      = $row;
+            }
+        }
+
+        $yieldQty = (float) ($recipe['yield_qty'] ?? 1);
+        if ($yieldQty <= 0) {
+            $yieldQty = 1; // guard supaya tidak dibagi nol
+        }
+
+        $totalCost   = $this->roundQty($totalCost);
+        $hppPerYield = $this->roundQty($totalCost / $yieldQty);
+
+        $result = [
+            'recipe'        => $recipe,
+            'items'         => $itemsWithCost,
+            'total_cost'    => $totalCost,
+            'hpp_per_yield' => $hppPerYield,
+            'raw_breakdown' => $rawBreakdown,
+            'warnings'      => $warnings,
+        ];
+
+        $cache[$recipeId] = $result;
+
+        return $result;
+    }
+
+    private function clampWastePct(float $waste): float
+    {
+        return max(0.0, min(100.0, $waste));
+    }
+
+    private function roundQty(float $qty): float
+    {
+        return round($qty, 6);
+    }
 }
