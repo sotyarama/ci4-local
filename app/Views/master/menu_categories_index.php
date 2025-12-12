@@ -79,14 +79,19 @@
 
 <script>
     (function() {
-        if (!window.App || !App.setupFilter) return;
-        App.setupFilter({
-            input: '#cat-filter',
-            rows: document.querySelectorAll('#cat-table-body tr:not(#cat-noresult)'),
-            noResult: '#cat-noresult',
-            fields: ['name','desc'],
-            debounce: 200
-        });
+        function init() {
+            if (!window.App || !App.setupFilter) {
+                return setTimeout(init, 50);
+            }
+            App.setupFilter({
+                input: '#cat-filter',
+                rows: document.querySelectorAll('#cat-table-body tr:not(#cat-noresult)'),
+                noResult: '#cat-noresult',
+                fields: ['name','desc'],
+                debounce: 200
+            });
+        }
+        document.addEventListener('DOMContentLoaded', init);
     })();
 </script>
 
