@@ -92,9 +92,32 @@
     toastContainer.appendChild(el);
     setTimeout(() => {
       el.style.opacity = '0';
-    el.style.transition = 'opacity 0.3s';
+      el.style.transition = 'opacity 0.3s';
       setTimeout(() => el.remove(), 300);
     }, 2200);
+  }
+
+  function setupFilter(opts) {
+    const input = typeof opts.input === 'string' ? document.querySelector(opts.input) : opts.input;
+    const rows = typeof opts.rows === 'string' ? document.querySelectorAll(opts.rows) : opts.rows;
+    const nores = opts.noResult ? (typeof opts.noResult === 'string' ? document.querySelector(opts.noResult) : opts.noResult) : null;
+    const fields = opts.fields || [];
+    if (!input || !rows) return;
+    let timer;
+    input.addEventListener('input', function () {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        const q = (input.value || '').toLowerCase().trim();
+        let shown = 0;
+        rows.forEach(function (tr) {
+          const data = fields.map(f => (tr.dataset[f] || '').toLowerCase()).join(' ');
+          const match = !q || data.includes(q);
+          tr.style.display = match ? '' : 'none';
+          if (match) shown++;
+        });
+        if (nores) nores.style.display = shown === 0 ? '' : 'none';
+      }, opts.debounce || 200);
+    });
   }
 
   window.App = {
@@ -102,5 +125,6 @@
     toast,
     csrfName,
     csrfToken,
+    setupFilter,
   };
 })();
