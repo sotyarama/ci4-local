@@ -68,11 +68,25 @@
     const el = document.createElement('div');
     el.textContent = message;
     el.style.padding = '10px 12px';
-    el.style.borderRadius = '8px';
+    el.style.borderRadius = '10px';
     el.style.fontSize = '12px';
-    el.style.color = '#111';
-    el.style.background = type === 'error' ? 'var(--tr-secondary-beige, #f2e8da)' : 'rgba(122,154,108,0.16)';
-    el.style.border = type === 'error' ? '1px solid var(--tr-accent-brown, #a27c55)' : '1px solid var(--tr-primary, #7A9A6C)';
+    el.style.lineHeight = '1.4';
+    el.style.minWidth = '220px';
+    el.style.maxWidth = '320px';
+    el.style.boxShadow = '0 8px 20px rgba(0,0,0,0.08)';
+    el.style.display = 'flex';
+    el.style.alignItems = 'center';
+    el.style.gap = '8px';
+
+    if (type === 'error') {
+      el.style.background = 'var(--tr-secondary-beige, #f2e8da)';
+      el.style.border = '1px solid var(--tr-accent-brown, #a27c55)';
+      el.style.color = 'var(--tr-accent-brown, #a27c55)';
+    } else {
+      el.style.background = 'rgba(122,154,108,0.14)';
+      el.style.border = '1px solid var(--tr-primary, #7A9A6C)';
+      el.style.color = 'var(--tr-primary, #7A9A6C)';
+    }
 
     toastContainer.appendChild(el);
     setTimeout(() => {
