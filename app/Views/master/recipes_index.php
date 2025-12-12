@@ -76,16 +76,19 @@
 
                     <!-- Aksi -->
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:center;">
-                        <?php if (!empty($menu['recipe_id'])): ?>
-                            <a href="<?= site_url('master/recipes/edit/' . $menu['recipe_id']); ?>"
-                            style="font-size:11px; margin-right:6px; color:#fff; text-decoration:none; background:var(--tr-primary); border:1px solid var(--tr-primary); padding:6px 10px; border-radius:999px;">
-                                Edit Resep
-                            </a>
-                        <?php else: ?>
-                            <span style="font-size:11px; color:var(--tr-muted-text);">
-                                Buat dari tombol "+ Tambah Resep"
-                            </span>
-                        <?php endif; ?>
+                        <div style="display:flex; justify-content:center; gap:8px;">
+                            <?php if (!empty($menu['recipe_id'])): ?>
+                                <a href="<?= site_url('master/recipes/edit/' . $menu['recipe_id']); ?>"
+                                   style="display:inline-flex; align-items:center; gap:6px; font-size:11px; color:#fff; text-decoration:none; background:var(--tr-primary); border:1px solid var(--tr-primary); padding:6px 12px; border-radius:10px; min-width:110px; justify-content:center;">
+                                    <span style="font-size:12px;">✏</span>
+                                    <span>Edit Resep</span>
+                                </a>
+                            <?php else: ?>
+                                <span style="font-size:11px; color:var(--tr-muted-text);">
+                                    Buat dari tombol "+ Tambah Resep"
+                                </span>
+                            <?php endif; ?>
+                        </div>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -99,4 +102,3 @@
 </div>
 
 <?= $this->endSection() ?>
-
