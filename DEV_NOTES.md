@@ -1,7 +1,7 @@
 # DEV_NOTES.md
 POS Cafe System — Development Notes  
 Author: GS  
-Last updated: 2025-12-09 (Late Night)
+Last updated: 2025-12-10 (Morning)
 
 ---
 
@@ -72,6 +72,11 @@ Tujuan utama:
 - HPP: clamp waste_pct dan rounding qty/cost (6 desimal) untuk kurangi noise float; total_cost & hpp_per_yield ikut di-round.
 - Sales: kebutuhan bahan & pengurangan stok di-round 6 desimal, guard stok pakai nilai yang sudah dinormalisasi, pesan shortage lebih jelas.
 - Stock Movements/Card: saldo berjalan & qty di-round per langkah untuk menghindari drift.
+
+## 10) Brand Guide Presentation (2025-12-10 Morning)
+- Route `/brand-guide` menuju controller `BrandGuide` yang merender deck Reveal.js.
+- View `brand_presentation.php`: 14 slide brand/UI guideline (cover, essence, story, color palette, typography, logo meaning/usage, pattern, photography mood, POS cashier/dashboard, menu layout, tone of voice, closing).
+- Theme `public/css/temurasa-reveal.css`: palet Temu Rasa, typography Nunito/Inter/Poppins, carded slide layout, color grid, chips/divider, responsive tweak untuk mobile.
 
 ## Uncommitted (2025-12-10) - Temu Rasa UI Refresh
 - Brand theme file `public/css/theme-temurasa.css` dengan CSS variables + komponen dasar (card, input, button, table, scrollbar) sesuai palet Temu Rasa.
