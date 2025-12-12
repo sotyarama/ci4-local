@@ -125,6 +125,10 @@
         <?php if (empty($movements)): ?>
             <p style="font-size:12px; color:var(--tr-muted-text);">Belum ada pergerakan stok untuk filter ini.</p>
         <?php else: ?>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div style="font-size:12px; color:var(--tr-muted-text);">Filter ref/catatan/tipe:</div>
+                <input type="text" id="stockcard-filter" placeholder="Cari di kartu stok..." style="padding:6px 8px; font-size:12px; border:1px solid var(--tr-border); border-radius:8px; background:var(--tr-bg); color:var(--tr-text); min-width:220px;">
+            </div>
             <div style="overflow-x:auto;">
                 <table style="width:100%; border-collapse:collapse; font-size:12px;">
                     <thead>
@@ -137,14 +141,15 @@
                         <th style="text-align:left; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Catatan</th>
                     </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="stockcard-table-body">
                     <?php foreach ($movements as $idx => $mv): ?>
                         <?php
                             $badgeColor = strtoupper($mv['movement_type']) === 'IN' ? 'var(--tr-primary)' : 'var(--tr-accent-brown)';
                             $badgeBg = strtoupper($mv['movement_type']) === 'IN' ? 'rgba(122,154,108,0.14)' : 'var(--tr-secondary-beige)';
                             $balance = $runningBalance[$idx] ?? 0;
+                            $refStr = trim(($mv['ref_type'] ?? '-') . ' #' . ($mv['ref_id'] ?? '-'));
                         ?>
-                        <tr>
+                        <tr data-ref="<?= esc(strtolower($refStr)); ?>" data-note="<?= esc(strtolower($mv['note'] ?? '')); ?>" data-type="<?= esc(strtolower($mv['movement_type'] ?? '')); ?>">
                             <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
                                 <?= esc($mv['created_at'] ?? '-'); ?>
                             </td>
@@ -167,11 +172,32 @@
                             </td>
                         </tr>
                     <?php endforeach; ?>
+                    <tr id="stockcard-noresult" style="display:none;">
+                        <td colspan="6" style="padding:8px; text-align:center; color:var(--tr-muted-text);">Tidak ada hasil.</td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
         <?php endif; ?>
     <?php endif; ?>
 </div>
+
+<script>
+    (function() {
+        function init() {
+            if (!window.App || !App.setupFilter) {
+                return setTimeout(init, 50);
+            }
+            App.setupFilter({
+                input: '#stockcard-filter',
+                rows: document.querySelectorAll('#stockcard-table-body tr:not(#stockcard-noresult)'),
+                noResult: '#stockcard-noresult',
+                fields: ['ref','note','type'],
+                debounce: 200
+            });
+        }
+        document.addEventListener('DOMContentLoaded', init);
+    })();
+</script>
 
 <?= $this->endSection() ?>
