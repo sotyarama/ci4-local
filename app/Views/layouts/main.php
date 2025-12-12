@@ -437,5 +437,9 @@
     <span>POS Cafe System</span>
     <span>CodeIgniter 4</span>
 </footer>
+
+<meta name="csrf-name" content="<?= csrf_token(); ?>">
+<meta name="csrf-token" content="<?= csrf_hash(); ?>">
+<script src="<?= base_url('js/app.js'); ?>"></script>
 </body>
 </html>

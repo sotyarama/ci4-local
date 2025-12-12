@@ -98,6 +98,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->post('overhead-categories/store', 'OverheadCategories::store');
         $routes->get('overhead-categories/edit/(:num)', 'OverheadCategories::edit/$1');
         $routes->post('overhead-categories/update/(:num)', 'OverheadCategories::update/$1');
+        $routes->post('overhead-categories/toggle', 'OverheadCategories::toggle');
 
         // Audit Logs
         $routes->get('audit-logs', 'AuditLogs::index');

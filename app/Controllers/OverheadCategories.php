@@ -107,4 +107,39 @@ class OverheadCategories extends BaseController
         return redirect()->to(site_url('overhead-categories'))
             ->with('message', 'Kategori overhead berhasil diperbarui.');
     }
+
+    public function toggle()
+    {
+        if (! $this->request->isAJAX()) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'status'  => 'error',
+                'message' => 'Invalid request',
+            ]);
+        }
+
+        $id = (int) ($this->request->getPost('id') ?? 0);
+        if ($id <= 0) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'status'  => 'error',
+                'message' => 'Invalid category id',
+            ]);
+        }
+
+        $category = $this->categoryModel->find($id);
+        if (! $category) {
+            return $this->response->setStatusCode(404)->setJSON([
+                'status'  => 'error',
+                'message' => 'Kategori tidak ditemukan',
+            ]);
+        }
+
+        $newStatus = (int) ($category['is_active'] ?? 0) === 1 ? 0 : 1;
+        $this->categoryModel->update($id, ['is_active' => $newStatus]);
+
+        return $this->response->setJSON([
+            'status'     => 'ok',
+            'is_active'  => $newStatus,
+            'message'    => 'Kategori diperbarui',
+        ]);
+    }
 }
