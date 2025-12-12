@@ -52,11 +52,11 @@
     const el = document.createElement('div');
     el.id = 'app-toast-container';
     el.style.position = 'fixed';
-    el.style.top = '16px';
-    el.style.right = '16px';
+    el.style.top = '18px';
+    el.style.right = '18px';
     el.style.display = 'flex';
     el.style.flexDirection = 'column';
-    el.style.gap = '8px';
+    el.style.gap = '10px';
     el.style.zIndex = '9999';
     document.addEventListener('DOMContentLoaded', () => {
       document.body.appendChild(el);
@@ -67,31 +67,32 @@
   function toast(message, type = 'info') {
     const el = document.createElement('div');
     el.textContent = message;
-    el.style.padding = '10px 12px';
-    el.style.borderRadius = '10px';
-    el.style.fontSize = '12px';
-    el.style.lineHeight = '1.4';
-    el.style.minWidth = '220px';
-    el.style.maxWidth = '320px';
-    el.style.boxShadow = '0 8px 20px rgba(0,0,0,0.08)';
+    el.style.padding = '12px 14px';
+    el.style.borderRadius = '12px';
+    el.style.fontSize = '13px';
+    el.style.lineHeight = '1.5';
+    el.style.minWidth = '260px';
+    el.style.maxWidth = '360px';
+    el.style.boxShadow = '0 10px 28px rgba(0,0,0,0.12)';
     el.style.display = 'flex';
     el.style.alignItems = 'center';
-    el.style.gap = '8px';
+    el.style.gap = '10px';
+    el.style.fontWeight = '600';
 
     if (type === 'error') {
-      el.style.background = 'var(--tr-secondary-beige, #f2e8da)';
-      el.style.border = '1px solid var(--tr-accent-brown, #a27c55)';
-      el.style.color = 'var(--tr-accent-brown, #a27c55)';
+      el.style.background = '#fbeae3';
+      el.style.border = '1px solid #d26f46';
+      el.style.color = '#8b3d1f';
     } else {
-      el.style.background = 'rgba(122,154,108,0.14)';
-      el.style.border = '1px solid var(--tr-primary, #7A9A6C)';
-      el.style.color = 'var(--tr-primary, #7A9A6C)';
+      el.style.background = '#e6f1e7';
+      el.style.border = '1px solid #7a9a6c';
+      el.style.color = '#2f3a2f';
     }
 
     toastContainer.appendChild(el);
     setTimeout(() => {
       el.style.opacity = '0';
-      el.style.transition = 'opacity 0.3s';
+    el.style.transition = 'opacity 0.3s';
       setTimeout(() => el.remove(), 300);
     }, 2200);
   }
