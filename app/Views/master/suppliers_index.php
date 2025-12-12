@@ -32,6 +32,10 @@
             Belum ada data supplier. Silakan tambahkan data baru.
         </p>
     <?php else: ?>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-size:12px; color:var(--tr-muted-text);">Filter nama/telp/status:</div>
+            <input type="text" id="suppliers-filter" placeholder="Cari supplier..." style="padding:6px 8px; font-size:12px; border:1px solid var(--tr-border); border-radius:8px; background:var(--tr-bg); color:var(--tr-text); min-width:200px;">
+        </div>
         <table style="width:100%; border-collapse:collapse; font-size:12px;">
             <thead>
             <tr>
@@ -42,9 +46,10 @@
                 <th style="text-align:center; padding:8px; border-bottom:1px solid var(--tr-border);">Aksi</th>
             </tr>
             </thead>
-            <tbody>
+            <tbody id="suppliers-table-body">
             <?php foreach ($suppliers as $s): ?>
-                <tr>
+                <?php $isActive = !empty($s['is_active']); ?>
+                <tr data-name="<?= esc(strtolower($s['name'])); ?>" data-phone="<?= esc(strtolower($s['phone'] ?? '')); ?>" data-status="<?= $isActive ? 'aktif' : 'nonaktif'; ?>">
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
                         <?= esc($s['name']); ?>
                     </td>
@@ -84,10 +89,30 @@
                     </td>
                 </tr>
             <?php endforeach; ?>
+            <tr id="suppliers-noresult" style="display:none;">
+                <td colspan="5" style="padding:8px; text-align:center; color:var(--tr-muted-text);">Tidak ada hasil.</td>
+            </tr>
             </tbody>
         </table>
     <?php endif; ?>
 </div>
 
-<?= $this->endSection() ?>
+<script>
+    (function() {
+        function init() {
+            if (!window.App || !App.setupFilter) {
+                return setTimeout(init, 50);
+            }
+            App.setupFilter({
+                input: '#suppliers-filter',
+                rows: document.querySelectorAll('#suppliers-table-body tr:not(#suppliers-noresult)'),
+                noResult: '#suppliers-noresult',
+                fields: ['name','phone','status'],
+                debounce: 200
+            });
+        }
+        document.addEventListener('DOMContentLoaded', init);
+    })();
+</script>
 
+<?= $this->endSection() ?>
