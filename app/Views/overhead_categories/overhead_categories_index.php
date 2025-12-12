@@ -52,10 +52,10 @@
                         <?php else: ?>
                             <span style="padding:2px 8px; border-radius:999px; background:var(--tr-secondary-beige); color:var(--tr-accent-brown); border:1px solid var(--tr-accent-brown);">Nonaktif</span>
                         <?php endif; ?>
-                    </td>
+                </td>
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:center;">
                         <a href="<?= site_url('overhead-categories/edit/' . $row['id']); ?>"
-                           style="font-size:11px; color:#fff; text-decoration:none; border:1px solid var(--tr-primary); padding:6px 10px; border-radius:999px; background:var(--tr-primary);">
+                           style="display:inline-block; font-size:11px; padding:6px 12px; border-radius:999px; background:var(--tr-primary); color:#fff; text-decoration:none;">
                             Edit
                         </a>
                     </td>
@@ -67,4 +67,3 @@
 </div>
 
 <?= $this->endSection() ?>
-
