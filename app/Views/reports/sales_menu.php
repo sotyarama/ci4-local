@@ -73,6 +73,10 @@
             Belum ada data penjualan untuk periode ini.
         </p>
     <?php else: ?>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-size:12px; color:var(--tr-muted-text);">Filter nama menu:</div>
+            <input type="text" id="salesmenu-filter" placeholder="Cari menu..." style="padding:6px 8px; font-size:12px; border:1px solid var(--tr-border); border-radius:8px; background:var(--tr-bg); color:var(--tr-text); min-width:200px;">
+        </div>
         <table style="width:100%; border-collapse:collapse; font-size:12px;">
             <thead>
             <tr>
@@ -84,7 +88,7 @@
                 <th style="text-align:right; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Margin %</th>
             </tr>
             </thead>
-            <tbody>
+            <tbody id="salesmenu-table-body">
             <?php foreach ($rows as $r): ?>
                 <?php
                     $qty    = (float) ($r['total_qty'] ?? 0);
@@ -95,7 +99,7 @@
 
                     $marginColor = $margin >= 0 ? 'var(--tr-primary-deep)' : 'var(--tr-accent-brown)';
                 ?>
-                <tr>
+                <tr data-name="<?= esc(strtolower($r['menu_name'] ?? 'menu')); ?>">
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
                         <?= esc($r['menu_name'] ?? 'Menu'); ?>
                     </td>
@@ -125,6 +129,9 @@
                 $grandMarginPct = $grandSales > 0 ? ($grandMargin / $grandSales * 100.0) : 0;
                 $grandColor = $grandMargin >= 0 ? 'var(--tr-primary-deep)' : 'var(--tr-accent-brown)';
             ?>
+            <tr id="salesmenu-noresult" style="display:none;">
+                <td colspan="6" style="padding:8px; text-align:center; color:var(--tr-muted-text);">Tidak ada hasil.</td>
+            </tr>
             <tr>
                 <td style="padding:6px 8px; border-top:1px solid var(--tr-muted-text); font-weight:bold;">
                     TOTAL (filter)
@@ -188,5 +195,22 @@
     <?php endif; ?>
 </div>
 
-<?= $this->endSection() ?>
+<script>
+    (function() {
+        function init() {
+            if (!window.App || !App.setupFilter) {
+                return setTimeout(init, 50);
+            }
+            App.setupFilter({
+                input: '#salesmenu-filter',
+                rows: document.querySelectorAll('#salesmenu-table-body tr:not(#salesmenu-noresult)'),
+                noResult: '#salesmenu-noresult',
+                fields: ['name'],
+                debounce: 200
+            });
+        }
+        document.addEventListener('DOMContentLoaded', init);
+    })();
+</script>
 
+<?= $this->endSection() ?>
