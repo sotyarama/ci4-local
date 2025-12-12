@@ -88,6 +88,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->get('reports/sales/menu', 'Reports\SalesSummary::perMenu');
         $routes->get('reports/sales/category', 'Reports\SalesSummary::perCategory');
         $routes->get('reports/purchases/supplier', 'Reports\PurchaseSummary::perSupplier');
+        $routes->get('reports/purchases/material', 'Reports\PurchaseSummary::perMaterial');
 
         // Overheads
         $routes->get('overheads', 'Overheads::index');
