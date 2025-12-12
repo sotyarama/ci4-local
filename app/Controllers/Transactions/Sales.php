@@ -172,17 +172,18 @@ class Sales extends BaseController
             $menuId  = $row['menu_id'];
             $qtySale = $row['qty'];
 
-            // 1) Cek resep
-            $recipe = $this->recipeModel->where('menu_id', $menuId)->first();
-            if (! $recipe) {
+            // 1) Cek resep + breakdown bahan
+            $hppData = $this->recipeModel->calculateHppForMenu($menuId);
+            if (! $hppData) {
                 $errors[] = "Menu <b>{$row['menu_name']}</b> belum memiliki resep. Transaksi dibatalkan.";
                 continue;
             }
 
-            $recipeItems = $this->recipeModel->getRecipeItems((int) $recipe['id']);
+            $recipe        = $hppData['recipe'] ?? [];
+            $rawBreakdown  = $hppData['raw_breakdown'] ?? [];
 
-            if (empty($recipeItems)) {
-                $errors[] = "Menu <b>{$row['menu_name']}</b> belum memiliki detail bahan. Transaksi dibatalkan.";
+            if (empty($rawBreakdown)) {
+                $errors[] = "Menu <b>{$row['menu_name']}</b> belum memiliki bahan baku (kosong). Transaksi dibatalkan.";
                 continue;
             }
 
@@ -194,17 +195,8 @@ class Sales extends BaseController
 
             $factor = $qtySale / $yieldQty;
 
-            foreach ($recipeItems as $ri) {
-                $rawId    = (int) $ri['raw_material_id'];
-                $baseQty  = (float) $ri['qty'];
-                $wastePct = $this->clampWastePct((float) ($ri['waste_pct'] ?? 0));
-
-                if ($rawId <= 0 || $baseQty <= 0) {
-                    continue;
-                }
-
-                $effectivePerBatch = $this->roundQty($baseQty * (1 + $wastePct / 100.0));
-                $needQty           = $this->roundQty($effectivePerBatch * $factor);
+            foreach ($rawBreakdown as $rawId => $qtyPerBatch) {
+                $needQty = $this->roundQty($qtyPerBatch * $factor);
 
                 if (! isset($rawNeeds[$rawId])) {
                     $rawNeeds[$rawId] = 0;
@@ -322,9 +314,9 @@ class Sales extends BaseController
             ], true);
 
             // Kurangi stok bahan baku
-            if ($hppData && ! empty($hppData['items'])) {
-                $recipe      = $hppData['recipe'];
-                $recipeItems = $hppData['items'];
+            if ($hppData && ! empty($hppData['raw_breakdown'])) {
+                $recipe       = $hppData['recipe'];
+                $rawBreakdown = $hppData['raw_breakdown'];
 
                 $yieldQty = (float) ($recipe['yield_qty'] ?? 1);
                 if ($yieldQty <= 0) {
@@ -333,17 +325,13 @@ class Sales extends BaseController
 
                 $factor = $qty / $yieldQty;
 
-                foreach ($recipeItems as $ri) {
-                    $rawId    = (int) ($ri['raw_material_id'] ?? 0);
-                    $baseQty  = (float) ($ri['qty'] ?? 0);
-                    $wastePct = $this->clampWastePct((float) ($ri['waste_pct'] ?? 0));
-
-                    if ($rawId <= 0 || $baseQty <= 0) {
+                foreach ($rawBreakdown as $rawId => $qtyPerBatch) {
+                    $rawId = (int) $rawId;
+                    if ($rawId <= 0) {
                         continue;
                     }
 
-                    $effectivePerBatch = $this->roundQty($baseQty * (1 + $wastePct / 100.0));
-                    $qtyToDeduct       = $this->roundQty($effectivePerBatch * $factor);
+                    $qtyToDeduct = $this->roundQty($qtyPerBatch * $factor);
 
                     // Update stok
                     $material = $this->rawModel->find($rawId);

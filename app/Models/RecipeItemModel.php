@@ -13,6 +13,8 @@ class RecipeItemModel extends Model
     protected $allowedFields = [
         'recipe_id',
         'raw_material_id',
+        'child_recipe_id',
+        'item_type',
         'qty',
         'waste_pct',
         'note',
