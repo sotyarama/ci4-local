@@ -24,7 +24,7 @@ class Products extends BaseController
     {
         $menus = $this->menuModel
             ->withCategory()
-            ->orderBy('menu_categories.sort_order', 'ASC')
+            ->orderBy('menu_categories.name', 'ASC')
             ->orderBy('menus.name', 'ASC')
             ->findAll();
 
