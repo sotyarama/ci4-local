@@ -21,6 +21,10 @@
             Belum ada data menu. Silakan tambahkan produk menggunakan tombol "Tambah Produk".
         </p>
     <?php else: ?>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-size:12px; color:var(--tr-muted-text);">Filter nama/kategori/status:</div>
+            <input type="text" id="products-filter" placeholder="Cari produk..." style="padding:6px 8px; font-size:12px; border:1px solid var(--tr-border); border-radius:8px; background:var(--tr-bg); color:var(--tr-text); min-width:200px;">
+        </div>
         <table style="width:100%; border-collapse:collapse; font-size:12px;">
             <thead>
             <tr>
@@ -32,9 +36,10 @@
                 <th style="text-align:center; padding:8px; border-bottom:1px solid var(--tr-border);">Aksi</th>
             </tr>
             </thead>
-            <tbody>
+            <tbody id="products-table-body">
             <?php foreach ($menus as $menu): ?>
-                <tr>
+                <?php $isActive = !empty($menu['is_active']); ?>
+                <tr data-name="<?= esc(strtolower($menu['name'])); ?>" data-cat="<?= esc(strtolower($menu['category_name'] ?? '')); ?>" data-status="<?= $isActive ? 'aktif' : 'nonaktif'; ?>">
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
                         <?= esc($menu['category_name'] ?? '-'); ?>
                     </td>
@@ -77,6 +82,9 @@
                     </td>
                 </tr>
             <?php endforeach; ?>
+            <tr id="products-noresult" style="display:none;">
+                <td colspan="6" style="padding:8px; text-align:center; color:var(--tr-muted-text);">Tidak ada hasil.</td>
+            </tr>
             </tbody>
         </table>
     <?php endif; ?>
@@ -86,5 +94,17 @@
     </div>
 </div>
 
-<?= $this->endSection() ?>
+<script>
+    (function() {
+        if (!window.App || !App.setupFilter) return;
+        App.setupFilter({
+            input: '#products-filter',
+            rows: document.querySelectorAll('#products-table-body tr:not(#products-noresult)'),
+            noResult: '#products-noresult',
+            fields: ['name','cat','status'],
+            debounce: 200
+        });
+    })();
+</script>
 
+<?= $this->endSection() ?>
