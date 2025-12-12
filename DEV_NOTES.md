@@ -1,7 +1,7 @@
 # DEV_NOTES.md
 POS Cafe System — Development Notes  
 Author: GS  
-Last updated: 2025-12-12 (Sub-recipe)
+Last updated: 2025-12-12 (Sub-recipe + JS plan)
 
 ---
 
@@ -205,6 +205,29 @@ Catatan gap:
 ## Audit Logs
 - [x] Log perubahan: harga menu, resep (payload JSON)
 - [x] Viewer audit log (filter entity, tanggal) sederhana
+
+---
+
+# NEXT TODOs (Frontend & JS Progressive Enhancement)
+
+- Platform & helper
+  - [ ] Tambah util JS dasar (public/js/app.js): fetchJSON (dengan CSRF), toast/error handler, loading state pada tombol; tetap server-rendered dengan fallback non-JS.
+  - [ ] Guard keamanan: handle 401/419 redirect ke login; batasi payload client (max rows/file); log fetch failure ke console (opsional kirim ke endpoint log).
+- Audit fitur prioritas untuk JS
+  - [ ] Review halaman yang paling diuntungkan: form resep (HPP live), filter tabel tanpa reload, toggle aktif/nonaktif entitas sederhana.
+  - [ ] Checklist progressive enhancement: tandai mana yang sudah/belum, pastikan fallback tanpa JS tetap berfungsi.
+- Fase 1 (kecil, validasi pola)
+  - [ ] Toggle aktif/nonaktif entitas ringan (kategori overhead/supplier) via fetch POST, update badge tanpa reload.
+  - [ ] Inline filter/search ringan di tabel (debounce 300 ms, fetch data, render tbody ulang).
+- Fase 2 (form & grid interaktif)
+  - [ ] Form resep: HPP live preview saat ubah bahan/qty/waste, tambah baris di client, opsional drag/sort baris.
+  - [ ] POS/Sales draft: grid item dengan increment qty, subtotal live, validasi override harga, submit via fetch.
+- Fase 3 (UX kelengkapan)
+  - [ ] Snackbar/toast global untuk success/error; konfirmasi dialog ringan (native confirm atau modal kecil).
+  - [ ] Skeleton/loading placeholder untuk tabel besar saat filter/pagination via fetch.
+- Fase 4 (optimasi)
+  - [ ] Cache data referensi (menu/bahan) di sessionStorage untuk form yang sering dipakai; invalidasi via versi data.
+  - [ ] Siapkan struktur minimal untuk Vite/ESM bila nanti butuh build step; sementara UMD tanpa build cukup.
 
 ---
 
