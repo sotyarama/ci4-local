@@ -10,7 +10,7 @@
         Definisikan komposisi bahan baku sebagai dasar perhitungan HPP.
     </p>
 
-    <?php if (($mode === 'edit') && isset($hpp) && $hpp !== null): ?>
+        <?php if (($mode === 'edit') && isset($hpp) && $hpp !== null): ?>
         <?php
             $yieldQty  = (float) ($hpp['recipe']['yield_qty'] ?? 1);
             $yieldUnit = $hpp['recipe']['yield_unit'] ?? 'porsi';
@@ -247,6 +247,21 @@
             Waste % dibatasi 0 - 100 agar perhitungan stok dan HPP tetap wajar.
         </div>
 
+        <div id="hpp-live" style="margin-top:12px; padding:10px 12px; border-radius:10px; border:1px dashed var(--tr-border); background:var(--tr-bg); font-size:12px; color:var(--tr-text);">
+            <div style="font-weight:700; margin-bottom:4px;">HPP Live (berdasar cost_avg bahan baku)</div>
+            <div style="display:flex; justify-content:space-between;">
+                <span>Total biaya 1 resep (raw only):</span>
+                <span id="hpp-live-total">Rp 0</span>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+                <span>HPP per yield:</span>
+                <span id="hpp-live-per">Rp 0</span>
+            </div>
+            <div style="margin-top:4px; font-size:11px; color:var(--tr-muted-text);">
+                Sub-resep belum dihitung di sini (hanya bahan baku).
+            </div>
+        </div>
+
         <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
             <a href="<?= site_url('master/recipes'); ?>"
                style="font-size:12px; padding:6px 12px; border-radius:999px; border:1px solid var(--tr-muted-text); background:var(--tr-bg); color:var(--tr-text); text-decoration:none;">
@@ -268,6 +283,7 @@
                 'id' => (int) $m['id'],
                 'name' => $m['name'],
                 'unit' => $m['unit_short'] ?? '',
+                'cost' => (float) ($m['cost_avg'] ?? 0),
             ];
         }, $materials ?? [])); ?>;
 
@@ -416,6 +432,50 @@
             const newRow = createRow(idx);
             tbody.appendChild(newRow);
         });
+
+        function formatCurrency(n) {
+            if (isNaN(n)) return 'Rp 0';
+            return 'Rp ' + Number(n || 0).toLocaleString('id-ID', { maximumFractionDigits: 0 });
+        }
+
+        function clampWaste(v) {
+            if (isNaN(v)) return 0;
+            return Math.min(100, Math.max(0, v));
+        }
+
+        function computeHppLive() {
+            const yieldInput = document.querySelector('input[name="yield_qty"]');
+            let yieldQty = parseFloat(yieldInput?.value || '1');
+            if (!(yieldQty > 0)) yieldQty = 1;
+
+            let total = 0;
+            tbody.querySelectorAll('tr').forEach(function(tr) {
+                const type = tr.querySelector('.item-type')?.value || 'raw';
+                if (type !== 'raw') return; // skip sub-recipe untuk live calc
+                const rawId = tr.querySelector('.select-raw')?.value || '';
+                const qty = parseFloat(tr.querySelector('input[name*="[qty]"]')?.value || '0');
+                const waste = clampWaste(parseFloat(tr.querySelector('input[name*="[waste_pct]"]')?.value || '0'));
+                if (!rawId || !(qty > 0)) return;
+                const mat = findMaterial(rawId);
+                const cost = mat ? parseFloat(mat.cost || 0) : 0;
+                const effectiveQty = qty * (1 + waste / 100);
+                total += effectiveQty * cost;
+            });
+
+            const per = total / yieldQty;
+            const totalEl = document.getElementById('hpp-live-total');
+            const perEl = document.getElementById('hpp-live-per');
+            if (totalEl) totalEl.textContent = formatCurrency(total);
+            if (perEl) perEl.textContent = formatCurrency(per);
+        }
+
+        document.addEventListener('input', function(e) {
+            if (e.target.closest('#recipe-items-body') || e.target.name === 'yield_qty') {
+                computeHppLive();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', computeHppLive);
     })();
 </script>
 
