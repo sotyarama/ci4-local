@@ -59,6 +59,10 @@
     <?php if (empty($sales)): ?>
         <p style="font-size:12px; color:var(--tr-muted-text);">Belum ada data penjualan.</p>
     <?php else: ?>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-size:12px; color:var(--tr-muted-text);">Filter invoice/tanggal/status/customer:</div>
+            <input type="text" id="sales-filter" placeholder="Cari penjualan..." style="padding:6px 8px; font-size:12px; border:1px solid var(--tr-border); border-radius:8px; background:var(--tr-bg); color:var(--tr-text); min-width:220px;">
+        </div>
         <table style="width:100%; border-collapse:collapse; font-size:12px;">
             <thead>
             <tr>
@@ -72,7 +76,7 @@
                 <th style="text-align:center; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Aksi</th>
             </tr>
             </thead>
-            <tbody>
+            <tbody id="sales-table-body">
             <?php foreach ($sales as $row): ?>
                 <?php
                     $total   = (float) ($row['total_amount'] ?? 0);
@@ -87,7 +91,7 @@
                         ? 'background:var(--tr-secondary-beige); color:var(--tr-accent-brown); border:1px solid var(--tr-accent-brown);'
                         : 'background:rgba(122,154,108,0.14); color:var(--tr-primary); border:1px solid var(--tr-primary);';
                 ?>
-                <tr>
+                <tr data-date="<?= esc(strtolower($row['sale_date'])); ?>" data-invoice="<?= esc(strtolower($row['invoice_no'] ?? '')); ?>" data-customer="<?= esc(strtolower($row['customer_name'] ?? '')); ?>" data-status="<?= strtolower($status); ?>">
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
                         <?= esc($row['sale_date']); ?>
                     </td>
@@ -140,9 +144,30 @@
                     </td>
                 </tr>
             <?php endforeach; ?>
+            <tr id="sales-noresult" style="display:none;">
+                <td colspan="8" style="padding:8px; text-align:center; color:var(--tr-muted-text);">Tidak ada hasil.</td>
+            </tr>
             </tbody>
         </table>
     <?php endif; ?>
 </div>
+
+<script>
+    (function() {
+        function init() {
+            if (!window.App || !App.setupFilter) {
+                return setTimeout(init, 50);
+            }
+            App.setupFilter({
+                input: '#sales-filter',
+                rows: document.querySelectorAll('#sales-table-body tr:not(#sales-noresult)'),
+                noResult: '#sales-noresult',
+                fields: ['date','invoice','customer','status'],
+                debounce: 200
+            });
+        }
+        document.addEventListener('DOMContentLoaded', init);
+    })();
+</script>
 
 <?= $this->endSection() ?>
