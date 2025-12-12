@@ -76,19 +76,16 @@
 
                     <!-- Aksi -->
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:center;">
-                        <div style="display:flex; justify-content:center; gap:8px;">
-                            <?php if (!empty($menu['recipe_id'])): ?>
-                                <a href="<?= site_url('master/recipes/edit/' . $menu['recipe_id']); ?>"
-                                   style="display:inline-flex; align-items:center; gap:6px; font-size:11px; color:#fff; text-decoration:none; background:var(--tr-primary); border:1px solid var(--tr-primary); padding:6px 12px; border-radius:10px; min-width:110px; justify-content:center;">
-                                    <span style="font-size:12px;">✏</span>
-                                    <span>Edit Resep</span>
-                                </a>
-                            <?php else: ?>
-                                <span style="font-size:11px; color:var(--tr-muted-text);">
-                                    Buat dari tombol "+ Tambah Resep"
-                                </span>
-                            <?php endif; ?>
-                        </div>
+                        <?php if (!empty($menu['recipe_id'])): ?>
+                            <a href="<?= site_url('master/recipes/edit/' . $menu['recipe_id']); ?>"
+                               style="display:inline-block; font-size:11px; padding:6px 12px; border-radius:999px; background:var(--tr-primary); color:#fff; text-decoration:none;">
+                                Edit
+                            </a>
+                        <?php else: ?>
+                            <span style="font-size:11px; color:var(--tr-muted-text);">
+                                Buat dari tombol "+ Tambah Resep"
+                            </span>
+                        <?php endif; ?>
                     </td>
                 </tr>
             <?php endforeach; ?>
