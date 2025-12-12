@@ -32,6 +32,10 @@
             Belum ada data bahan baku. Silakan tambahkan data baru.
         </p>
     <?php else: ?>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-size:12px; color:var(--tr-muted-text);">Filter nama/satuan/status:</div>
+            <input type="text" id="rm-filter" placeholder="Cari bahan baku..." style="padding:6px 8px; font-size:12px; border:1px solid var(--tr-border); border-radius:8px; background:var(--tr-bg); color:var(--tr-text); min-width:200px;">
+        </div>
         <table style="width:100%; border-collapse:collapse; font-size:12px;">
             <thead>
             <tr>
@@ -45,9 +49,10 @@
                 <th style="text-align:center; padding:8px; border-bottom:1px solid var(--tr-border);">Aksi</th>
             </tr>
             </thead>
-            <tbody>
+            <tbody id="rm-table-body">
             <?php foreach ($materials as $m): ?>
-                <tr>
+                <?php $isActive = !empty($m['is_active']); ?>
+                <tr data-name="<?= esc(strtolower($m['name'])); ?>" data-unit="<?= esc(strtolower($m['unit_short'] ?? $m['unit_name'] ?? '')); ?>" data-status="<?= $isActive ? 'aktif' : 'nonaktif'; ?>">
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
                         <?= esc($m['name']); ?>
                     </td>
@@ -105,6 +110,9 @@
                     </td>
                 </tr>
             <?php endforeach; ?>
+            <tr id="rm-noresult" style="display:none;">
+                <td colspan="8" style="padding:8px; text-align:center; color:var(--tr-muted-text);">Tidak ada hasil.</td>
+            </tr>
             </tbody>
         </table>
     <?php endif; ?>
@@ -113,5 +121,23 @@
         Data ini akan digunakan pada modul Resep, Pembelian, dan Stock Movement.
     </div>
 </div>
+
+<script>
+    (function() {
+        function init() {
+            if (!window.App || !App.setupFilter) {
+                return setTimeout(init, 50);
+            }
+            App.setupFilter({
+                input: '#rm-filter',
+                rows: document.querySelectorAll('#rm-table-body tr:not(#rm-noresult)'),
+                noResult: '#rm-noresult',
+                fields: ['name','unit','status'],
+                debounce: 200
+            });
+        }
+        document.addEventListener('DOMContentLoaded', init);
+    })();
+</script>
 
 <?= $this->endSection() ?>
