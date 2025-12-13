@@ -129,8 +129,128 @@ label {
     color: var(--tr-muted-text);
 }
 
+/* =========================
+   FILTERABLE SELECT DROPDOWN
+   ========================= */
+
+.filter-select {
+    position: relative;
+    width: 100%;
+    z-index: 50; /* <-- tambahan: buat stack di atas row/card lain */
+}
+
+/* Select asli disembunyikan tapi tetap ada untuk event change / form submit */
+.filter-select .filter-select-original {
+    position: absolute !important;
+    inset: 0;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Input filter yang tampak di UI */
+.filter-select-input {
+    width: 100%;
+    padding: 8px 28px 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--tr-border);
+    background: #fff;
+    color: var(--tr-text);
+    font-size: 13px;
+    line-height: 1.4;
+    cursor: pointer;
+}
+
+.filter-select-input:focus {
+    outline: 2px solid rgba(122, 154, 108, 0.45);
+    border-color: var(--tr-primary);
+}
+
+/* State open: beri sedikit shadow */
+.filter-select.open .filter-select-input {
+    border-color: var(--tr-primary);
+    box-shadow: 0 8px 18px rgba(58, 58, 58, 0.18);
+}
+
+/* Ikon caret */
+.filter-select-caret {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    color: var(--tr-muted-text);
+    cursor: pointer;
+    z-index: 2;
+}
+
+/* Container list dropdown */
+.filter-select-list {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid var(--tr-border);
+    border-radius: 10px;
+    box-shadow: 0 12px 28px rgba(58, 58, 58, 0.2);
+    max-height: 260px;
+    overflow-y: auto;
+
+    /* default: tidak tampil sampai .open ditambahkan */
+    display: none;
+    z-index: 9999;
+}
+
+/* Saat wrapper punya class .open, paksa tampil */
+.filter-select.open .filter-select-list {
+    display: block !important;
+}
+
+/* Item di dalam dropdown */
+.filter-select-option {
+    padding: 8px 10px;
+    cursor: pointer;
+    font-size: 13px;
+    border-bottom: 1px solid var(--tr-border);
+}
+
+.filter-select-option:last-child {
+    border-bottom: none;
+}
+
+.filter-select-option:hover,
+.filter-select-option.active {
+    background: var(--tr-secondary-green);
+}
+
+.filter-select-option.selected {
+    font-weight: 600;
+}
+
+.filter-select-option.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.filter-select-empty {
+    padding: 10px;
+    font-size: 12px;
+    color: var(--tr-muted-text);
+}
+
+.filter-select.is-disabled .filter-select-input {
+    background: #f0f0f0;
+    cursor: not-allowed;
+    color: var(--tr-muted-text);
+}
+
+/* =========================
+   TABLE / LAINNYA
+   ========================= */
+
 .table-scroll-wrap {
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: visible; /* penting: jangan auto, supaya dropdown tidak terpotong */
     max-height: calc(80vh - 120px);
     border: 1px solid var(--tr-border);
     border-radius: 10px;
@@ -171,4 +291,87 @@ tr:hover td {
 
 .muted {
     color: var(--tr-muted-text);
+}
+
+/* ============================================
+   FIX DROPDOWN TERPOTONG CARD (GLOBAL PATCH)
+   ============================================ */
+
+.card,
+.card-body,
+.row,
+.col,
+.form-group,
+.form-row,
+.table-scroll-wrap,
+.table-scroll-wrap tr,
+.table-scroll-wrap td,
+.table-scroll-wrap .item-row {
+    overflow: visible !important;
+}
+
+/* Pastikan dropdown berada di atas layer lain */
+.filter-select {
+    position: relative;
+    z-index: 9999 !important;
+}
+
+.filter-select-list {
+    position: absolute;
+    z-index: 10000 !important;
+}
+
+/* ============================================
+   FIX DROPDOWN TERPOTONG CARD / CONTENT
+   ============================================ */
+
+/* Semua container utama di halaman transaksi jangan motong anaknya */
+.layout,
+.main,
+main.content,
+main.content > .card,
+main.content form {
+    overflow: visible !important;
+}
+
+/* Pastikan wrapper table tidak memotong dropdown */
+.table-scroll-wrap,
+.table-scroll-wrap table,
+.table-scroll-wrap tbody,
+.table-scroll-wrap tr,
+.table-scroll-wrap td {
+    overflow: visible !important;
+}
+
+/* Naikkan lagi layer dropdown di atas card lain */
+.filter-select {
+    position: relative;
+    z-index: 200 !important;
+}
+
+.filter-select-list {
+    position: absolute;
+    z-index: 210 !important;
+}
+
+/* ============================================
+   OVERRIDE KHUSUS TABEL PENJUALAN
+   ============================================ */
+
+/* Di tabel penjualan, buat dropdown "inline" supaya tidak ketutup card */
+#items-table .filter-select {
+    z-index: auto !important;
+}
+
+#items-table .filter-select-list {
+    position: static !important;   /* ikut layout normal, bukan absolute */
+    display: none;                 /* default tersembunyi */
+    margin-top: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Saat open, tampilkan list seperti biasa */
+#items-table .filter-select.open .filter-select-list {
+    display: block !important;
 }
