@@ -334,3 +334,32 @@ tr:hover td { background: rgba(200, 215, 192, 0.4); }
   text-align: left !important;
 }
 
+/* ============================================
+   RECIPE FORM: dropdown list inline (anti-clip)
+   ============================================ */
+
+/* Target card komposisi (aman: pakai heading teks/struktur yang sudah ada) */
+.card .table-scroll-wrap {
+  overflow: visible !important;  /* jangan potong dropdown */
+}
+
+/* Di area komposisi resep, jadikan dropdown list ikut layout */
+.card .filter-select.open .filter-select-list {
+  position: static !important;   /* inline, bukan floating */
+  display: block !important;
+  margin-top: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+/* Beri ruang bawah saat open supaya row berikutnya tidak ketimpa */
+.card .filter-select.open {
+  margin-bottom: 230px; /* kira-kira = max-height list + margin */
+}
+
+/* Kalau dropdown ada di dalam table cell yang kecil, pastikan tidak center */
+.card .filter-select,
+.card .filter-select * {
+  text-align: left !important;
+}
+
