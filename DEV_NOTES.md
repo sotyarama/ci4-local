@@ -1,7 +1,7 @@
 # DEV_NOTES.md
 POS Cafe System — Development Notes  
 Author: GS  
-Last updated: 2025-12-12 (Sub-recipe + JS plan)
+Last updated: 2025-12-13 (Filterable dropdown refinements)
 
 ---
 
@@ -101,6 +101,13 @@ Tujuan utama:
 - CSS: z-index dropdown/list dinaikkan, overflow parent (card/row/col/table-scroll) dibuka agar menu tidak terpotong.
 - POS Sales: dropdown dalam tabel dipaksa inline (position static) supaya tinggi row mengikuti dropdown.
 - Tidak ada perubahan HTML; hanya JS + CSS.
+
+## Uncommitted (2025-12-13) - Dropdown Filterable Alignment & Whitespace
+- Option label dibersihkan (hapus NBSP, trim, collapse whitespace) sebelum dirender supaya teks sejajar kiri.
+- Input filter dipaksa left-align via style JS (important) dan diterapkan ulang saat sinkron/open untuk cegah override.
+- Multi-row behavior: saat satu dropdown dibuka, dropdown lain otomatis ditutup (hindari tumpuk).
+- Placeholder `value=""` tetap diabaikan (hanya tampil sebagai placeholder input); event change/form submit tidak berubah.
+- File: `public/js/app.js`.
 
 # Current Modules Status
 

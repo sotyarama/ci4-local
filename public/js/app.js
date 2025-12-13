@@ -176,6 +176,28 @@
       input.autocomplete = 'off';
       input.spellcheck = false;
       input.className = 'filter-select-input';
+
+      // FORCE left align (anti-override) — pakai !important
+      function forceLeftAlign() {
+        wrapper.style.setProperty('text-align', 'left', 'important');
+
+        input.style.setProperty('text-align', 'left', 'important');
+        input.style.setProperty('text-align-last', 'left', 'important'); // jaga-jaga kalau browser treat seperti select
+        input.style.setProperty('padding-left', '10px', 'important');
+        input.style.setProperty('padding-right', '28px', 'important');
+        input.style.setProperty('text-indent', '0', 'important');
+        input.style.setProperty('direction', 'ltr', 'important');
+
+        // Anti “center feel” kalau ada rule aneh dari parent
+        input.style.setProperty('display', 'block', 'important');
+        input.style.setProperty('width', '100%', 'important');
+        input.style.setProperty('box-sizing', 'border-box', 'important');
+      }
+
+      // apply pertama kali
+      forceLeftAlign();
+
+
       input.setAttribute('aria-label', select.getAttribute('aria-label') || select.name || select.id || 'Cari opsi');
       input.setAttribute('role', 'combobox');
       input.setAttribute('aria-expanded', 'false');
@@ -200,12 +222,21 @@
 
       // DATA OPSI: abaikan option dengan value kosong (placeholder)
       const optionsData = Array.from(select.options)
-        .filter(opt => opt.value !== '') // <- ini penting
-        .map(opt => ({
-          value: opt.value,
-          label: opt.textContent || '',
-          disabled: !!opt.disabled,
-        }));
+        .filter(opt => opt.value !== '')
+        .map(opt => {
+          const raw = (opt.textContent || '');
+          const clean = raw
+            .replace(/\u00A0/g, ' ')   // NBSP -> space
+            .replace(/\s+/g, ' ')      // tabs/newlines/multi-space -> single space
+            .trim();                   // remove leading/trailing spaces
+
+          return {
+            value: opt.value,
+            label: clean,
+            disabled: !!opt.disabled,
+          };
+        });
+
 
 
       if (!optionsData.length) {
@@ -224,16 +255,17 @@
         return optionsData.find(opt => opt.value === select.value) || null;
       }
 
-      function syncInputLabel() {
+    function syncInputLabel() {
+      forceLeftAlign(); // <-- penting: re-apply terus
+
       const sel = getSelectedOption();
       if (sel) {
-        input.value = sel.label;      // kalau ada pilihan, tampilkan label-nya
+        input.value = sel.label;
       } else {
-        input.value = '';             // kalau select.value kosong (placeholder), input dikosongkan
+        input.value = '';
       }
-      input.placeholder = placeholder; // teks "-- pilih kategori --" muncul sebagai placeholder
+      input.placeholder = placeholder;
     }
-
 
       function renderList() {
         list.innerHTML = '';
@@ -286,8 +318,31 @@
         renderList();
       }
 
+      function closeOtherDropdowns() {
+        // Tutup semua dropdown lain yang sedang open
+        document.querySelectorAll('.filter-select.open').forEach(el => {
+          if (el === wrapper) return;
+          el.classList.remove('open');
+          const inp = el.querySelector('.filter-select-input');
+          const lst = el.querySelector('.filter-select-list');
+          if (inp) inp.setAttribute('aria-expanded', 'false');
+          if (lst) lst.style.display = 'none';
+        });
+      }
+
+      const api = {
+        wrapper,
+        close: () => closeDropdown(),
+      };
+
+
       function openDropdown() {
+        forceLeftAlign();
         if (wrapper.classList.contains('is-disabled')) return;
+
+        // NEW: Tutup dropdown lain terlebih dahulu (multi-row aman)
+        closeOtherDropdowns();
+
         if (activeInstance && activeInstance !== api) {
           activeInstance.close();
         }
@@ -387,10 +442,6 @@
       renderList();
       syncListSize();
 
-      const api = {
-        wrapper,
-        close: closeDropdown,
-      };
       return api;
     }
 
