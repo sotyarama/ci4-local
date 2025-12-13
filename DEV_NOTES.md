@@ -95,6 +95,13 @@ Tujuan utama:
 
 ---
 
+## Uncommitted (2025-12-13) - Dropdown Filterable & Inline Fixes
+- Filter-select: opsi placeholder `value=""` tidak ikut di daftar; input filter hanya menampilkan placeholder, tidak dipakai sebagai value.
+- Auto-init diperkuat: init di DOMContentLoaded + fallback window.load.
+- CSS: z-index dropdown/list dinaikkan, overflow parent (card/row/col/table-scroll) dibuka agar menu tidak terpotong.
+- POS Sales: dropdown dalam tabel dipaksa inline (position static) supaya tinggi row mengikuti dropdown.
+- Tidak ada perubahan HTML; hanya JS + CSS.
+
 # Current Modules Status
 
 | Module               | Status              | Notes                                                          |
