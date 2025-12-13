@@ -113,6 +113,10 @@ Tujuan utama:
 - Tombol "Tambah Resep" di list resep otomatis disabled jika semua menu sudah punya resep (ada title helper).
 - Guard backend di `Recipes::create()` memblokir akses langsung saat tidak ada menu tersisa tanpa resep.
 
+## Uncommitted (2025-12-13) - Recipe Form Defaults
+- Form resep: default hanya 1 baris komposisi saat create; dropdown tipe kini pakai placeholder "Pilih tipe bahan" dengan opsi "Bahan Baku" / "Sub-resep".
+- Dropdown tipe kosong menyembunyikan kedua dropdown bahan/sub-resep sampai user memilih.
+
 # Current Modules Status
 
 | Module               | Status              | Notes                                                          |
