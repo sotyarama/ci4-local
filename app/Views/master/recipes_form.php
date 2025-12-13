@@ -147,23 +147,25 @@
                 } elseif (! empty($items)) {
                     $rows = $items;
                 } else {
-                    // default 5 baris kosong
-                    $rows = array_fill(0, 5, [
-                        'item_type'       => 'raw',
-                        'raw_material_id' => '',
-                        'child_recipe_id' => '',
-                        'qty'             => '',
-                        'waste_pct'       => '',
-                        'note'            => '',
-                        'material_name'   => '',
-                        'unit_short'      => '',
-                    ]);
+                    // default 1 baris kosong saja
+                    $rows = [
+                        [
+                            'item_type'       => '',
+                            'raw_material_id' => '',
+                            'child_recipe_id' => '',
+                            'qty'             => '',
+                            'waste_pct'       => '',
+                            'note'            => '',
+                            'material_name'   => '',
+                            'unit_short'      => '',
+                        ],
+                    ];
                 }
                 ?>
 
                 <?php foreach ($rows as $idx => $row): ?>
                     <?php
-                        $type         = $row['item_type'] ?? 'raw';
+                        $type         = $row['item_type'] ?? '';
                         $rawSelected  = $row['raw_material_id'] ?? '';
                         $childSelected= $row['child_recipe_id'] ?? '';
                         $unit         = $row['unit_short'] ?? '';
@@ -178,12 +180,13 @@
                                 <select name="items[<?= $idx; ?>][item_type]"
                                         class="item-type"
                                         style="width:100%; padding:4px 6px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text);">
-                                    <option value="raw" <?= $type === 'raw' ? 'selected' : ''; ?>>Bahan baku</option>
+                                    <option value="" <?= $type === '' ? 'selected' : ''; ?>>Pilih tipe bahan</option>
+                                    <option value="raw" <?= $type === 'raw' ? 'selected' : ''; ?>>Bahan Baku</option>
                                     <option value="recipe" <?= $type === 'recipe' ? 'selected' : ''; ?>>Sub-resep</option>
                                 </select>
                                 <select name="items[<?= $idx; ?>][raw_material_id]"
                                         class="select-raw"
-                                        style="width:100%; padding:4px 6px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text); <?= $type === 'recipe' ? 'display:none;' : ''; ?>">
+                                        style="width:100%; padding:4px 6px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text); <?= $type === 'recipe' || $type === '' ? 'display:none;' : ''; ?>">
                                     <option value="">-- pilih bahan --</option>
                                     <?php foreach ($materials as $m): ?>
                                         <option value="<?= $m['id']; ?>"
@@ -330,12 +333,13 @@
                         <select name="items[${idx}][item_type]"
                                 class="item-type"
                                 style="width:100%; padding:4px 6px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text);">
-                            <option value="raw" selected>Bahan baku</option>
+                            <option value="" selected>Pilih tipe bahan</option>
+                            <option value="raw">Bahan Baku</option>
                             <option value="recipe">Sub-resep</option>
                         </select>
                         <select name="items[${idx}][raw_material_id]"
                                 class="select-raw"
-                                style="width:100%; padding:4px 6px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text);">
+                                style="width:100%; padding:4px 6px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text); display:none;">
                             ${buildRawOptions()}
                         </select>
                         <select name="items[${idx}][child_recipe_id]"
@@ -398,9 +402,11 @@
                 if (type === 'raw') {
                     const mat = findMaterial(rawSelect.value);
                     unitLabel.textContent = mat && mat.unit ? mat.unit : '';
-                } else {
+                } else if (type === 'recipe') {
                     const rec = findRecipe(recipeSelect.value);
                     unitLabel.textContent = rec ? ('Sub: ' + rec.name) : '';
+                } else {
+                    unitLabel.textContent = '';
                 }
             }
 
@@ -416,8 +422,8 @@
                 } else {
                     tr.querySelectorAll('input, select').forEach(function(el) { el.value = ''; });
                     unitLabel.textContent = '';
-                    typeSelect.value = 'raw';
-                    rawSelect.style.display = 'block';
+                    typeSelect.value = '';
+                    rawSelect.style.display = 'none';
                     recipeSelect.style.display = 'none';
                 }
             });
@@ -451,7 +457,7 @@
 
             let total = 0;
             tbody.querySelectorAll('tr').forEach(function(tr) {
-                const type = tr.querySelector('.item-type')?.value || 'raw';
+                const type = tr.querySelector('.item-type')?.value || '';
                 const qty = parseFloat(tr.querySelector('input[name*="[qty]"]')?.value || '0');
                 const waste = clampWaste(parseFloat(tr.querySelector('input[name*="[waste_pct]"]')?.value || '0'));
                 if (!(qty > 0)) return;
@@ -469,6 +475,8 @@
                     const rec = findRecipe(childId);
                     const childHpp = rec && rec.hpp ? parseFloat(rec.hpp) : 0;
                     total += effectiveQty * childHpp;
+                } else {
+                    return;
                 }
             });
 
