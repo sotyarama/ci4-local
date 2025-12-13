@@ -11,10 +11,20 @@
                 Mapping menu ke bahan baku (BOM) sebagai dasar perhitungan HPP.
             </p>
         </div>
-        <a href="<?= site_url('master/recipes/create'); ?>"
-           style="font-size:12px; padding:6px 12px; border-radius:999px; border:none; background:var(--tr-primary); color:#fff; text-decoration:none;">
-            + Tambah Resep
-        </a>
+        <?php $canCreate = $canCreateRecipe ?? true; ?>
+        <?php if ($canCreate): ?>
+            <a href="<?= site_url('master/recipes/create'); ?>"
+               style="font-size:12px; padding:6px 12px; border-radius:999px; border:none; background:var(--tr-primary); color:#fff; text-decoration:none;">
+                + Tambah Resep
+            </a>
+        <?php else: ?>
+            <button type="button"
+                    disabled
+                    title="Semua menu sudah memiliki resep"
+                    style="font-size:12px; padding:6px 12px; border-radius:999px; border:1px solid var(--tr-border); background:var(--tr-border); color:var(--tr-muted-text); cursor:not-allowed;">
+                + Tambah Resep
+            </button>
+        <?php endif; ?>
     </div>
 
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">

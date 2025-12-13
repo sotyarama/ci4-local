@@ -57,10 +57,18 @@ class Recipes extends BaseController
         }
         unset($menu); // safety
 
+        $totalMenu = $this->menuModel->countAllResults();
+        $menuWithRecipe = $this->recipeModel
+            ->select('menu_id')
+            ->distinct()
+            ->countAllResults();
+        $canCreateRecipe = $totalMenu > $menuWithRecipe;
+
         $data = [
             'title'    => 'Master Resep Menu',
             'subtitle' => 'Mapping menu ke bahan baku (BOM)',
             'menus'    => $menus,
+            'canCreateRecipe' => $canCreateRecipe,
         ];
 
         return view('master/recipes_index', $data);
@@ -68,6 +76,18 @@ class Recipes extends BaseController
 
     public function create()
     {
+        $totalMenu = $this->menuModel->countAllResults();
+        $menuWithRecipe = $this->recipeModel
+            ->select('menu_id')
+            ->distinct()
+            ->countAllResults();
+        $canCreateRecipe = $totalMenu > $menuWithRecipe;
+
+        if (! $canCreateRecipe) {
+            return redirect()->to(site_url('master/recipes'))
+                ->with('error', 'Semua menu sudah memiliki resep.');
+        }
+
         // Hanya tampilkan menu yang belum punya resep
         $db = \Config\Database::connect();
         $menus = $db->table('menus m')
