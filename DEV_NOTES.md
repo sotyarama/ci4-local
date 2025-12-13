@@ -109,6 +109,10 @@ Tujuan utama:
 - Placeholder `value=""` tetap diabaikan (hanya tampil sebagai placeholder input); event change/form submit tidak berubah.
 - File: `public/js/app.js`.
 
+## Uncommitted (2025-12-13) - Guard Tambah Resep
+- Tombol "Tambah Resep" di list resep otomatis disabled jika semua menu sudah punya resep (ada title helper).
+- Guard backend di `Recipes::create()` memblokir akses langsung saat tidak ada menu tersisa tanpa resep.
+
 # Current Modules Status
 
 | Module               | Status              | Notes                                                          |
