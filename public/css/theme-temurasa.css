@@ -7,7 +7,7 @@
     --tr-text: #3A3A3A;
     --tr-secondary-green: #C8D7C0;
     --tr-secondary-beige: #E7DFD1;
-    /* Supporting tones */
+
     --tr-border: #d6cfc0;
     --tr-surface: #E7DFD1;
     --tr-surface-strong: #C8D7C0;
@@ -17,9 +17,7 @@
 
 *,
 *::before,
-*::after {
-    box-sizing: border-box;
-}
+*::after { box-sizing: border-box; }
 
 body {
     margin: 0;
@@ -28,9 +26,7 @@ body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-a {
-    color: var(--tr-primary);
-}
+a { color: var(--tr-primary); }
 
 .card {
     background: var(--tr-surface);
@@ -55,11 +51,7 @@ a {
     cursor: pointer;
     transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
 }
-
-.btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .btn-primary {
     background: var(--tr-primary-strong);
@@ -67,19 +59,16 @@ a {
     color: #fff;
     box-shadow: 0 8px 18px rgba(122, 154, 108, 0.32);
 }
-
 .btn-primary:hover {
     background: var(--tr-primary-deep);
     box-shadow: 0 10px 22px rgba(122, 154, 108, 0.36);
 }
-
 .btn-secondary {
     background: var(--tr-secondary-beige);
     border-color: var(--tr-border);
     color: var(--tr-primary);
     font-weight: 600;
 }
-
 .btn-outline-primary {
     background: transparent;
     border-color: var(--tr-primary);
@@ -92,16 +81,12 @@ a[style*="var(--tr-primary)"],
     color: #fff !important;
     font-weight: 600;
 }
-
 [style*="rgba(122,154,108,0.14)"] {
     color: var(--tr-primary) !important;
     font-weight: 600;
     border-color: var(--tr-primary) !important;
 }
-
-[style*="background:var(--tr-accent-brown)"] {
-    color: #fff !important;
-}
+[style*="background:var(--tr-accent-brown)"] { color: #fff !important; }
 
 input[type="text"],
 input[type="number"],
@@ -125,21 +110,17 @@ select:focus {
     border-color: var(--tr-primary);
 }
 
-label {
-    color: var(--tr-muted-text);
-}
+label { color: var(--tr-muted-text); }
 
 /* =========================
-   FILTERABLE SELECT DROPDOWN
+   FILTERABLE SELECT - DEFAULT (FLOATING)
    ========================= */
 
 .filter-select {
     position: relative;
     width: 100%;
-    z-index: 50; /* <-- tambahan: buat stack di atas row/card lain */
 }
 
-/* Select asli disembunyikan tapi tetap ada untuk event change / form submit */
 .filter-select .filter-select-original {
     position: absolute !important;
     inset: 0;
@@ -147,7 +128,6 @@ label {
     pointer-events: none !important;
 }
 
-/* Input filter yang tampak di UI */
 .filter-select-input {
     width: 100%;
     padding: 8px 28px 8px 10px;
@@ -158,6 +138,12 @@ label {
     font-size: 13px;
     line-height: 1.4;
     cursor: pointer;
+
+    /* force left align everywhere */
+    text-align: left !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .filter-select-input:focus {
@@ -165,13 +151,11 @@ label {
     border-color: var(--tr-primary);
 }
 
-/* State open: beri sedikit shadow */
 .filter-select.open .filter-select-input {
     border-color: var(--tr-primary);
     box-shadow: 0 8px 18px rgba(58, 58, 58, 0.18);
 }
 
-/* Ikon caret */
 .filter-select-caret {
     position: absolute;
     right: 10px;
@@ -183,7 +167,7 @@ label {
     z-index: 2;
 }
 
-/* Container list dropdown */
+/* floating list */
 .filter-select-list {
     position: absolute;
     top: calc(100% + 4px);
@@ -195,42 +179,39 @@ label {
     box-shadow: 0 12px 28px rgba(58, 58, 58, 0.2);
     max-height: 260px;
     overflow-y: auto;
-
-    /* default: tidak tampil sampai .open ditambahkan */
     display: none;
     z-index: 9999;
+
+    padding: 0;
+    margin: 0;
+    text-align: left !important;
 }
 
-/* Saat wrapper punya class .open, paksa tampil */
-.filter-select.open .filter-select-list {
-    display: block !important;
-}
+.filter-select.open .filter-select-list { display: block !important; }
 
-/* Item di dalam dropdown */
 .filter-select-option {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
     padding: 8px 10px;
     cursor: pointer;
     font-size: 13px;
     border-bottom: 1px solid var(--tr-border);
+
+    text-align: left !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.filter-select-option:last-child {
-    border-bottom: none;
-}
+.filter-select-option:last-child { border-bottom: none; }
 
 .filter-select-option:hover,
-.filter-select-option.active {
-    background: var(--tr-secondary-green);
-}
+.filter-select-option.active { background: var(--tr-secondary-green); }
 
-.filter-select-option.selected {
-    font-weight: 600;
-}
+.filter-select-option.selected { font-weight: 600; }
 
-.filter-select-option.is-disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
+.filter-select-option.is-disabled { opacity: 0.5; cursor: not-allowed; }
 
 .filter-select-empty {
     padding: 10px;
@@ -249,8 +230,7 @@ label {
    ========================= */
 
 .table-scroll-wrap {
-    overflow-x: auto;
-    overflow-y: visible; /* penting: jangan auto, supaya dropdown tidak terpotong */
+    overflow: auto; /* default aman untuk list halaman lain */
     max-height: calc(80vh - 120px);
     border: 1px solid var(--tr-border);
     border-radius: 10px;
@@ -268,15 +248,12 @@ th {
     color: var(--tr-text);
 }
 
-th,
-td {
+th, td {
     padding: 6px 8px;
     border-bottom: 1px solid var(--tr-border);
 }
 
-tr:hover td {
-    background: rgba(200, 215, 192, 0.4);
-}
+tr:hover td { background: rgba(200, 215, 192, 0.4); }
 
 .pill {
     display: inline-flex;
@@ -289,89 +266,71 @@ tr:hover td {
     font-size: 12px;
 }
 
-.muted {
-    color: var(--tr-muted-text);
-}
+.muted { color: var(--tr-muted-text); }
 
-/* ============================================
-   FIX DROPDOWN TERPOTONG CARD (GLOBAL PATCH)
-   ============================================ */
-
-.card,
-.card-body,
-.row,
-.col,
-.form-group,
-.form-row,
-.table-scroll-wrap,
-.table-scroll-wrap tr,
-.table-scroll-wrap td,
-.table-scroll-wrap .item-row {
-    overflow: visible !important;
-}
-
-/* Pastikan dropdown berada di atas layer lain */
-.filter-select {
-    position: relative;
-    z-index: 9999 !important;
-}
-
-.filter-select-list {
-    position: absolute;
-    z-index: 10000 !important;
-}
-
-/* ============================================
-   FIX DROPDOWN TERPOTONG CARD / CONTENT
-   ============================================ */
-
-/* Semua container utama di halaman transaksi jangan motong anaknya */
-.layout,
-.main,
-main.content,
-main.content > .card,
-main.content form {
-    overflow: visible !important;
-}
-
-/* Pastikan wrapper table tidak memotong dropdown */
-.table-scroll-wrap,
-.table-scroll-wrap table,
-.table-scroll-wrap tbody,
-.table-scroll-wrap tr,
-.table-scroll-wrap td {
-    overflow: visible !important;
-}
-
-/* Naikkan lagi layer dropdown di atas card lain */
-.filter-select {
-    position: relative;
-    z-index: 200 !important;
-}
-
-.filter-select-list {
-    position: absolute;
-    z-index: 210 !important;
-}
-
-/* ============================================
-   OVERRIDE KHUSUS TABEL PENJUALAN
-   ============================================ */
-
-/* Di tabel penjualan, buat dropdown "inline" supaya tidak ketutup card */
-#items-table .filter-select {
-    z-index: auto !important;
-}
+/* =================================================
+   POS PENJUALAN: INLINE DROPDOWN (agar tidak terpotong)
+   ================================================= */
 
 #items-table .filter-select-list {
-    position: static !important;   /* ikut layout normal, bukan absolute */
-    display: none;                 /* default tersembunyi */
+    position: static !important;
+    display: none;
     margin-top: 4px;
     max-height: 200px;
     overflow-y: auto;
+    z-index: auto !important;
 }
 
-/* Saat open, tampilkan list seperti biasa */
 #items-table .filter-select.open .filter-select-list {
     display: block !important;
 }
+
+/* =================================================
+   FORM RESEP (MULTI ROW): INLINE + SPACING
+   Scope: field wrapper yang punya label di dalam card
+   (menghindari efek ke dropdown global lain)
+   ================================================= */
+
+/* wrapper field umum: <div> yang punya <label> langsung di bawah .card */
+.card div:has(> label) .filter-select-list {
+    position: static !important;
+    display: none;
+    margin-top: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: auto !important;
+}
+
+.card div:has(> label) .filter-select.open .filter-select-list {
+    display: block !important;
+}
+
+/* agar tidak numpuk saat beberapa dropdown ada di bawahnya */
+.card div:has(> label) .filter-select.open {
+    margin-bottom: 220px;
+}
+
+/* ============================================
+   FIX ALIGNMENT: select & input harus LEFT
+   (atasi kasus select yang kelihatan center)
+   ============================================ */
+
+/* Input filter (custom) */
+.filter-select .filter-select-input{
+  text-align: left !important;
+  padding-left: 10px !important;
+  padding-right: 28px !important;
+  text-indent: 0 !important;
+}
+
+/* Select asli (native) — beberapa browser butuh text-align-last */
+.filter-select select.filter-select-original{
+  text-align: left !important;
+  text-align-last: left !important;
+}
+
+/* Opsi di list juga pastikan left */
+.filter-select .filter-select-option{
+  text-align: left !important;
+}
+
