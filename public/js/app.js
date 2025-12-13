@@ -439,8 +439,8 @@
       wrapper.classList.toggle('is-disabled', select.disabled);
       input.disabled = select.disabled;
       syncInputLabel();
-      renderList();
-      syncListSize();
+      // renderList();
+      // syncListSize();
 
       return api;
     }
@@ -474,7 +474,12 @@
     };
   })();
 
+  let __filterSelectInited = false;
+
   function initFilterSelect() {
+    if (__filterSelectInited) return;
+    __filterSelectInited = true;
+    
     try {
       console.log('[FilterSelect] initFilterSelect called');
       FilterSelect.enhanceAll();
