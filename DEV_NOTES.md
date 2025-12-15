@@ -1,7 +1,7 @@
 # DEV_NOTES.md
 POS Cafe System — Development Notes  
 Author: GS  
-Last updated: 2025-12-13 (Filterable dropdown refinements)
+Last updated: 2025-12-15 (Sales by Time, Stock Variance, Payroll, POS Touchscreen)
 
 ---
 
@@ -50,9 +50,9 @@ Tujuan utama:
 - Sales detail view: margin per item & ringkasan (revenue, HPP, margin nominal & %).
 - End-to-end: Menu → Recipe → Purchase → Sales → HPP → Margin → Stock OUT.
 
-## 6) Stock Movement List + Daily Sales Report (2025-12-08 Late Night)
+## 6) Stock Movement List + Sales Report (2025-12-08 Late Night)
 - Inventory\StockMovements: riwayat IN/OUT + filter bahan, date range, ref_type/id.
-- Reports\SalesSummary::daily: ringkasan per hari + grand total.
+- Reports\SalesSummary::daily (digantikan laporan by time).
 - Sidebar update (master, transaksi, inventory, laporan).
 
 ## 7) Stabilization & Fixes (2025-12-09 Morning)
@@ -83,6 +83,12 @@ Tujuan utama:
 - Recipe form: pilih tipe baris (bahan baku atau sub-resep), dropdown sub-resep (daftar resep lain), unit label mengikuti pilihan; tambah guard siklus dan validasi qty/waste.
 - HPP engine: rekursif dengan raw breakdown per batch + guard siklus; sub-resep ikut dihitung ke HPP dan konsumsi bahan.
 - Sales flow: kebutuhan stok & pengurangan stok memakai raw breakdown (flatten) dari resep, jadi sub-resep ikut mengurangi stok bahan baku.
+
+## 12) Sales Time Report + POS Touch + Stock Variance + Payroll (2025-12-15)
+- Reports\SalesSummary::byTime: laporan penjualan by day/week/month/year + preset range ala Moka (start/end, all-day/time, CSV). Laporan harian/bulanan terpisah dihapus.
+- Laporan Stok & Selisih: opening (movement sebelum start), IN/OUT periode, saldo akhir, stok sistem, selisih per bahan (filter bahan/tanggal/pencarian).
+- POS Touchscreen (Phase 2 awal): grid card menu, tap tambah qty, keranjang qty +/-/hapus, submit ke Sales::store (backend sama).
+- Payroll Overhead (owner only): CRUD payroll bulanan per staff (role Staff) + filter; tabel `payrolls` (uniq user+periode).
 
 ## Uncommitted (2025-12-10) - Temu Rasa UI Refresh
 - Brand theme file `public/css/theme-temurasa.css` dengan CSS variables + komponen dasar (card, input, button, table, scrollbar) sesuai palet Temu Rasa.
@@ -133,10 +139,11 @@ Tujuan utama:
 | Sales                | Backend v1 Complete | HPP snapshot, total_cost, margin, stock OUT, validation; blok menu tanpa resep/detail |
 | Stock Movements      | List Implemented    | IN/OUT list + filter                                           |
 | Stock Card           | Implemented         | Per bahan, filter tanggal + opening balance, saldo berjalan    |
-| Reports - Sales Daily| Implemented (v1)    | Ringkasan penjualan harian + grand total                       |
+| Reports - Sales Daily| Replaced             | Diganti laporan Penjualan by Time (day/week/month/year)         |
 | Overhead             | Basic               | Tabel overhead + kategori master; input & list dengan filter tanggal |
 | Audit Logs           | Not started         | Planned                                                        |
-| POS UI Skin          | Planned (Phase 2)   | Touchscreen-friendly, setelah backend stabil                   |
+| POS UI Skin          | In Progress (P2)    | Touchscreen grid, cart qty +/- , submit ke Sales::store        |
+| Overhead Payroll     | Implemented         | CRUD payroll bulanan staff (owner only)                        |
 
 ---
 
@@ -289,3 +296,4 @@ Setiap fitur/modul baru minimal cek:
 - Observability diperkuat: kartu stok per bahan, summary harian di Sales.  
 - Seed demo siap dipakai untuk testing cepat (supplier, bahan, pembelian IN, resep, user owner).  
 - Dokumen ini untuk menjaga konteks jika ada jeda/pindah device.
+

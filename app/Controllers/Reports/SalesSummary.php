@@ -15,64 +15,6 @@ class SalesSummary extends BaseController
     }
 
     /**
-     * Ringkasan penjualan per hari (omzet, HPP, margin).
-     */
-    public function daily()
-    {
-        $dateFrom = $this->request->getGet('date_from') ?: null;
-        $dateTo   = $this->request->getGet('date_to') ?: null;
-        $perPage  = $this->sanitizePerPage($this->request->getGet('per_page'));
-        $page     = $this->sanitizePage($this->request->getGet('page'));
-        $wantCsv  = ($this->request->getGet('export') === 'csv');
-
-        $db = \Config\Database::connect();
-
-        $baseBuilder = $db->table('sales')
-            ->select('sale_date, SUM(total_amount) AS total_sales, SUM(total_cost) AS total_cost')
-            ->where('status !=', 'void')
-            ->groupBy('sale_date')
-            ->orderBy('sale_date', 'DESC');
-
-        $this->applyDateFilter($baseBuilder, $dateFrom, $dateTo);
-
-        if ($wantCsv) {
-            $rows = (clone $baseBuilder)->get()->getResultArray();
-            return $this->exportDailyCsv($rows, $dateFrom, $dateTo);
-        }
-
-        $totalRows = $this->countDailyRows($dateFrom, $dateTo);
-        $totalPages = max(1, (int) ceil($totalRows / $perPage));
-        if ($page > $totalPages) {
-            $page = $totalPages;
-        }
-        $offset = ($page - 1) * $perPage;
-
-        $rows = (clone $baseBuilder)
-            ->limit($perPage, $offset)
-            ->get()
-            ->getResultArray();
-
-        $totals = $this->aggregateDailyTotals($dateFrom, $dateTo);
-
-
-        $data = [
-            'title'     => 'Laporan Penjualan Harian',
-            'subtitle'  => 'Ringkasan omzet, HPP, dan margin per tanggal',
-            'rows'      => $rows,
-            'dateFrom'  => $dateFrom,
-            'dateTo'    => $dateTo,
-            'perPage'   => $perPage,
-            'page'      => $page,
-            'totalRows' => $totalRows,
-            'totalPages'=> $totalPages,
-            'totalSalesAll' => (float) ($totals['total_sales'] ?? 0),
-            'totalCostAll'  => (float) ($totals['total_cost'] ?? 0),
-        ];
-
-        return view('reports/sales_daily', $data);
-    }
-
-    /**
      * Ringkasan penjualan per menu (periode, qty, omzet, HPP total, margin).
      */
     public function perMenu()
@@ -201,38 +143,120 @@ class SalesSummary extends BaseController
         return view('reports/sales_category', $data);
     }
 
-    private function exportDailyCsv(array $rows, ?string $dateFrom, ?string $dateTo)
+    /**
+     * Ringkasan penjualan by time (harian/mingguan/bulanan/tahunan).
+     */
+    public function byTime()
     {
-        $fh = fopen('php://temp', 'r+');
+        $startParam = $this->request->getGet('start') ?? $this->request->getGet('date_from');
+        $endParam   = $this->request->getGet('end') ?? $this->request->getGet('date_to');
+        $allDay     = $this->request->getGet('allday');
+        $allDay     = ($allDay === '0') ? false : true;
+        $startTime  = $this->sanitizeTime($this->request->getGet('start_time'), '00:00');
+        $endTime    = $this->sanitizeTime($this->request->getGet('end_time'), '23:59');
 
-        fputcsv($fh, ['Tanggal', 'Total Penjualan', 'Total HPP', 'Margin', 'Margin %']);
+        // Default: this month
+        $today      = new \DateTime('now', new \DateTimeZone('Asia/Jakarta'));
+        $defaultStart = (clone $today)->modify('first day of this month')->format('Y-m-d');
+        $defaultEnd   = $today->format('Y-m-d');
 
-        foreach ($rows as $r) {
-            $sales  = (float) ($r['total_sales'] ?? 0);
-            $cost   = (float) ($r['total_cost'] ?? 0);
-            $margin = $sales - $cost;
-            $marginPct = $sales > 0 ? ($margin / $sales * 100.0) : 0;
+        $startDate = $startParam ?: $defaultStart;
+        $endDate   = $endParam   ?: $defaultEnd;
 
-            fputcsv($fh, [
-                $r['sale_date'] ?? '',
-                $sales,
-                $cost,
-                $margin,
-                round($marginPct, 2),
-            ]);
+        // Validate range
+        $startObj = \DateTime::createFromFormat('Y-m-d', $startDate, new \DateTimeZone('Asia/Jakarta')) ?: new \DateTime($defaultStart, new \DateTimeZone('Asia/Jakarta'));
+        $endObj   = \DateTime::createFromFormat('Y-m-d', $endDate, new \DateTimeZone('Asia/Jakarta'))   ?: new \DateTime($defaultEnd, new \DateTimeZone('Asia/Jakarta'));
+
+        if ($startObj > $endObj) {
+            $tmp = $startObj;
+            $startObj = $endObj;
+            $endObj = $tmp;
         }
 
-        rewind($fh);
-        $csv = stream_get_contents($fh);
-        fclose($fh);
+        // Clamp max range to 366 days for safety
+        $maxDays = 366;
+        $diffDays = (int) $startObj->diff($endObj)->format('%a');
+        if ($diffDays + 1 > $maxDays) {
+            $endObj = (clone $startObj)->modify('+' . ($maxDays - 1) . ' days');
+        }
 
-        $period = $this->formatPeriodLabel($dateFrom, $dateTo);
-        $filename = 'sales_daily_' . $period . '.csv';
+        if ($allDay) {
+            $fromDateTime = $startObj->format('Y-m-d') . ' 00:00:00';
+            $toDateTime   = $endObj->format('Y-m-d') . ' 23:59:59';
+        } else {
+            $fromDateTime = $startObj->format('Y-m-d') . ' ' . $startTime . ':00';
+            $toDateTime   = $endObj->format('Y-m-d') . ' ' . $endTime . ':59';
+        }
 
-        return $this->response
-            ->setHeader('Content-Type', 'text/csv')
-            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
-            ->setBody($csv);
+        $dateFrom = $startObj->format('Y-m-d');
+        $dateTo   = $endObj->format('Y-m-d');
+        $perPage  = $this->sanitizePerPage($this->request->getGet('per_page'));
+        $page     = $this->sanitizePage($this->request->getGet('page'));
+        $wantCsv  = ($this->request->getGet('export') === 'csv');
+
+        $group    = strtolower((string) ($this->request->getGet('group') ?? 'day'));
+        $allowedGroups = ['day', 'week', 'month', 'year'];
+        if (! in_array($group, $allowedGroups, true)) {
+            $group = 'day';
+        }
+
+        [$periodExpr, $periodKeyExpr] = $this->resolvePeriodExpressions($group);
+
+        $db = \Config\Database::connect();
+
+        $baseBuilder = $db->table('sales')
+            ->select("{$periodExpr} AS period", false)
+            ->select("{$periodKeyExpr} AS period_key", false)
+            ->select('SUM(total_amount) AS total_sales')
+            ->select('SUM(total_cost) AS total_cost')
+            ->where('status !=', 'void')
+            ->groupBy('period_key')
+            ->orderBy('period_key', 'DESC');
+
+        $this->applyDateTimeFilter($baseBuilder, $fromDateTime, $toDateTime);
+
+        if ($wantCsv) {
+            $rows = (clone $baseBuilder)->get()->getResultArray();
+            return $this->exportTimeCsv($rows, $dateFrom, $dateTo, $group, $allDay, $startTime, $endTime);
+        }
+
+        $totalRows  = $this->countTimeRows($fromDateTime, $toDateTime, $periodKeyExpr);
+        $totalPages = max(1, (int) ceil($totalRows / $perPage));
+        if ($page > $totalPages) {
+            $page = $totalPages;
+        }
+        $offset = ($page - 1) * $perPage;
+
+        $rows = (clone $baseBuilder)
+            ->limit($perPage, $offset)
+            ->get()
+            ->getResultArray();
+
+        $totals = $this->aggregateTimeTotals($fromDateTime, $toDateTime);
+
+        $data = [
+            'title'     => 'Laporan Penjualan by Time',
+            'subtitle'  => 'Ringkasan omzet, HPP, margin per periode (harian/mingguan/bulanan/tahunan)',
+            'rows'      => $rows,
+            'dateFrom'  => $dateFrom,
+            'dateTo'    => $dateTo,
+            'startDate' => $dateFrom,
+            'endDate'   => $dateTo,
+            'allDay'    => $allDay,
+            'startTime' => $startTime,
+            'endTime'   => $endTime,
+            'rangeDays' => (int) ($startObj->diff($endObj)->format('%a')) + 1,
+            'perPage'   => $perPage,
+            'page'      => $page,
+            'totalRows' => $totalRows,
+            'totalPages'=> $totalPages,
+            'totalSalesAll' => (float) ($totals['total_sales'] ?? 0),
+            'totalCostAll'  => (float) ($totals['total_cost'] ?? 0),
+            'group'     => $group,
+            'groupOptions' => $allowedGroups,
+        ];
+
+        return view('reports/sales_time', $data);
     }
 
     private function exportPerCategoryCsv(array $rows, ?string $dateFrom, ?string $dateTo)
@@ -307,6 +331,44 @@ class SalesSummary extends BaseController
             ->setBody($csv);
     }
 
+    private function exportTimeCsv(array $rows, ?string $dateFrom, ?string $dateTo, string $group, bool $allDay, string $startTime, string $endTime)
+    {
+        $fh = fopen('php://temp', 'r+');
+
+        fputcsv($fh, ['Periode', 'Total Penjualan', 'Total HPP', 'Margin', 'Margin %', 'Group', 'All Day', 'Start Time', 'End Time']);
+
+        foreach ($rows as $r) {
+            $sales  = (float) ($r['total_sales'] ?? 0);
+            $cost   = (float) ($r['total_cost'] ?? 0);
+            $margin = $sales - $cost;
+            $marginPct = $sales > 0 ? ($margin / $sales * 100.0) : 0;
+
+            fputcsv($fh, [
+                $r['period'] ?? '',
+                $sales,
+                $cost,
+                $margin,
+                round($marginPct, 2),
+                $group,
+                $allDay ? '1' : '0',
+                $startTime,
+                $endTime,
+            ]);
+        }
+
+        rewind($fh);
+        $csv = stream_get_contents($fh);
+        fclose($fh);
+
+        $period = $this->formatPeriodLabel($dateFrom, $dateTo);
+        $filename = 'sales_by_time_' . $group . '_' . $period . '.csv';
+
+        return $this->response
+            ->setHeader('Content-Type', 'text/csv')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->setBody($csv);
+    }
+
     private function formatPeriodLabel(?string $from, ?string $to): string
     {
         $exportDate = date('Ymd');
@@ -342,6 +404,22 @@ class SalesSummary extends BaseController
         return $page > 0 ? $page : 1;
     }
 
+    private function sanitizeTime($input, string $default): string
+    {
+        if (! is_string($input) || $input === '') {
+            return $default;
+        }
+
+        $parts = explode(':', $input);
+        $h = isset($parts[0]) ? (int) $parts[0] : 0;
+        $m = isset($parts[1]) ? (int) $parts[1] : 0;
+
+        $h = max(0, min(23, $h));
+        $m = max(0, min(59, $m));
+
+        return str_pad((string) $h, 2, '0', STR_PAD_LEFT) . ':' . str_pad((string) $m, 2, '0', STR_PAD_LEFT);
+    }
+
     private function applyDateFilter($builder, ?string $dateFrom, ?string $dateTo, string $field = 'sale_date')
     {
         if ($dateFrom) {
@@ -353,31 +431,15 @@ class SalesSummary extends BaseController
         }
     }
 
-    private function countDailyRows(?string $dateFrom, ?string $dateTo): int
+    private function applyDateTimeFilter($builder, ?string $fromDateTime, ?string $toDateTime, string $field = 'created_at')
     {
-        $db = \Config\Database::connect();
+        if ($fromDateTime) {
+            $builder->where($field . ' >=', $fromDateTime);
+        }
 
-        $builder = $db->table('sales')
-            ->select('COUNT(DISTINCT sale_date) AS cnt')
-            ->where('status !=', 'void');
-
-        $this->applyDateFilter($builder, $dateFrom, $dateTo);
-
-        $row = $builder->get()->getRowArray();
-        return (int) ($row['cnt'] ?? 0);
-    }
-
-    private function aggregateDailyTotals(?string $dateFrom, ?string $dateTo): array
-    {
-        $db = \Config\Database::connect();
-
-        $builder = $db->table('sales')
-            ->select('SUM(total_amount) AS total_sales, SUM(total_cost) AS total_cost')
-            ->where('status !=', 'void');
-
-        $this->applyDateFilter($builder, $dateFrom, $dateTo);
-
-        return $builder->get()->getRowArray() ?? ['total_sales' => 0, 'total_cost' => 0];
+        if ($toDateTime) {
+            $builder->where($field . ' <=', $toDateTime);
+        }
     }
 
     private function countMenuRows(?string $dateFrom, ?string $dateTo): int
@@ -438,5 +500,51 @@ class SalesSummary extends BaseController
         $this->applyDateFilter($builder, $dateFrom, $dateTo, 's.sale_date');
 
         return $builder->get()->getRowArray() ?? ['total_qty' => 0, 'total_sales' => 0, 'total_cost' => 0];
+    }
+
+    private function resolvePeriodExpressions(string $group): array
+    {
+        switch ($group) {
+            case 'week':
+                return [
+                    'CONCAT(YEAR(created_at), "-W", LPAD(WEEK(created_at, 1), 2, "0"))',
+                    'YEARWEEK(created_at, 1)'
+                ];
+            case 'month':
+                return ['DATE_FORMAT(created_at, "%Y-%m")', 'DATE_FORMAT(created_at, "%Y-%m")'];
+            case 'year':
+                return ['DATE_FORMAT(created_at, "%Y")', 'DATE_FORMAT(created_at, "%Y")'];
+            case 'day':
+            default:
+                return ['DATE(created_at)', 'DATE(created_at)'];
+        }
+    }
+
+    private function countTimeRows(?string $fromDateTime, ?string $toDateTime, string $periodKeyExpr): int
+    {
+        $db = \Config\Database::connect();
+
+        $builder = $db->table('sales')
+            ->select("COUNT(DISTINCT {$periodKeyExpr}) AS cnt", false)
+            ->where('status !=', 'void');
+
+        $this->applyDateTimeFilter($builder, $fromDateTime, $toDateTime);
+
+        $row = $builder->get()->getRowArray();
+        return (int) ($row['cnt'] ?? 0);
+    }
+
+
+    private function aggregateTimeTotals(?string $fromDateTime, ?string $toDateTime): array
+    {
+        $db = \Config\Database::connect();
+
+        $builder = $db->table('sales')
+            ->select('SUM(total_amount) AS total_sales, SUM(total_cost) AS total_cost')
+            ->where('status !=', 'void');
+
+        $this->applyDateTimeFilter($builder, $fromDateTime, $toDateTime);
+
+        return $builder->get()->getRowArray() ?? ['total_sales' => 0, 'total_cost' => 0];
     }
 }

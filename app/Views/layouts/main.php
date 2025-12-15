@@ -258,7 +258,7 @@
             if ($p === '' && $currentPath === '') {
                 return true;
             }
-            if ($p !== '' && (strpos($currentPath, $p) === 0)) {
+            if ($p !== '' && ($currentPath === $p || str_starts_with($currentPath, $p . '/'))) {
                 return true;
             }
         }
@@ -347,6 +347,7 @@
             </div>
             <div class="nav-group" id="nav-main">
                 <a href="<?= site_url('/') ?>" class="nav-link <?= $menuAllowed('dashboard') ? '' : 'disabled-link'; ?> <?= $isActive(['','dashboard']) ? 'active' : ''; ?>">Dashboard</a>
+                <a href="<?= site_url('pos/touch') ?>" class="nav-link small <?= $menuAllowed('transactions') ? '' : 'disabled-link'; ?> <?= $isActive(['pos/touch']) ? 'active' : ''; ?>">POS UI (Touch)</a>
             </div>
 
             <div class="nav-section-title collapsible" data-target="master">
@@ -367,7 +368,6 @@
             <div class="nav-group" id="nav-transactions">
                 <a href="<?= site_url('purchases') ?>" class="nav-link small <?= $menuAllowed('transactions') ? '' : 'disabled-link'; ?> <?= $isActive(['purchases']) ? 'active' : ''; ?>">Pembelian Bahan</a>
                 <a href="<?= site_url('transactions/sales') ?>" class="nav-link small <?= $menuAllowed('transactions') ? '' : 'disabled-link'; ?> <?= $isActive(['transactions/sales']) ? 'active' : ''; ?>">POS Penjualan</a>
-                <a href="#" class="nav-link small disabled-link" title="Planned">Retur Penjualan (planned)</a>
             </div>
 
             <div class="nav-section-title collapsible" data-target="inventory">
@@ -376,38 +376,32 @@
             <div class="nav-group" id="nav-inventory">
                 <a href="<?= site_url('inventory/stock-movements') ?>" class="nav-link small <?= $menuAllowed('inventory') ? '' : 'disabled-link'; ?> <?= $isActive(['inventory/stock-movements']) ? 'active' : ''; ?>">Riwayat Stok (IN/OUT)</a>
                 <a href="<?= site_url('inventory/stock-card') ?>" class="nav-link small <?= $menuAllowed('inventory') ? '' : 'disabled-link'; ?> <?= $isActive(['inventory/stock-card']) ? 'active' : ''; ?>">Kartu Stok per Bahan</a>
-                <a href="#" class="nav-link small disabled-link" title="Planned">Stock Adjustment (planned)</a>
-                <a href="#" class="nav-link small disabled-link" title="Planned">Stock & Selisih Fisik (planned)</a>
+                <a href="<?= site_url('inventory/stock-adjustments') ?>" class="nav-link small <?= $menuAllowed('inventory') ? '' : 'disabled-link'; ?> <?= $isActive(['inventory/stock-adjustments']) ? 'active' : ''; ?>">Stock Adjustment</a>
+                <a href="<?= site_url('inventory/stock-opname') ?>" class="nav-link small <?= $menuAllowed('inventory') ? '' : 'disabled-link'; ?> <?= $isActive(['inventory/stock-opname']) ? 'active' : ''; ?>">Stock & Selisih Fisik</a>
             </div>
 
             <div class="nav-section-title collapsible" data-target="reports">
                 Laporan <span class="collapse-arrow">▾</span>
             </div>
             <div class="nav-group" id="nav-reports">
-                <a href="<?= site_url('reports/sales/daily') ?>" class="nav-link small <?= $menuAllowed('reports') ? '' : 'disabled-link'; ?> <?= $isActive(['reports/sales/daily']) ? 'active' : ''; ?>">Penjualan Harian</a>
+                <a href="<?= site_url('reports/sales/time') ?>" class="nav-link small <?= $menuAllowed('reports') ? '' : 'disabled-link'; ?> <?= $isActive(['reports/sales/time']) ? 'active' : ''; ?>">Penjualan by Time</a>
                 <a href="<?= site_url('reports/sales/menu') ?>" class="nav-link small <?= $menuAllowed('reports') ? '' : 'disabled-link'; ?> <?= $isActive(['reports/sales/menu']) ? 'active' : ''; ?>">Penjualan per Menu</a>
                 <a href="<?= site_url('reports/sales/category') ?>" class="nav-link small <?= $menuAllowed('reports') ? '' : 'disabled-link'; ?> <?= $isActive(['reports/sales/category']) ? 'active' : ''; ?>">Penjualan per Kategori</a>
                 <a href="<?= site_url('reports/purchases/supplier') ?>" class="nav-link small <?= $menuAllowed('reports') ? '' : 'disabled-link'; ?> <?= $isActive(['reports/purchases/supplier']) ? 'active' : ''; ?>">Pembelian per Supplier</a>
                 <a href="<?= site_url('reports/purchases/material') ?>" class="nav-link small <?= $menuAllowed('reports') ? '' : 'disabled-link'; ?> <?= $isActive(['reports/purchases/material']) ? 'active' : ''; ?>">Pembelian per Bahan</a>
-                <a href="#" class="nav-link small disabled-link" title="Planned">Penjualan Bulanan (planned)</a>
-                <a href="#" class="nav-link small disabled-link" title="Planned">Stok & Selisih (planned)</a>
+                <a href="<?= site_url('reports/stock/variance') ?>" class="nav-link small <?= $menuAllowed('reports') ? '' : 'disabled-link'; ?> <?= $isActive(['reports/stock/variance']) ? 'active' : ''; ?>">Stok & Selisih</a>
             </div>
 
             <div class="nav-section-title collapsible" data-target="overhead">
                 Overhead <span class="collapse-arrow">▾</span>
             </div>
             <div class="nav-group" id="nav-overhead">
-                <a href="<?= site_url('overheads') ?>" class="nav-link small <?= $menuAllowed('overhead') ? '' : 'disabled-link'; ?> <?= $isActive(['overheads']) ? 'active' : ''; ?>">Biaya Overhead</a>
+                <?php $isOverheadPayroll = str_starts_with($currentPath, 'overheads/payroll'); ?>
+                <a href="<?= site_url('overheads') ?>" class="nav-link small <?= $menuAllowed('overhead') ? '' : 'disabled-link'; ?> <?= (!$isOverheadPayroll && $isActive(['overheads'])) ? 'active' : ''; ?>">Biaya Overhead</a>
                 <a href="<?= site_url('overhead-categories') ?>" class="nav-link small <?= $menuAllowed('overhead') ? '' : 'disabled-link'; ?> <?= $isActive(['overhead-categories']) ? 'active' : ''; ?>">Kategori Overhead</a>
-                <a href="#" class="nav-link small disabled-link" title="Planned">Overhead (Payroll) planned</a>
+                <a href="<?= site_url('overheads/payroll') ?>" class="nav-link small <?= $menuAllowed('overhead') ? '' : 'disabled-link'; ?> <?= $isOverheadPayroll ? 'active' : ''; ?>">Overhead (Payroll)</a>
             </div>
 
-            <div class="nav-section-title collapsible" data-target="posui">
-                POS UI (Phase 2) <span class="collapse-arrow">▾</span>
-            </div>
-            <div class="nav-group" id="nav-posui">
-                <a href="#" class="nav-link small disabled-link" title="Planned">Touchscreen POS (planned)</a>
-            </div>
         </div>
     </aside>
 

@@ -82,13 +82,17 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         // Inventory - Stock Movements
         $routes->get('inventory/stock-movements', 'Inventory\StockMovements::index');
         $routes->get('inventory/stock-card', 'Inventory\StockMovements::card');
+        // Inventory planned stubs
+        $routes->get('inventory/stock-adjustments', 'Inventory\StockAdjustments::index');
+        $routes->get('inventory/stock-opname', 'Inventory\StockOpname::index');
 
-        // Reports - Sales Daily Summary
-        $routes->get('reports/sales/daily', 'Reports\SalesSummary::daily');
+        // Reports - Sales
         $routes->get('reports/sales/menu', 'Reports\SalesSummary::perMenu');
         $routes->get('reports/sales/category', 'Reports\SalesSummary::perCategory');
+        $routes->get('reports/sales/time', 'Reports\SalesSummary::byTime');
         $routes->get('reports/purchases/supplier', 'Reports\PurchaseSummary::perSupplier');
         $routes->get('reports/purchases/material', 'Reports\PurchaseSummary::perMaterial');
+        $routes->get('reports/stock/variance', 'Reports\StockSummary::variance');
 
         // Overheads
         $routes->get('overheads', 'Overheads::index');
@@ -100,11 +104,20 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->get('overhead-categories/edit/(:num)', 'OverheadCategories::edit/$1');
         $routes->post('overhead-categories/update/(:num)', 'OverheadCategories::update/$1');
         $routes->post('overhead-categories/toggle', 'OverheadCategories::toggle');
+        $routes->get('overheads/payroll', 'OverheadsPayroll::index');
+        $routes->get('overheads/payroll/create', 'OverheadsPayroll::create');
+        $routes->post('overheads/payroll/store', 'OverheadsPayroll::store');
+        $routes->get('overheads/payroll/edit/(:num)', 'OverheadsPayroll::edit/$1');
+        $routes->post('overheads/payroll/update/(:num)', 'OverheadsPayroll::update/$1');
+        $routes->post('overheads/payroll/delete/(:num)', 'OverheadsPayroll::delete/$1');
 
         // Audit Logs
         $routes->get('audit-logs', 'AuditLogs::index');
 
         //Brand Guide
         $routes->get('brand-guide', 'BrandGuide::index');
+
+        // POS Touchscreen UI (Phase 2 stub)
+        $routes->get('pos/touch', 'Pos\Touchscreen::index');
     });
 });

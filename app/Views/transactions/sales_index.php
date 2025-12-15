@@ -126,19 +126,19 @@
                             <?php endif; ?>
                         </span>
                     </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:center;">
-                        <div style="display:flex; justify-content:center; gap:8px;">
-                            <a href="<?= site_url('transactions/sales/detail/' . $row['id']); ?>"
-                               style="font-size:11px; color:#fff; text-decoration:none; background:var(--tr-primary); border:1px solid var(--tr-primary); padding:6px 10px; border-radius:999px;">
-                                Detail
-                            </a>
+                            <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:center;">
+                                <div style="display:flex; justify-content:center; gap:8px;">
+                                    <a href="<?= site_url('transactions/sales/detail/' . $row['id']); ?>"
+                                       style="font-size:11px; color:#fff; text-decoration:none; background:var(--tr-primary); border:1px solid var(--tr-primary); padding:6px 10px; border-radius:999px;">
+                                        Detail
+                                    </a>
                             <?php if (! $isVoid): ?>
-                                <form method="post" action="<?= site_url('transactions/sales/void/' . $row['id']); ?>" onsubmit="return confirm('Void transaksi ini? Stok akan dikembalikan.');" style="display:inline;">
-                                    <?= csrf_field(); ?>
-                                    <button type="submit" style="font-size:11px; color:#fff; background:var(--tr-accent-brown); border:1px solid var(--tr-accent-brown); cursor:pointer; padding:6px 10px; border-radius:999px;">
-                                        Void
-                                    </button>
-                                </form>
+                                <button type="button"
+                                        class="btn btn-secondary btn-void"
+                                        data-url="<?= site_url('transactions/sales/void/' . $row['id']); ?>"
+                                        style="font-size:11px; padding:6px 10px; border-radius:999px; border:1px solid var(--tr-accent-brown); background:var(--tr-accent-brown); color:#fff; cursor:pointer;">
+                                    Void
+                                </button>
                             <?php endif; ?>
                         </div>
                     </td>
@@ -150,6 +150,27 @@
             </tbody>
         </table>
     <?php endif; ?>
+</div>
+
+<!-- Modal Void -->
+<div id="void-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:9998; align-items:center; justify-content:center; padding:16px;">
+    <div style="background:#fff; border-radius:12px; padding:16px; max-width:420px; width:100%; box-shadow:0 16px 40px rgba(0,0,0,0.18); border:1px solid var(--tr-border);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+            <div>
+                <div style="font-size:16px; font-weight:700; color:var(--tr-text);">Void Transaksi</div>
+                <div style="font-size:12px; color:var(--tr-muted-text);">Isi alasan (opsional) lalu konfirmasi.</div>
+            </div>
+            <button type="button" id="void-close" style="border:none; background:transparent; font-size:16px; cursor:pointer; color:var(--tr-muted-text);">×</button>
+        </div>
+        <form id="void-form" method="post" action="" style="display:flex; flex-direction:column; gap:8px;">
+            <?= csrf_field(); ?>
+            <textarea name="void_reason" id="void-reason" rows="3" placeholder="Alasan void (opsional)" style="width:100%; padding:8px 10px; font-size:12px; border:1px solid var(--tr-border); border-radius:8px; background:var(--tr-bg); color:var(--tr-text);"></textarea>
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:4px;">
+                <button type="button" id="void-cancel" class="btn btn-secondary" style="padding:7px 12px; border-radius:8px; font-size:12px; border:1px solid var(--tr-border); background:var(--tr-secondary-beige); color:var(--tr-text);">Batal</button>
+                <button type="submit" class="btn btn-primary" style="padding:7px 12px; border-radius:8px; font-size:12px; background:var(--tr-accent-brown); border:1px solid var(--tr-accent-brown); color:#fff;">Void &amp; Kembalikan Stok</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>
@@ -164,6 +185,44 @@
                 noResult: '#sales-noresult',
                 fields: ['date','invoice','customer','status'],
                 debounce: 200
+            });
+
+            var modal   = document.getElementById('void-modal');
+            var form    = document.getElementById('void-form');
+            var reason  = document.getElementById('void-reason');
+            var closeBtn= document.getElementById('void-close');
+            var cancelBtn=document.getElementById('void-cancel');
+
+            function openModal(url) {
+                form.action = url;
+                reason.value = '';
+                modal.style.display = 'flex';
+                reason.focus();
+            }
+
+            function closeModal() {
+                modal.style.display = 'none';
+                form.action = '';
+            }
+
+            document.querySelectorAll('.btn-void').forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var url = btn.getAttribute('data-url');
+                    openModal(url);
+                });
+            });
+
+            closeBtn.addEventListener('click', closeModal);
+            cancelBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                closeModal();
+            });
+
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
             });
         }
         document.addEventListener('DOMContentLoaded', init);
