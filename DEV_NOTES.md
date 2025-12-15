@@ -91,10 +91,11 @@ Tujuan utama:
 - Payroll Overhead (owner only): CRUD payroll bulanan per staff (role Staff) + filter; tabel `payrolls` (uniq user+periode).
 
 ## 13) Dashboard KPI & Alerts (2025-12-16)
-- Dashboard kini menampilkan KPI live: omzet/margin hari ini, 7 hari, dan bulan berjalan (plus delta vs bulan lalu), avg ticket, dan jumlah transaksi.
-- Top menu 7 hari terakhir lengkap dengan qty, omzet, margin%.
-- Peringatan stok minim: daftar bahan dengan current_stock <= min_stock + meter bar.
-- Ringkasan biaya bulan berjalan (pembelian, overhead operasional, payroll) dan 5 transaksi terbaru non-void.
+- KPI live: omzet, cost, margin%, avg ticket, transaksi untuk hari ini, 7 hari, dan bulan berjalan, plus delta MTD vs bulan lalu (non-void saja).
+- Top 5 menu 7 hari terakhir (qty, omzet, margin%).
+- Peringatan stok minim: raw_materials dengan current_stock <= min_stock (include unit) + meter bar.
+- Ringkasan biaya bulan berjalan: total pembelian, overhead operasional, dan payroll.
+- 5 transaksi terbaru non-void (total, margin, margin%).
 
 ## Uncommitted (2025-12-10) - Temu Rasa UI Refresh
 - Brand theme file `public/css/theme-temurasa.css` dengan CSS variables + komponen dasar (card, input, button, table, scrollbar) sesuai palet Temu Rasa.
