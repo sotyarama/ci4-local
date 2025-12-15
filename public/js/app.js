@@ -501,6 +501,69 @@
     initFilterSelect();
   });
 
+    // ======================================================
+  // Sidebar collapse state (dipindah dari layout)
+  // ======================================================
+  (function initSidebarCollapse() {
+    const stateKey = 'sidebarCollapseState';
+    const saved = localStorage.getItem(stateKey);
+    let collapseState = {};
+
+    if (saved) {
+      try { collapseState = JSON.parse(saved); } catch (e) { collapseState = {}; }
+    }
+
+    function saveState() {
+      localStorage.setItem(stateKey, JSON.stringify(collapseState));
+    }
+
+    function toggleSection(section, force) {
+      const group = document.getElementById('nav-' + section);
+      const title = document.querySelector('.nav-section-title[data-target="' + section + '"]');
+      if (!group || !title) return;
+
+      const shouldCollapse = force !== undefined ? force : !(collapseState[section] === true);
+
+      if (shouldCollapse) {
+        group.style.display = 'none';
+        title.classList.add('collapsed');
+        collapseState[section] = true;
+      } else {
+        group.style.display = '';
+        title.classList.remove('collapsed');
+        collapseState[section] = false;
+      }
+      saveState();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.nav-section-title.collapsible').forEach(function (title) {
+        const target = title.getAttribute('data-target');
+        if (collapseState[target] === true) {
+          toggleSection(target, true);
+        }
+        title.addEventListener('click', function () {
+          toggleSection(target);
+        });
+      });
+    });
+  })();
+
+  // ======================================================
+  // Auto wrap table di dalam .card (scrollable)
+  // ======================================================
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.card table').forEach(function (tbl) {
+      if (tbl.closest('.table-scroll-wrap')) return;
+
+      const wrap = document.createElement('div');
+      wrap.className = 'table-scroll-wrap';
+      tbl.parentNode.insertBefore(wrap, tbl);
+      wrap.appendChild(tbl);
+    });
+  });
+
+
   window.App = {
     fetchJSON,
     toast,
