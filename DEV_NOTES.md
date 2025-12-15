@@ -1,7 +1,7 @@
 # DEV_NOTES.md
 POS Cafe System — Development Notes  
 Author: GS  
-Last updated: 2025-12-15 (Sales by Time, Stock Variance, Payroll, POS Touchscreen)
+Last updated: 2025-12-16 (Dashboard KPI & Low-Stock Alerts)
 
 ---
 
@@ -90,6 +90,12 @@ Tujuan utama:
 - POS Touchscreen (Phase 2 awal): grid card menu, tap tambah qty, keranjang qty +/-/hapus, submit ke Sales::store (backend sama).
 - Payroll Overhead (owner only): CRUD payroll bulanan per staff (role Staff) + filter; tabel `payrolls` (uniq user+periode).
 
+## 13) Dashboard KPI & Alerts (2025-12-16)
+- Dashboard kini menampilkan KPI live: omzet/margin hari ini, 7 hari, dan bulan berjalan (plus delta vs bulan lalu), avg ticket, dan jumlah transaksi.
+- Top menu 7 hari terakhir lengkap dengan qty, omzet, margin%.
+- Peringatan stok minim: daftar bahan dengan current_stock <= min_stock + meter bar.
+- Ringkasan biaya bulan berjalan (pembelian, overhead operasional, payroll) dan 5 transaksi terbaru non-void.
+
 ## Uncommitted (2025-12-10) - Temu Rasa UI Refresh
 - Brand theme file `public/css/theme-temurasa.css` dengan CSS variables + komponen dasar (card, input, button, table, scrollbar) sesuai palet Temu Rasa.
 - Layout utama & login: background softCream, topbar primary, surface beige/green, teks charcoal, scrollbar mengikuti tema.
@@ -128,7 +134,7 @@ Tujuan utama:
 | Module               | Status              | Notes                                                          |
 |----------------------|---------------------|----------------------------------------------------------------|
 | Auth / Login         | Complete            | Stable                                                         |
-| Dashboard            | Complete            | Base layout + summary placeholder                              |
+| Dashboard            | Complete            | KPI harian/7d/MTD, delta vs bulan lalu, top menu 7d, low-stock alert, transaksi terbaru |
 | Master Products      | Complete            | CRUD menu                                                      |
 | Master Categories    | Complete            | Dipakai oleh menu                                              |
 | Master Units         | Complete            |                                                                |
@@ -212,7 +218,7 @@ Catatan gap:
 ## Recipes & Food Cost
 - [x] Support sub-recipe (mis: syrup/base dipakai menu lain)
 - [x] Indikator bahan hampir habis (min_stock) di master bahan + kartu stok
-- [ ] Warning di dashboard untuk bahan di bawah min_stock
+- [x] Warning di dashboard untuk bahan di bawah min_stock
 
 ## POS UI (Phase 2 — Modern Touchscreen Skin)
 *(Dikerjakan setelah backend final & stabil)*
@@ -294,6 +300,6 @@ Setiap fitur/modul baru minimal cek:
 
 - Alur utama (Purchase → Stock IN → Recipe → Sales → Stock OUT → Laporan Harian) sudah berfungsi.  
 - Observability diperkuat: kartu stok per bahan, summary harian di Sales.  
+- Dashboard sudah memuat KPI live (hari ini, 7d, MTD), top menu 7d, peringatan stok minim, transaksi terbaru, serta beban biaya bulan berjalan.  
 - Seed demo siap dipakai untuk testing cepat (supplier, bahan, pembelian IN, resep, user owner).  
 - Dokumen ini untuk menjaga konteks jika ada jeda/pindah device.
-
