@@ -1,114 +1,128 @@
 <?= $this->extend('layouts/main') ?>
-
 <?= $this->section('content') ?>
 
+<?php
+/**
+ * Master Products - Index
+ * - Fokus: readability + no inline style
+ * - Tetap pakai App.setupFilter (app.js) untuk filtering rows
+ */
+$fmtMoney = static fn($v): string => number_format((float) ($v ?? 0), 0, ',', '.');
+?>
+
 <div class="card">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <div></div>
-        <a href="<?= site_url('master/products/create'); ?>"
-           style="font-size:12px; padding:6px 10px; border-radius:999px; border:none; background:var(--tr-primary); color:#fff; text-decoration:none;">
-            + Tambah Produk
-        </a>
+    <!-- Header actions -->
+    <div class="page-head">
+        <div class="page-head__left"></div>
+
+        <div class="page-head__right">
+            <a class="btn btn-primary btn-sm" href="<?= site_url('master/products/create'); ?>">
+                + Tambah Produk
+            </a>
+        </div>
     </div>
 
-    <h2 style="margin:0 0 8px; font-size:18px;">Master Produk</h2>
-    <p style="margin:0 0 16px; font-size:13px; color:var(--tr-muted-text);">
+    <h2 class="page-title">Master Produk</h2>
+    <p class="page-subtitle">
         Daftar menu cafe yang saat ini terdaftar di sistem.
     </p>
 
     <?php if (empty($menus)): ?>
-        <p style="font-size:12px; color:var(--tr-muted-text); margin:0;">
+        <p class="empty-state">
             Belum ada data menu. Silakan tambahkan produk menggunakan tombol "Tambah Produk".
         </p>
     <?php else: ?>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <div style="font-size:12px; color:var(--tr-muted-text);">Filter nama/kategori/status:</div>
-            <input type="text" id="products-filter" placeholder="Cari produk..." style="padding:6px 8px; font-size:12px; border:1px solid var(--tr-border); border-radius:8px; background:var(--tr-bg); color:var(--tr-text); min-width:200px;">
+        <div class="table-tools">
+            <div class="table-tools__hint">Filter nama/kategori/status:</div>
+            <input
+                type="text"
+                id="products-filter"
+                class="table-tools__search"
+                placeholder="Cari produk...">
         </div>
-        <table style="width:100%; border-collapse:collapse; font-size:12px;">
-            <thead>
-            <tr>
-                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--tr-border);">Kategori</th>
-                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--tr-border);">Nama Menu</th>
-                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--tr-border);">SKU</th>
-                <th style="text-align:right; padding:8px; border-bottom:1px solid var(--tr-border);">Harga</th>
-                <th style="text-align:center; padding:8px; border-bottom:1px solid var(--tr-border);">Status</th>
-                <th style="text-align:center; padding:8px; border-bottom:1px solid var(--tr-border);">Aksi</th>
-            </tr>
-            </thead>
-            <tbody id="products-table-body">
-            <?php foreach ($menus as $menu): ?>
-                <?php $isActive = !empty($menu['is_active']); ?>
-                <tr data-name="<?= esc(strtolower($menu['name'])); ?>" data-cat="<?= esc(strtolower($menu['category_name'] ?? '')); ?>" data-status="<?= $isActive ? 'aktif' : 'nonaktif'; ?>">
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
-                        <?= esc($menu['category_name'] ?? '-'); ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
-                        <?= esc($menu['name']); ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
-                        <?= esc($menu['sku'] ?? ''); ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
-                        Rp <?= number_format((float) $menu['price'], 0, ',', '.'); ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:center;">
-                        <?php if (!empty($menu['is_active'])): ?>
-                            <span style="font-size:11px; padding:2px 8px; border-radius:999px; background:rgba(122,154,108,0.14); color:var(--tr-secondary-green); border:1px solid rgba(122,154,108,0.14);">
-                                Aktif
-                            </span>
-                        <?php else: ?>
-                            <span style="font-size:11px; padding:2px 8px; border-radius:999px; background:var(--tr-secondary-beige); color:var(--tr-accent-brown); border:1px solid var(--tr-accent-brown);">
-                                Nonaktif
-                            </span>
-                        <?php endif; ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:center;">
-                        <a href="<?= site_url('master/products/edit/' . $menu['id']); ?>"
-                           style="font-size:11px; margin-right:6px; color:#fff; text-decoration:none; background:var(--tr-primary); border:1px solid var(--tr-primary); padding:6px 10px; border-radius:999px;">
-                            Edit
-                        </a>
 
-                        <form action="<?= site_url('master/products/delete/' . $menu['id']); ?>"
-                              method="post"
-                              style="display:inline;"
-                              onsubmit="return confirm('Yakin ingin menghapus produk ini?');">
-                            <?= csrf_field(); ?>
-                            <button type="submit"
-                                    style="font-size:11px; border:1px solid var(--tr-accent-brown); background:var(--tr-accent-brown); color:#fff; cursor:pointer; padding:6px 10px; border-radius:999px;">
-                                Hapus
-                            </button>
-                        </form>
-                    </td>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="table__th">Kategori</th>
+                    <th class="table__th">Nama Menu</th>
+                    <th class="table__th">SKU</th>
+                    <th class="table__th table__th--right">Harga</th>
+                    <th class="table__th table__th--center">Status</th>
+                    <th class="table__th table__th--center">Aksi</th>
                 </tr>
-            <?php endforeach; ?>
-            <tr id="products-noresult" style="display:none;">
-                <td colspan="6" style="padding:8px; text-align:center; color:var(--tr-muted-text);">Tidak ada hasil.</td>
-            </tr>
+            </thead>
+
+            <tbody id="products-table-body">
+                <?php foreach ($menus as $menu): ?>
+                    <?php
+                    $isActive    = ! empty($menu['is_active']);
+                    $statusLabel = $isActive ? 'aktif' : 'nonaktif';
+                    $id          = (int) ($menu['id'] ?? 0);
+                    ?>
+                    <tr
+                        data-name="<?= esc(strtolower((string) ($menu['name'] ?? ''))); ?>"
+                        data-cat="<?= esc(strtolower((string) ($menu['category_name'] ?? ''))); ?>"
+                        data-status="<?= esc($statusLabel); ?>">
+
+                        <td class="table__td"><?= esc($menu['category_name'] ?? '-'); ?></td>
+                        <td class="table__td"><?= esc($menu['name'] ?? '-'); ?></td>
+                        <td class="table__td"><?= esc($menu['sku'] ?? ''); ?></td>
+                        <td class="table__td table__td--right">Rp <?= $fmtMoney($menu['price'] ?? 0); ?></td>
+
+                        <td class="table__td table__td--center">
+                            <?php if ($isActive): ?>
+                                <span class="badge badge--active">Aktif</span>
+                            <?php else: ?>
+                                <span class="badge badge--inactive">Nonaktif</span>
+                            <?php endif; ?>
+                        </td>
+
+                        <td class="table__td table__td--center">
+                            <div class="row-actions">
+                                <a class="btn btn-primary btn-sm" href="<?= site_url('master/products/edit/' . $id); ?>">
+                                    Edit
+                                </a>
+
+                                <form
+                                    action="<?= site_url('master/products/delete/' . $id); ?>"
+                                    method="post"
+                                    class="inline"
+                                    onsubmit="return confirm('Yakin ingin menghapus produk ini?');">
+                                    <?= csrf_field(); ?>
+                                    <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+
+                <tr id="products-noresult" style="display:none;">
+                    <td colspan="6" class="table__td table__td--center muted">Tidak ada hasil.</td>
+                </tr>
             </tbody>
         </table>
     <?php endif; ?>
 
-    <div style="margin-top:12px; font-size:11px; color:var(--tr-muted-text);">
+    <div class="footnote">
         Data ini berasal dari tabel <code>menus</code> dan <code>menu_categories</code>.
     </div>
 </div>
 
 <script>
     (function() {
-        function init() {
-            if (!window.App || !App.setupFilter) {
-                return setTimeout(init, 50);
-            }
+        function initFilter() {
+            if (!window.App || !App.setupFilter) return setTimeout(initFilter, 50);
+
             App.setupFilter({
                 input: '#products-filter',
                 rows: document.querySelectorAll('#products-table-body tr:not(#products-noresult)'),
                 noResult: '#products-noresult',
-                fields: ['name','cat','status'],
+                fields: ['name', 'cat', 'status'],
                 debounce: 200
             });
         }
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', initFilter);
     })();
 </script>
 

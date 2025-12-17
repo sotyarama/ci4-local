@@ -73,6 +73,14 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
             $routes->get('suppliers/edit/(:num)',   'Suppliers::edit/$1');
             $routes->post('suppliers/update/(:num)', 'Suppliers::update/$1');
             $routes->post('suppliers/delete/(:num)', 'Suppliers::delete/$1');
+
+            // Units
+            $routes->get('units',                'Units::index');
+            $routes->get('units/create',         'Units::create');
+            $routes->post('units/store',          'Units::store');
+            $routes->get('units/edit/(:num)',    'Units::edit/$1');
+            $routes->post('units/update/(:num)',  'Units::update/$1');
+            $routes->post('units/delete/(:num)',  'Units::delete/$1');
         });
 
 

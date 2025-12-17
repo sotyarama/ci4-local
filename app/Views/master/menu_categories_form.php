@@ -1,68 +1,75 @@
 <?= $this->extend('layouts/main') ?>
-
 <?= $this->section('content') ?>
 
+<?php
+/**
+ * Master Categories - Form (Create/Edit)
+ * - Minim inline style, konsisten dengan theme-temurasa.css
+ * - Mode: create|edit ditentukan dari $mode
+ */
+
+$mode   = $mode ?? 'create';
+$errors = session('errors') ?? [];
+$isEdit = ($mode === 'edit');
+
+$action = $isEdit
+    ? site_url('master/categories/update/' . ($category['id'] ?? 0))
+    : site_url('master/categories/store');
+?>
+
 <div class="card">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+    <div class="page-head">
         <div>
-            <h2 style="margin:0; font-size:18px;"><?= esc($title ?? 'Kategori Menu'); ?></h2>
-            <p style="margin:2px 0 0; font-size:12px; color:var(--tr-muted-text);">
-                Kelola kategori untuk mengelompokkan menu/produk.
-            </p>
+            <h2 class="page-title"><?= esc($title ?? 'Kategori Menu'); ?></h2>
+            <p class="page-subtitle">Kelola kategori untuk mengelompokkan menu/produk.</p>
         </div>
-        <a href="<?= site_url('master/categories'); ?>"
-           style="font-size:11px; padding:6px 10px; border-radius:999px; background:var(--tr-border); color:var(--tr-text); text-decoration:none;">
+
+        <a href="<?= site_url('master/categories'); ?>" class="btn btn-secondary btn-sm">
             Kembali
         </a>
     </div>
 
-    <?php $errors = session('errors') ?? []; ?>
-
     <?php if (! empty($errors)): ?>
-        <div style="padding:8px 10px; margin-bottom:12px; border-radius:6px; background:var(--tr-secondary-beige); border:1px solid var(--tr-accent-brown); color:var(--tr-accent-brown); font-size:12px;">
-            <div style="font-weight:600; margin-bottom:4px;">Terjadi kesalahan input:</div>
-            <ul style="margin:0 0 0 18px; padding:0;">
+        <div class="alert alert-danger">
+            <strong>Terjadi kesalahan input:</strong>
+            <ul class="alert-list">
                 <?php foreach ($errors as $err): ?>
-                    <li><?= esc($err) ?></li>
+                    <li><?= esc($err); ?></li>
                 <?php endforeach; ?>
             </ul>
         </div>
     <?php endif; ?>
 
-    <form action="<?= ($mode ?? 'create') === 'edit'
-            ? site_url('master/categories/update/' . ($category['id'] ?? 0))
-            : site_url('master/categories/store'); ?>"
-          method="post">
-        <?= csrf_field() ?>
+    <form action="<?= esc($action); ?>" method="post" class="form">
+        <?= csrf_field(); ?>
 
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:12px;">
-            <div>
-                <label style="font-size:11px; color:var(--tr-muted-text); display:block; margin-bottom:4px;">Nama Kategori</label>
-                <input type="text"
-                       name="name"
-                       required
-                       value="<?= old('name', $category['name'] ?? ''); ?>"
-                       placeholder="mis: Makanan, Minuman"
-                       style="width:100%; padding:6px 8px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text);">
+        <div class="form-grid">
+            <div class="form-field">
+                <label class="form-label">Nama Kategori</label>
+                <input
+                    class="form-input"
+                    type="text"
+                    name="name"
+                    required
+                    value="<?= esc(old('name', $category['name'] ?? '')); ?>"
+                    placeholder="mis: Makanan, Minuman">
             </div>
         </div>
 
-        <div style="margin-bottom:12px;">
-            <label style="font-size:11px; color:var(--tr-muted-text); display:block; margin-bottom:4px;">Deskripsi (opsional)</label>
-            <textarea name="description"
-                      rows="2"
-                      style="width:100%; padding:6px 8px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text);"><?= old('description', $category['description'] ?? ''); ?></textarea>
+        <div class="form-field">
+            <label class="form-label">Deskripsi (opsional)</label>
+            <textarea
+                class="form-input"
+                name="description"
+                rows="2"><?= esc(old('description', $category['description'] ?? '')); ?></textarea>
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:8px;">
-            <button type="submit"
-                    style="font-size:13px; padding:8px 16px; border-radius:999px; border:none; background:var(--tr-primary); color:#fff; cursor:pointer;">
-                <?= ($mode ?? 'create') === 'edit' ? 'Simpan Perubahan' : 'Simpan'; ?>
+        <div class="form-actions" style="justify-content:flex-end;">
+            <button type="submit" class="btn btn-primary">
+                <?= $isEdit ? 'Simpan Perubahan' : 'Simpan'; ?>
             </button>
         </div>
     </form>
 </div>
 
 <?= $this->endSection() ?>
-
-

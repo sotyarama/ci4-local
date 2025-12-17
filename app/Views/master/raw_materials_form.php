@@ -1,21 +1,26 @@
 <?= $this->extend('layouts/main') ?>
-
 <?= $this->section('content') ?>
 
-<?php $errors = session('errors') ?? []; ?>
+<?php
+/**
+ * Master Raw Materials - Form
+ * - Fokus: minim inline style, pakai class dari theme-temurasa.css
+ * - Create vs Edit:
+ *   - Create: initial_stock & initial_cost
+ *   - Edit:   current_stock + last cost (readonly info)
+ */
+$errors = session('errors') ?? [];
+$isEdit = ! empty($material);
+?>
 
 <div class="card">
-    <h2 style="margin:0 0 8px; font-size:18px;">
-        <?= esc($title ?? 'Form Bahan Baku'); ?>
-    </h2>
-    <p style="margin:0 0 16px; font-size:13px; color:var(--tr-muted-text);">
-        <?= esc($subtitle ?? ''); ?>
-    </p>
+    <h2 class="page-title"><?= esc($title ?? 'Form Bahan Baku'); ?></h2>
+    <p class="page-subtitle"><?= esc($subtitle ?? ''); ?></p>
 
-    <?php if (!empty($errors)): ?>
-        <div style="background:var(--tr-accent-brown); border-radius:8px; padding:8px 10px; border:1px solid var(--tr-accent-brown); font-size:12px; color:var(--tr-secondary-beige); margin-bottom:12px;">
+    <?php if (! empty($errors)): ?>
+        <div class="alert alert-danger">
             <strong>Terjadi kesalahan:</strong>
-            <ul style="margin:4px 0 0 16px; padding:0;">
+            <ul class="alert-list">
                 <?php foreach ($errors as $error): ?>
                     <li><?= esc($error); ?></li>
                 <?php endforeach; ?>
@@ -23,128 +28,119 @@
         </div>
     <?php endif; ?>
 
-    <form action="<?= esc($formAction ?? '#'); ?>" method="post">
+    <form action="<?= esc($formAction ?? '#'); ?>" method="post" class="form">
         <?= csrf_field(); ?>
 
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap:12px;">
-            <div>
-                <label style="font-size:12px; display:block; margin-bottom:4px;">Nama Bahan</label>
+        <div class="form-grid">
+            <div class="form-field">
+                <label class="form-label">Nama Bahan</label>
                 <input
+                    class="form-input"
                     type="text"
                     name="name"
                     value="<?= esc(old('name', $material['name'] ?? '')); ?>"
-                    style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:13px;"
-                    required
-                >
+                    required>
             </div>
 
-            <div>
-                <label style="font-size:12px; display:block; margin-bottom:4px;">Satuan</label>
-                <select
-                    name="unit_id"
-                    style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:13px;"
-                    required
-                >
+            <div class="form-field">
+                <label class="form-label">Satuan</label>
+                <select class="form-input" name="unit_id" required>
                     <option value="">-- pilih satuan --</option>
-                    <?php foreach ($units as $u): ?>
-                        <option
-                            value="<?= $u['id']; ?>"
-                            <?= (string) old('unit_id', $material['unit_id'] ?? '') === (string) $u['id'] ? 'selected' : ''; ?>
-                        >
-                            <?= esc($u['name']); ?> (<?= esc($u['short_name']); ?>)
+
+                    <?php foreach (($units ?? []) as $u): ?>
+                        <?php
+                        $uid   = (string) ($u['id'] ?? '');
+                        $uname = (string) ($u['name'] ?? '');
+                        $short = (string) ($u['short_name'] ?? '');
+                        $selected = ((string) old('unit_id', $material['unit_id'] ?? '') === $uid);
+                        ?>
+                        <option value="<?= esc($uid); ?>" <?= $selected ? 'selected' : ''; ?>>
+                            <?= esc($uname); ?><?= $short !== '' ? ' (' . esc($short) . ')' : ''; ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
             </div>
 
-            <div>
-                <label style="font-size:12px; display:block; margin-bottom:4px;">Min. Stok</label>
+            <div class="form-field">
+                <label class="form-label">Min. Stok</label>
                 <input
+                    class="form-input"
                     type="number"
                     step="0.001"
                     name="min_stock"
-                    value="<?= esc(old('min_stock', $material['min_stock'] ?? '0')); ?>"
-                    style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:13px;"
-                >
+                    value="<?= esc(old('min_stock', $material['min_stock'] ?? '0')); ?>">
             </div>
 
-            <?php if (empty($material)): ?>
-                <div>
-                    <label style="font-size:12px; display:block; margin-bottom:4px;">Stok Awal (opsional)</label>
+            <?php if (! $isEdit): ?>
+                <div class="form-field">
+                    <label class="form-label">Stok Awal (opsional)</label>
                     <input
+                        class="form-input"
                         type="number"
                         step="0.001"
                         name="initial_stock"
-                        value="<?= esc(old('initial_stock', '0')); ?>"
-                        style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:13px;"
-                    >
+                        value="<?= esc(old('initial_stock', '0')); ?>">
                 </div>
 
-                <div>
-                    <label style="font-size:12px; display:block; margin-bottom:4px;">Harga per Satuan (opsional)</label>
+                <div class="form-field">
+                    <label class="form-label">Harga per Satuan (opsional)</label>
                     <input
+                        class="form-input"
                         type="number"
                         step="1"
                         name="initial_cost"
-                        value="<?= esc(old('initial_cost', '0')); ?>"
-                        style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:13px;"
-                    >
+                        value="<?= esc(old('initial_cost', '0')); ?>">
                 </div>
             <?php else: ?>
-                <div>
-                    <label style="font-size:12px; display:block; margin-bottom:4px;">Stok Saat Ini</label>
+                <div class="form-field">
+                    <label class="form-label">Stok Saat Ini</label>
                     <input
+                        class="form-input"
                         type="number"
                         step="0.001"
                         name="current_stock"
-                        value="<?= esc(old('current_stock', $material['current_stock'] ?? '0')); ?>"
-                        style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:13px;"
-                    >
+                        value="<?= esc(old('current_stock', $material['current_stock'] ?? '0')); ?>">
                 </div>
 
-                <div>
-                    <label style="font-size:12px; display:block; margin-bottom:4px;">Last Cost (readonly untuk info)</label>
+                <div class="form-field">
+                    <label class="form-label">Last Cost (readonly untuk info)</label>
                     <input
+                        class="form-input"
                         type="number"
-                        step="100"
+                        step="1"
                         value="<?= esc($material['cost_last'] ?? '0'); ?>"
-                        style="width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-muted-text); font-size:13px;"
-                        disabled
-                    >
+                        readonly
+                        aria-readonly="true">
+                    <div class="form-note">
+                        Last Cost & Avg Cost akan berubah otomatis dari modul Pembelian / Stock Movement.
+                    </div>
                 </div>
             <?php endif; ?>
         </div>
 
-        <div style="margin-top:12px;">
-            <label style="font-size:12px;">
+        <div class="form-check">
+            <label class="form-check__label">
                 <input
+                    class="form-check__input"
                     type="checkbox"
                     name="is_active"
                     value="1"
-                    <?= (old('is_active', $material['is_active'] ?? 1) ? 'checked' : ''); ?>
-                    style="margin-right:6px;"
-                >
+                    <?= (old('is_active', $material['is_active'] ?? 1) ? 'checked' : ''); ?>>
                 Aktif
             </label>
         </div>
 
-        <div style="margin-top:16px; display:flex; gap:8px;">
-            <button type="submit"
-                    style="padding:8px 14px; border-radius:999px; border:none; background:var(--tr-primary); color:#fff; font-size:13px; cursor:pointer;">
-                Simpan
-            </button>
-            <a href="<?= site_url('master/raw-materials'); ?>"
-               style="padding:8px 14px; border-radius:999px; border:1px solid var(--tr-muted-text); font-size:13px; color:var(--tr-text); text-decoration:none;">
-                Batal
-            </a>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Simpan</button>
+            <a href="<?= site_url('master/raw-materials'); ?>" class="btn btn-secondary">Batal</a>
         </div>
 
-        <div style="margin-top:10px; font-size:11px; color:var(--tr-muted-text);">
-            Stok & harga akan diperbarui otomatis dari modul Pembelian dan Penyesuaian Stok.
-        </div>
+        <?php if (! $isEdit): ?>
+            <div class="form-note">
+                Stok & harga akan diperbarui otomatis dari modul Pembelian dan Penyesuaian Stok.
+            </div>
+        <?php endif; ?>
     </form>
 </div>
 
 <?= $this->endSection() ?>
-
-

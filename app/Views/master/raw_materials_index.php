@@ -1,142 +1,161 @@
 <?= $this->extend('layouts/main') ?>
-
 <?= $this->section('content') ?>
 
+<?php
+/**
+ * Master Raw Materials - Index
+ * - Fokus: minim inline style, konsisten dengan theme-temurasa.css
+ * - Tetap pakai App.setupFilter (app.js)
+ */
+$fmtQty3  = static fn($v): string => number_format((float) ($v ?? 0), 3, ',', '.');
+$fmtMoney = static fn($v): string => number_format((float) ($v ?? 0), 0, ',', '.');
+?>
+
 <div class="card">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h2 style="margin:0; font-size:18px;">Master Bahan Baku</h2>
-        <a href="<?= site_url('master/raw-materials/create'); ?>"
-           style="font-size:12px; padding:6px 10px; border-radius:999px; border:none; background:var(--tr-primary); color:#fff; text-decoration:none;">
+
+    <div class="page-head">
+        <div>
+            <h2 class="page-title">Master Bahan Baku</h2>
+            <p class="page-subtitle">Daftar bahan baku untuk resep dan pengelolaan stok.</p>
+        </div>
+
+        <a href="<?= site_url('master/raw-materials/create'); ?>" class="btn btn-primary btn-sm">
             + Tambah Bahan
         </a>
     </div>
 
-    <p style="margin:0 0 16px; font-size:13px; color:var(--tr-muted-text);">
-        Daftar bahan baku untuk resep dan pengelolaan stok.
-    </p>
-
     <?php if (session()->getFlashdata('message')): ?>
-        <div style="background:rgba(122,154,108,0.14); border-radius:8px; padding:8px 10px; border:1px solid var(--tr-primary); font-size:12px; color:var(--tr-secondary-green); margin-bottom:12px;">
+        <div class="alert alert-success">
             <?= esc(session()->getFlashdata('message')); ?>
         </div>
     <?php endif; ?>
 
     <?php if (session()->getFlashdata('error')): ?>
-        <div style="background:var(--tr-accent-brown); border-radius:8px; padding:8px 10px; border:1px solid var(--tr-accent-brown); font-size:12px; color:var(--tr-secondary-beige); margin-bottom:12px;">
+        <div class="alert alert-danger">
             <?= esc(session()->getFlashdata('error')); ?>
         </div>
     <?php endif; ?>
 
     <?php if (empty($materials)): ?>
-        <p style="font-size:12px; color:var(--tr-muted-text); margin:0;">
-            Belum ada data bahan baku. Silakan tambahkan data baru.
-        </p>
+        <p class="empty-state">Belum ada data bahan baku. Silakan tambahkan data baru.</p>
     <?php else: ?>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <div style="font-size:12px; color:var(--tr-muted-text);">Filter nama/satuan/status:</div>
-            <input type="text" id="rm-filter" placeholder="Cari bahan baku..." style="padding:6px 8px; font-size:12px; border:1px solid var(--tr-border); border-radius:8px; background:var(--tr-bg); color:var(--tr-text); min-width:200px;">
+
+        <div class="table-tools">
+            <div class="table-tools__hint">Filter nama/satuan/status:</div>
+            <input
+                type="text"
+                id="rm-filter"
+                class="table-tools__search"
+                placeholder="Cari bahan baku...">
         </div>
-        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+
+        <table class="table">
             <thead>
-            <tr>
-                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--tr-border);">Nama Bahan</th>
-                <th style="text-align:left; padding:8px; border-bottom:1px solid var(--tr-border);">Satuan</th>
-                <th style="text-align:right; padding:8px; border-bottom:1px solid var(--tr-border);">Stok Saat Ini</th>
-                <th style="text-align:right; padding:8px; border-bottom:1px solid var(--tr-border);">Min Stok</th>
-                <th style="text-align:right; padding:8px; border-bottom:1px solid var(--tr-border);">Last Cost</th>
-                <th style="text-align:right; padding:8px; border-bottom:1px solid var(--tr-border);">Avg Cost</th>
-                <th style="text-align:center; padding:8px; border-bottom:1px solid var(--tr-border);">Status</th>
-                <th style="text-align:center; padding:8px; border-bottom:1px solid var(--tr-border);">Aksi</th>
-            </tr>
-            </thead>
-            <tbody id="rm-table-body">
-            <?php foreach ($materials as $m): ?>
-                <?php $isActive = !empty($m['is_active']); ?>
-                <tr data-name="<?= esc(strtolower($m['name'])); ?>" data-unit="<?= esc(strtolower($m['unit_short'] ?? $m['unit_name'] ?? '')); ?>" data-status="<?= $isActive ? 'aktif' : 'nonaktif'; ?>">
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
-                        <?= esc($m['name']); ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
-                        <?= esc($m['unit_short'] ?? $m['unit_name'] ?? ''); ?>
-                    </td>
-                    <?php
-                        $currentStock = (float) ($m['current_stock'] ?? 0);
-                        $minStock     = (float) ($m['min_stock'] ?? 0);
-                        $isLow        = $minStock > 0 && $currentStock < $minStock;
-                    ?>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
-                        <?= number_format($currentStock, 3, ',', '.'); ?>
-                        <?php if ($isLow): ?>
-                            <span style="margin-left:6px; padding:2px 8px; border-radius:999px; background:var(--tr-secondary-beige); color:var(--tr-accent-brown); border:1px solid var(--tr-accent-brown); font-size:10px; font-weight:700;">
-                                Low
-                            </span>
-                        <?php endif; ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
-                        <?= number_format($minStock, 3, ',', '.'); ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
-                        Rp <?= number_format((float) $m['cost_last'], 0, ',', '.'); ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
-                        Rp <?= number_format((float) $m['cost_avg'], 0, ',', '.'); ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:center;">
-                        <?php if (!empty($m['is_active'])): ?>
-                            <span style="font-size:11px; padding:2px 8px; border-radius:999px; background:rgba(122,154,108,0.14); color:var(--tr-secondary-green); border:1px solid rgba(122,154,108,0.14);">
-                                Aktif
-                            </span>
-                        <?php else: ?>
-                            <span style="font-size:11px; padding:2px 8px; border-radius:999px; background:var(--tr-secondary-beige); color:var(--tr-accent-brown); border:1px solid var(--tr-accent-brown);">
-                                Nonaktif
-                            </span>
-                        <?php endif; ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:center;">
-                        <a href="<?= site_url('master/raw-materials/edit/' . $m['id']); ?>"
-                           style="font-size:11px; margin-right:6px; color:#fff; text-decoration:none; background:var(--tr-primary); border:1px solid var(--tr-primary); padding:6px 10px; border-radius:999px;">
-                            Edit
-                        </a>
-                        <form action="<?= site_url('master/raw-materials/delete/' . $m['id']); ?>"
-                              method="post"
-                              style="display:inline;"
-                              onsubmit="return confirm('Yakin ingin menghapus bahan ini?');">
-                            <?= csrf_field(); ?>
-                            <button type="submit"
-                                    style="font-size:11px; border:1px solid var(--tr-accent-brown); background:var(--tr-accent-brown); color:#fff; cursor:pointer; padding:6px 10px; border-radius:999px;">
-                                Hapus
-                            </button>
-                        </form>
-                    </td>
+                <tr>
+                    <th class="table__th">Nama Bahan</th>
+                    <th class="table__th">Satuan</th>
+                    <th class="table__th table__th--right">Stok Saat Ini</th>
+                    <th class="table__th table__th--right">Min Stok</th>
+                    <th class="table__th table__th--right">Last Cost</th>
+                    <th class="table__th table__th--right">Avg Cost</th>
+                    <th class="table__th table__th--center">Status</th>
+                    <th class="table__th table__th--center">Aksi</th>
                 </tr>
-            <?php endforeach; ?>
-            <tr id="rm-noresult" style="display:none;">
-                <td colspan="8" style="padding:8px; text-align:center; color:var(--tr-muted-text);">Tidak ada hasil.</td>
-            </tr>
+            </thead>
+
+            <tbody id="rm-table-body">
+                <?php foreach ($materials as $m): ?>
+                    <?php
+                    $id       = (int) ($m['id'] ?? 0);
+                    $name     = (string) ($m['name'] ?? '');
+                    $unit     = (string) ($m['unit_short'] ?? $m['unit_name'] ?? '');
+                    $isActive = ! empty($m['is_active']);
+                    $status   = $isActive ? 'aktif' : 'nonaktif';
+
+                    $currentStock = (float) ($m['current_stock'] ?? 0);
+                    $minStock     = (float) ($m['min_stock'] ?? 0);
+                    $isLow        = ($minStock > 0) && ($currentStock < $minStock);
+
+                    $costLast = (float) ($m['cost_last'] ?? 0);
+                    $costAvg  = (float) ($m['cost_avg'] ?? 0);
+                    ?>
+                    <tr
+                        data-name="<?= esc(strtolower($name)); ?>"
+                        data-unit="<?= esc(strtolower($unit)); ?>"
+                        data-status="<?= esc($status); ?>">
+
+                        <td class="table__td"><?= esc($name !== '' ? $name : '-'); ?></td>
+                        <td class="table__td"><?= esc($unit !== '' ? $unit : '-'); ?></td>
+
+                        <td class="table__td table__td--right">
+                            <?= $fmtQty3($currentStock); ?>
+
+                            <?php if ($isLow): ?>
+                                <span class="badge badge--low">Low</span>
+                            <?php endif; ?>
+                        </td>
+
+                        <td class="table__td table__td--right"><?= $fmtQty3($minStock); ?></td>
+
+                        <td class="table__td table__td--right">Rp <?= $fmtMoney($costLast); ?></td>
+                        <td class="table__td table__td--right">Rp <?= $fmtMoney($costAvg); ?></td>
+
+                        <td class="table__td table__td--center">
+                            <?php if ($isActive): ?>
+                                <span class="badge badge--active">Aktif</span>
+                            <?php else: ?>
+                                <span class="badge badge--inactive">Nonaktif</span>
+                            <?php endif; ?>
+                        </td>
+
+                        <td class="table__td table__td--center">
+                            <div class="row-actions">
+                                <a href="<?= site_url('master/raw-materials/edit/' . $id); ?>" class="btn btn-primary btn-sm">
+                                    Edit
+                                </a>
+
+                                <form
+                                    action="<?= site_url('master/raw-materials/delete/' . $id); ?>"
+                                    method="post"
+                                    class="inline"
+                                    onsubmit="return confirm('Yakin ingin menghapus bahan ini?');">
+                                    <?= csrf_field(); ?>
+                                    <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+
+                <tr id="rm-noresult" style="display:none;">
+                    <td colspan="8" class="table__td table__td--center muted">Tidak ada hasil.</td>
+                </tr>
             </tbody>
         </table>
+
+        <div class="footnote">
+            Data ini akan digunakan pada modul Resep, Pembelian, dan Stock Movement.
+        </div>
+
     <?php endif; ?>
 
-    <div style="margin-top:12px; font-size:11px; color:var(--tr-muted-text);">
-        Data ini akan digunakan pada modul Resep, Pembelian, dan Stock Movement.
-    </div>
 </div>
 
 <script>
     (function() {
-        function init() {
-            if (!window.App || !App.setupFilter) {
-                return setTimeout(init, 50);
-            }
+        function initFilter() {
+            if (!window.App || !App.setupFilter) return setTimeout(initFilter, 50);
+
             App.setupFilter({
                 input: '#rm-filter',
                 rows: document.querySelectorAll('#rm-table-body tr:not(#rm-noresult)'),
                 noResult: '#rm-noresult',
-                fields: ['name','unit','status'],
+                fields: ['name', 'unit', 'status'],
                 debounce: 200
             });
         }
-        document.addEventListener('DOMContentLoaded', init);
+
+        document.addEventListener('DOMContentLoaded', initFilter);
     })();
 </script>
 

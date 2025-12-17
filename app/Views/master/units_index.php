@@ -3,8 +3,8 @@
 
 <?php
 /**
- * Master Suppliers - Index
- * - Fokus: minim inline style, konsisten dengan theme-temurasa.css
+ * Master Units - Index
+ * - Konsisten dengan theme-temurasa.css
  * - Tetap pakai App.setupFilter (app.js)
  */
 ?>
@@ -13,12 +13,12 @@
 
     <div class="page-head">
         <div>
-            <h2 class="page-title">Master Supplier</h2>
-            <p class="page-subtitle">Daftar supplier bahan baku untuk pembelian.</p>
+            <h2 class="page-title" style="margin:0 0 4px;">Master Satuan</h2>
+            <p class="page-subtitle" style="margin:0;">Daftar satuan untuk bahan baku & resep.</p>
         </div>
 
-        <a href="<?= site_url('master/suppliers/create'); ?>" class="btn btn-primary btn-sm">
-            + Tambah Supplier
+        <a href="<?= site_url('master/units/create'); ?>" class="btn btn-primary btn-sm">
+            + Tambah Satuan
         </a>
     </div>
 
@@ -34,51 +34,45 @@
         </div>
     <?php endif; ?>
 
-    <?php if (empty($suppliers)): ?>
-        <p class="empty-state">Belum ada data supplier. Silakan tambahkan data baru.</p>
+    <?php if (empty($units)): ?>
+        <p class="empty-state">Belum ada data satuan. Silakan tambahkan data baru.</p>
     <?php else: ?>
 
         <div class="table-tools">
-            <div class="table-tools__hint">Filter nama/telp/status:</div>
+            <div class="table-tools__hint">Filter nama/singkatan/status:</div>
             <input
                 type="text"
-                id="suppliers-filter"
+                id="units-filter"
                 class="table-tools__search"
-                placeholder="Cari supplier...">
+                placeholder="Cari satuan...">
         </div>
 
         <table class="table">
             <thead>
                 <tr>
                     <th class="table__th">Nama</th>
-                    <th class="table__th">Telepon</th>
-                    <th class="table__th">Alamat</th>
+                    <th class="table__th">Singkatan</th>
                     <th class="table__th table__th--center">Status</th>
                     <th class="table__th table__th--center">Aksi</th>
                 </tr>
             </thead>
 
-            <tbody id="suppliers-table-body">
-                <?php foreach ($suppliers as $s): ?>
+            <tbody id="units-table-body">
+                <?php foreach ($units as $u): ?>
                     <?php
-                    $id       = (int) ($s['id'] ?? 0);
-                    $name     = (string) ($s['name'] ?? '');
-                    $phone    = (string) ($s['phone'] ?? '');
-                    $address  = (string) ($s['address'] ?? '');
-                    $isActive = ! empty($s['is_active']);
+                    $id       = (int) ($u['id'] ?? 0);
+                    $name     = (string) ($u['name'] ?? '');
+                    $short    = (string) ($u['short_name'] ?? '');
+                    $isActive = ! empty($u['is_active']);
                     $status   = $isActive ? 'aktif' : 'nonaktif';
                     ?>
                     <tr
                         data-name="<?= esc(strtolower($name)); ?>"
-                        data-phone="<?= esc(strtolower($phone)); ?>"
+                        data-short="<?= esc(strtolower($short)); ?>"
                         data-status="<?= esc($status); ?>">
 
                         <td class="table__td"><?= esc($name !== '' ? $name : '-'); ?></td>
-                        <td class="table__td"><?= esc($phone); ?></td>
-
-                        <td class="table__td muted table__td--small table__td--wrap">
-                            <?= $address !== '' ? nl2br(esc($address)) : '-'; ?>
-                        </td>
+                        <td class="table__td"><?= esc($short); ?></td>
 
                         <td class="table__td table__td--center">
                             <?php if ($isActive): ?>
@@ -90,15 +84,15 @@
 
                         <td class="table__td table__td--center">
                             <div class="row-actions">
-                                <a href="<?= site_url('master/suppliers/edit/' . $id); ?>" class="btn btn-primary btn-sm">
+                                <a href="<?= site_url('master/units/edit/' . $id); ?>" class="btn btn-primary btn-sm">
                                     Edit
                                 </a>
 
                                 <form
-                                    action="<?= site_url('master/suppliers/delete/' . $id); ?>"
+                                    action="<?= site_url('master/units/delete/' . $id); ?>"
                                     method="post"
                                     class="inline"
-                                    onsubmit="return confirm('Yakin ingin menghapus supplier ini?');">
+                                    onsubmit="return confirm('Yakin ingin menghapus satuan ini?');">
                                     <?= csrf_field(); ?>
                                     <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
                                 </form>
@@ -107,8 +101,8 @@
                     </tr>
                 <?php endforeach; ?>
 
-                <tr id="suppliers-noresult" style="display:none;">
-                    <td colspan="5" class="table__td table__td--center muted">Tidak ada hasil.</td>
+                <tr id="units-noresult" style="display:none;">
+                    <td colspan="4" class="table__td table__td--center muted">Tidak ada hasil.</td>
                 </tr>
             </tbody>
         </table>
@@ -123,10 +117,10 @@
             if (!window.App || !App.setupFilter) return setTimeout(initFilter, 50);
 
             App.setupFilter({
-                input: '#suppliers-filter',
-                rows: document.querySelectorAll('#suppliers-table-body tr:not(#suppliers-noresult)'),
-                noResult: '#suppliers-noresult',
-                fields: ['name', 'phone', 'status'],
+                input: '#units-filter',
+                rows: document.querySelectorAll('#units-table-body tr:not(#units-noresult)'),
+                noResult: '#units-noresult',
+                fields: ['name', 'short', 'status'],
                 debounce: 200
             });
         }

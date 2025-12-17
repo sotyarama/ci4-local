@@ -14,12 +14,23 @@ class UnitModel extends Model
     protected $allowedFields = [
         'name',
         'short_name',
+        'is_active',   // NEW
         'created_at',
         'updated_at',
     ];
 
-    public function getForDropdown(): array
+    /**
+     * Untuk dropdown (default: hanya yang aktif).
+     * Kalau suatu saat butuh semua unit (termasuk nonaktif), set $onlyActive=false.
+     */
+    public function getForDropdown(bool $onlyActive = true): array
     {
-        return $this->orderBy('name', 'ASC')->findAll();
+        $qb = $this->orderBy('name', 'ASC');
+
+        if ($onlyActive) {
+            $qb->where('is_active', 1);
+        }
+
+        return $qb->findAll();
     }
 }

@@ -3,15 +3,13 @@
 
 <?php
 /**
- * Master Suppliers - Form
- * - Fokus: minim inline style, pakai class dari theme-temurasa.css
- * - Tetap kompatibel dengan controller (create/edit) lewat $supplier & $formAction
+ * Master Units - Form
  */
 $errors = session('errors') ?? [];
 ?>
 
 <div class="card">
-    <h2 class="page-title"><?= esc($title ?? 'Form Supplier'); ?></h2>
+    <h2 class="page-title"><?= esc($title ?? 'Form Satuan'); ?></h2>
     <p class="page-subtitle"><?= esc($subtitle ?? ''); ?></p>
 
     <?php if (! empty($errors)): ?>
@@ -30,31 +28,26 @@ $errors = session('errors') ?? [];
 
         <div class="form-grid">
             <div class="form-field">
-                <label class="form-label">Nama Supplier</label>
+                <label class="form-label">Nama Satuan</label>
                 <input
                     class="form-input"
                     type="text"
                     name="name"
-                    value="<?= esc(old('name', $supplier['name'] ?? '')); ?>"
+                    value="<?= esc(old('name', $unit['name'] ?? '')); ?>"
+                    placeholder="mis: Gram, Mililiter, Pcs"
                     required>
             </div>
 
             <div class="form-field">
-                <label class="form-label">Telepon (opsional)</label>
+                <label class="form-label">Singkatan</label>
                 <input
                     class="form-input"
                     type="text"
-                    name="phone"
-                    value="<?= esc(old('phone', $supplier['phone'] ?? '')); ?>">
+                    name="short_name"
+                    value="<?= esc(old('short_name', $unit['short_name'] ?? '')); ?>"
+                    placeholder="mis: g, ml, pcs"
+                    required>
             </div>
-        </div>
-
-        <div class="form-field form-field--stack">
-            <label class="form-label">Alamat (opsional)</label>
-            <textarea
-                class="form-input"
-                name="address"
-                rows="3"><?= esc(old('address', $supplier['address'] ?? '')); ?></textarea>
         </div>
 
         <div class="form-check">
@@ -64,14 +57,14 @@ $errors = session('errors') ?? [];
                     type="checkbox"
                     name="is_active"
                     value="1"
-                    <?= (old('is_active', $supplier['is_active'] ?? 1) ? 'checked' : ''); ?>>
+                    <?= (old('is_active', $unit['is_active'] ?? 1) ? 'checked' : ''); ?>>
                 Aktif
             </label>
         </div>
 
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Simpan</button>
-            <a href="<?= site_url('master/suppliers'); ?>" class="btn btn-secondary">Batal</a>
+            <a href="<?= site_url('master/units'); ?>" class="btn btn-secondary">Batal</a>
         </div>
     </form>
 </div>
