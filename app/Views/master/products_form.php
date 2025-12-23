@@ -49,7 +49,11 @@ $subtitleText = $subtitle ?? '';
 
             <div class="form-field">
                 <label class="form-label" for="product-category">Kategori</label>
-                <select id="product-category" class="form-input" name="menu_category_id" required>
+                <select
+                    id="product-category"
+                    class="form-input"
+                    name="menu_category_id"
+                    required>
                     <option value="">-- pilih kategori --</option>
                     <?php foreach (($categories ?? []) as $cat): ?>
                         <?php
@@ -106,10 +110,10 @@ $subtitleText = $subtitle ?? '';
             <a class="btn btn-secondary" href="<?= site_url('master/products'); ?>">Batal</a>
         </div>
 
-        <div class="form-note">
-            Perubahan di sini hanya mengatur menu &amp; harga jual. HPP dan resep akan diatur di modul Resep.
-        </div>
-    </form>
+    <div class="form-note">
+        Perubahan di sini hanya mengatur menu &amp; harga jual. HPP dan resep akan diatur di modul Resep.
+    </div>
+</form>
 </div>
 
 <?= $this->endSection() ?>

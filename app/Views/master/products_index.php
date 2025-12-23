@@ -5,7 +5,7 @@
 /**
  * Master Products - Index
  * - Fokus: readability + no inline style
- * - Tetap pakai App.setupFilter (app.js) untuk filtering rows
+ * - DataTables untuk pencarian/sort/pagination
  */
 $fmtMoney = static fn($v): string => number_format((float) ($v ?? 0), 0, ',', '.');
 ?>
@@ -41,7 +41,7 @@ $fmtMoney = static fn($v): string => number_format((float) ($v ?? 0), 0, ',', '.
                 placeholder="Cari produk...">
         </div>
 
-        <table class="table">
+        <table class="table" id="menuTable">
             <thead>
                 <tr>
                     <th class="table__th">Kategori</th>
@@ -96,10 +96,6 @@ $fmtMoney = static fn($v): string => number_format((float) ($v ?? 0), 0, ',', '.
                         </td>
                     </tr>
                 <?php endforeach; ?>
-
-                <tr id="products-noresult" style="display:none;">
-                    <td colspan="6" class="table__td table__td--center muted">Tidak ada hasil.</td>
-                </tr>
             </tbody>
         </table>
     <?php endif; ?>
@@ -109,21 +105,6 @@ $fmtMoney = static fn($v): string => number_format((float) ($v ?? 0), 0, ',', '.
     </div>
 </div>
 
-<script>
-    (function() {
-        function initFilter() {
-            if (!window.App || !App.setupFilter) return setTimeout(initFilter, 50);
-
-            App.setupFilter({
-                input: '#products-filter',
-                rows: document.querySelectorAll('#products-table-body tr:not(#products-noresult)'),
-                noResult: '#products-noresult',
-                fields: ['name', 'cat', 'status'],
-                debounce: 200
-            });
-        }
-        document.addEventListener('DOMContentLoaded', initFilter);
-    })();
-</script>
+<script src="/assets/js/datatables/menu.js" defer></script>
 
 <?= $this->endSection() ?>

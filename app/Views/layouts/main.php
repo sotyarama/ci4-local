@@ -5,6 +5,16 @@
     <meta charset="UTF-8">
     <title><?= esc($title ?? 'Cafe POS'); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        (function() {
+            try {
+                var saved = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', saved);
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
 
     <?php
     /**
@@ -21,6 +31,7 @@
 
     <link rel="stylesheet" href="<?= base_url('css/theme-temurasa.css') . '?v=' . $assetVer; ?>">
     <link rel="stylesheet" href="<?= base_url('css/layout.css') . '?v=' . $assetVer; ?>">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
 </head>
 
 <body>
@@ -215,7 +226,10 @@
                     <span class="topbar-pill" style="margin-right: 8px;">
                         <?= esc(session('full_name') ?? session('username') ?? ''); ?>
                     </span>
-                    <a href="<?= site_url('logout'); ?>" style="font-size:12px; color:rgba(255,255,255,0.9); text-decoration:none;">
+                    <button type="button" id="themeToggle" class="theme-toggle-btn" aria-label="Toggle theme" style="margin-right: 8px;">
+                        🌙
+                    </button>
+                    <a href="<?= site_url('logout'); ?>" style="font-size:12px; text-decoration:none; color:inherit;">
                         Logout
                     </a>
                 </div>
@@ -236,7 +250,10 @@
     <meta name="csrf-name" content="<?= csrf_token(); ?>">
     <meta name="csrf-token" content="<?= csrf_hash(); ?>">
 
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
     <script src="<?= base_url('js/app.js') . '?v=' . $assetVer; ?>"></script>
+    <script src="<?= base_url('js/theme-toggle.js') . '?v=' . $assetVer; ?>"></script>
 </body>
 
 </html>
