@@ -123,7 +123,8 @@
 
         <div class="hint">
             User awal: <code>owner / owner123</code><br>
-            (Silakan ganti nanti dari modul User Management.)
+            (Silakan ganti nanti dari modul User Management.)<br>
+            <a href="<?= site_url('auth/forgot'); ?>">Lupa password?</a>
         </div>
     </div>
 </div>

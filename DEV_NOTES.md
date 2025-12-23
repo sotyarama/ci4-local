@@ -1,7 +1,7 @@
 # DEV_NOTES.md
 POS Cafe System — Development Notes  
 Author: GS  
-Last updated: 2025-12-16 (Dashboard KPI & Low-Stock Alerts)
+Last updated: 2025-12-19 (Auth hardening, CSRF on, password reset)
 
 ---
 
@@ -96,6 +96,35 @@ Tujuan utama:
 - Peringatan stok minim: raw_materials dengan current_stock <= min_stock (include unit) + meter bar.
 - Ringkasan biaya bulan berjalan: total pembelian, overhead operasional, dan payroll.
 - 5 transaksi terbaru non-void (total, margin, margin%).
+
+## 14) Auth Hardening & Password Reset (2025-12-19)
+- CSRF diaktifkan global melalui filter `csrf`; halaman/form eksisting sudah pakai `csrf_field()` dan meta token di JS.
+- Page cache global dihapus dari `required` untuk menghindari cache halaman dinamis/auth; `forcehttps` tetap on (potensi friksi dev jika baseURL http).
+- Session fixation hardening: session ID diregenerate saat login sukses; session keys tetap sama (user_id, username, role, isLoggedIn, dll.).
+- Forgot/Reset Password ditambahkan di custom auth (tanpa Shield): routes `/auth/forgot` & `/auth/reset`, controller Auth\ForgotPassword + Auth\ResetPassword, views baru + link “Lupa password?” di login.
+- Password reset tokens: migration `password_resets` (token_hash SHA-256, expires_at, used_at, created_at, request_ip, user_agent, FK users, indexes on user_id/exp/used). Token dibuat dari base64url(random_bytes(32)), disimpan hash; throttle 2 menit per email; expiry default 60 menit; reset sukses menandai semua token aktif user sebagai used.
+- Model baru `PasswordResetModel` untuk simpan & validasi token (hash_equals).
+- Email reset dikirim via Services::email() dengan konfigurasi Brevo SMTP dari .env (placeholder, secret tidak dikomit); body teks singkat berisi tautan reset + expiry info.
+
+### Manual steps (ops)
+- Jalankan migrasi: `php spark migrate`.
+- Isi kredensial Brevo SMTP di `.env` (host/port/user/pass/from/name) & verifikasi sender di Brevo.
+- Smoke-test POST/redirect setelah CSRF aktif + alur forgot/reset end-to-end (request, email link, reset, login baru).
+
+### Risks / Notes
+- CSRF sekarang wajib: form/JS yang tidak menyertakan token akan 403; DataTables/AJAX harus pakai meta token yang sudah disediakan.
+- `forcehttps` masih global; baseURL http saat dev bisa memicu redirect loop jika server belum https.
+- Pastikan `.env` tetap di-ignore (jangan commit secret SMTP).
+
+### TODO / Recommended (prioritas)
+1) Bungkus proses reset password dalam DB transaction (update password + invalidasi token).
+2) Tambah index token_hash + pertimbangkan lookup langsung (bukan loop hasil findAll).
+3) Tambah password_needs_rehash saat login untuk upgrade hash lama.
+4) Cleanup job/command untuk expired/used password_resets.
+5) Perkuat throttling (per IP/email) untuk permintaan reset.
+6) Tambah Change Password untuk user yang sudah login.
+7) Granular authorization per-route (permissions), bukan hanya role filter global.
+8) Evaluasi CSP & pemisahan Filters required list untuk dev/prod.
 
 ## Uncommitted (2025-12-10) - Temu Rasa UI Refresh
 - Brand theme file `public/css/theme-temurasa.css` dengan CSS variables + komponen dasar (card, input, button, table, scrollbar) sesuai palet Temu Rasa.
@@ -267,6 +296,13 @@ Catatan gap:
 
 ---
 
+## 2025-12 - Theme Toggle (Light/Dark)
+- Tema berbasis CSS variables (`data-theme="light"/"dark"`) untuk warna utama: page/card/sidebar, text, border, accent, success/danger/warning.
+- Toggle kecil di topbar (`#themeToggle`) menyimpan preferensi ke `localStorage` lewat `public/js/theme-toggle.js`.
+- Layout/topbar/sidebar/card/table/button/badge sudah memakai token warna baru agar kontras tetap terjaga di dua mode.
+- Rekomendasi commit: `feat(theme): add light/dark mode toggle using css variables`
+
+# Testing Guideline
 # Testing Guideline
 
 Setiap fitur/modul baru minimal cek:

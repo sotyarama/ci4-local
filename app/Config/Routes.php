@@ -21,6 +21,10 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('login',         'Auth\Login::index');
 $routes->post('login/attempt', 'Auth\Login::attempt');
 $routes->get('logout',        'Auth\Logout::index');
+$routes->get('auth/forgot',   'Auth\ForgotPassword::index');
+$routes->post('auth/forgot',  'Auth\ForgotPassword::send');
+$routes->get('auth/reset',    'Auth\ResetPassword::index');
+$routes->post('auth/reset',   'Auth\ResetPassword::update');
 
 
 // ======================================================

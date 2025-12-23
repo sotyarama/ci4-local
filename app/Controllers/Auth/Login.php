@@ -51,6 +51,9 @@ class Login extends BaseController
 
         $roleName = $this->getRoleName((int) ($user['role_id'] ?? 0));
 
+        // Regenerate session ID to mitigate fixation before storing identity
+        $session->regenerate(true);
+
         // Simpan ke session
         $session->set([
             'user_id'     => $user['id'],
