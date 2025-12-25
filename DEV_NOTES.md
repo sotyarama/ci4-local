@@ -512,6 +512,7 @@ Setiap fitur/modul baru minimal cek:
 -   Observability diperkuat: kartu stok per bahan, summary harian di Sales.
 -   Dashboard sudah memuat KPI live (hari ini, 7d, MTD), top menu 7d, peringatan stok minim, transaksi terbaru, serta beban biaya bulan berjalan.
 -   Seed demo siap dipakai untuk testing cepat (supplier, bahan, pembelian IN, resep, user owner).
+-   User Management: create/edit tanpa password; password dibuat lewat alur Forgot Password (password_hash bisa null).
 -   Dokumen ini untuk menjaga konteks jika ada jeda/pindah device.
 
 ## [2025-12] Master Data & Recipes Stabilization (Phase 1)
