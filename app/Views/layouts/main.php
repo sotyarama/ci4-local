@@ -73,6 +73,8 @@
         return in_array($key, $roleAllow[$role] ?? [], true);
     };
 
+    $canManageUsers = in_array($role, ['owner', 'auditor'], true);
+
     // Active state helper (match exact path or prefix)
     $isActive = static function (array $paths) use ($currentPath): bool {
         foreach ($paths as $p) {
@@ -206,6 +208,14 @@
                     <?= $navLink('overheads', 'Biaya Overhead', $menuAllowed('overhead'), (! $isOverheadPayroll && $isActive(['overheads'])), true); ?>
                     <?= $navLink('overhead-categories', 'Kategori Overhead', $menuAllowed('overhead'), $isActive(['overhead-categories']), true); ?>
                     <?= $navLink('overheads/payroll', 'Overhead (Payroll)', $menuAllowed('overhead'), $isOverheadPayroll, true); ?>
+                </div>
+
+                <!-- Settings -->
+                <div class="nav-section-title collapsible" data-target="settings">
+                    Settings <span class="collapse-arrow">ƒ-ó</span>
+                </div>
+                <div class="nav-group" id="nav-settings">
+                    <?= $navLink('users', 'User Management', $canManageUsers, $isActive(['users']), true); ?>
                 </div>
             </div>
         </aside>

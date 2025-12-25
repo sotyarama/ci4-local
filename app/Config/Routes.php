@@ -174,6 +174,19 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 
 
         // ------------------------------
+        // Users (Owner/Auditor)
+        // ------------------------------
+        $routes->group('users', ['filter' => 'role:owner,auditor'], static function ($routes) {
+            $routes->get('/',             'Users::index');
+            $routes->get('create',        'Users::create');
+            $routes->post('store',         'Users::store');
+            $routes->get('edit/(:num)',   'Users::edit/$1');
+            $routes->post('update/(:num)', 'Users::update/$1');
+            $routes->post('delete/(:num)', 'Users::delete/$1');
+        });
+
+
+        // ------------------------------
         // Audit Logs
         // ------------------------------
         $routes->get('audit-logs', 'AuditLogs::index');
