@@ -77,7 +77,8 @@ This document summarizes the project status after a security-first audit (2025-1
 1. Revoke old SMTP credentials at provider (Brevo/Gmail) immediately and confirm new secret validity. (Owner/Provider access required.)
 2. Update deployment servers and staging with new `.env` values (database password, smtp password, encryption key) and restart services. Test DB and SMTP.
 3. Add secrets to GitHub Actions (via `gh` or UI): `APP_DB_PASSWORD`, `APP_SMTP_USER`, `APP_SMTP_PASS`, `APP_ENCRYPTION_KEY`.
-4. Notify collaborators: advise all devs to re-clone and recreate local envs. Use the provided message below.
+4. **Quote `.env` values that contain spaces.** For example: `email.fromName = "TEMU RASA CAFE"`. Unquoted values containing spaces will cause the DotEnv parser to throw an exception ("`.env` values containing spaces must be surrounded by quotes") and prevent the app from booting.
+5. Notify collaborators: advise all devs to re-clone and recreate local envs. Use the provided message below.
 
 ---
 
@@ -114,6 +115,7 @@ This document summarizes the project status after a security-first audit (2025-1
 
 -   `phpunit` runs on CI (we added workflow) — ensure test suite green and sqlite3 extension present in CI.
 -   Smoke-tests after rotation: DB connect, write-read; SMTP send a test message.
+-   Added automated `.env` formatting check: `scripts/check_env_format.php` and GitHub Actions workflow `.github/workflows/env-format-check.yml` run on PRs and pushes to catch unquoted values containing spaces before they break DotEnv parsing. (CI will fail the check if issues are found.)
 -   Manual: Walk forgot/reset password flow to ensure tokens work and no leaked tokens exist.
 
 ---

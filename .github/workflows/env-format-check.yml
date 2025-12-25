@@ -1,0 +1,22 @@
+name: 'ENV format check'
+
+on:
+    pull_request:
+    push:
+        branches: ['**']
+
+jobs:
+    env-format:
+        name: Check .env formatting
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Set up PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.1'
+
+            - name: Run .env format checker
+              run: php scripts/check_env_format.php
