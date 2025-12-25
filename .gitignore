@@ -63,6 +63,10 @@ writable/uploads/*
 writable/debugbar/*
 !writable/debugbar/index.html
 
+# Local backups of sensitive runtime artifacts
+backups/*
+!backups/.gitkeep
+
 php_errors.log
 
 #-------------------------
