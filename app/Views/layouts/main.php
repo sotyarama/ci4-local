@@ -158,6 +158,7 @@
                 </div>
                 <div class="nav-group" id="nav-master">
                     <?= $navLink('master/products', 'Menu / Produk', $menuAllowed('master'), $isActive(['master/products']), true); ?>
+                    <?= $navLink('master/menu-options', 'Menu Options', $menuAllowed('master'), $isActive(['master/menu-options']), true); ?>
                     <?= $navLink('master/categories', 'Kategori Menu', $menuAllowed('master'), $isActive(['master/categories']), true); ?>
                     <?= $navLink('master/raw-materials', 'Bahan Baku', $menuAllowed('master'), $isActive(['master/raw-materials']), true); ?>
                     <?= $navLink('master/suppliers', 'Supplier', $menuAllowed('master'), $isActive(['master/suppliers']), true); ?>

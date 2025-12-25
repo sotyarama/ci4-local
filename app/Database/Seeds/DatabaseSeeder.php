@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
         $this->call('MenusSeeder');
         $this->call('SuppliersSeeder');
         $this->call('RawMaterialsSeeder');
+        $this->call('MenuOptionsDemoSeeder');
         $this->call('PurchasesDemoSeeder');
         $this->call('RecipesDemoSeeder');
         $this->call('UsersSeeder');

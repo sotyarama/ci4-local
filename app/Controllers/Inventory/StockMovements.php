@@ -5,16 +5,19 @@ namespace App\Controllers\Inventory;
 use App\Controllers\BaseController;
 use App\Models\StockMovementModel;
 use App\Models\RawMaterialModel;
+use App\Models\RawMaterialVariantModel;
 
 class StockMovements extends BaseController
 {
     protected StockMovementModel $movementModel;
     protected RawMaterialModel $rawModel;
+    protected RawMaterialVariantModel $variantModel;
 
     public function __construct()
     {
         $this->movementModel = new StockMovementModel();
         $this->rawModel      = new RawMaterialModel();
+        $this->variantModel  = new RawMaterialVariantModel();
     }
 
     /**
@@ -23,6 +26,7 @@ class StockMovements extends BaseController
     public function index()
     {
         $rawId    = (int) ($this->request->getGet('raw_material_id') ?? 0);
+        $variantId = (int) ($this->request->getGet('variant_id') ?? 0);
         $dateFrom = $this->request->getGet('date_from') ?: null;
         $dateTo   = $this->request->getGet('date_to') ?: null;
         $openingBalance = $this->request->getGet('opening_balance');
@@ -37,6 +41,9 @@ class StockMovements extends BaseController
         if ($rawId > 0) {
             $builder->where('stock_movements.raw_material_id', $rawId);
         }
+        if ($variantId > 0) {
+            $builder->where('stock_movements.raw_material_variant_id', $variantId);
+        }
 
         if ($dateFrom) {
             $builder->where('DATE(stock_movements.created_at) >=', $dateFrom);
@@ -49,9 +56,14 @@ class StockMovements extends BaseController
         $movements = $builder->findAll();
 
         // Hitung saldo berjalan hanya bila filter bahan dipilih agar konteks jelas.
-        if ($rawId > 0 && ! empty($movements)) {
-            $ascBuilder = $this->movementModel
-                ->where('stock_movements.raw_material_id', $rawId);
+        if (($rawId > 0 || $variantId > 0) && ! empty($movements)) {
+            $ascBuilder = $this->movementModel;
+            if ($rawId > 0) {
+                $ascBuilder->where('stock_movements.raw_material_id', $rawId);
+            }
+            if ($variantId > 0) {
+                $ascBuilder->where('stock_movements.raw_material_variant_id', $variantId);
+            }
 
             if ($dateFrom) {
                 $ascBuilder->where('DATE(stock_movements.created_at) >=', $dateFrom);
@@ -84,16 +96,47 @@ class StockMovements extends BaseController
             ->orderBy('name', 'ASC')
             ->findAll();
 
+        $variants = $this->variantModel
+            ->select('raw_material_variants.id, raw_material_variants.raw_material_id, raw_materials.name AS raw_material_name, raw_materials.qty_precision AS qty_precision, raw_material_variants.variant_name, brands.name AS brand_name')
+            ->join('raw_materials', 'raw_materials.id = raw_material_variants.raw_material_id', 'left')
+            ->join('brands', 'brands.id = raw_material_variants.brand_id', 'left')
+            ->where('raw_material_variants.is_active', 1)
+            ->where('raw_materials.is_active', 1)
+            ->orderBy('raw_materials.name', 'ASC')
+            ->orderBy('brands.name', 'ASC')
+            ->orderBy('raw_material_variants.variant_name', 'ASC')
+            ->findAll();
+
+        $selectedPrecision = null;
+        if ($variantId > 0) {
+            foreach ($variants as $variant) {
+                if ((int) ($variant['id'] ?? 0) === $variantId) {
+                    $selectedPrecision = (int) ($variant['qty_precision'] ?? 0);
+                    break;
+                }
+            }
+        } elseif ($rawId > 0) {
+            foreach ($materials as $material) {
+                if ((int) ($material['id'] ?? 0) === $rawId) {
+                    $selectedPrecision = (int) ($material['qty_precision'] ?? 0);
+                    break;
+                }
+            }
+        }
+
         $data = [
             'title'       => 'Riwayat Stok',
             'subtitle'    => 'Pergerakan stok IN/OUT per bahan baku',
             'movements'   => $movements,
             'materials'   => $materials,
+            'variants'    => $variants,
             'filterRawId' => $rawId,
+            'filterVariantId' => $variantId,
             'filterFrom'  => $dateFrom,
             'filterTo'    => $dateTo,
             'openingBalance' => $openingBalance,
             'runningBalanceMap' => $runningBalanceMap,
+            'selectedPrecision' => $selectedPrecision,
         ];
 
         return view('inventory/stock_movements_index', $data);

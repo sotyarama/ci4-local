@@ -140,12 +140,6 @@ class Recipes extends BaseController
             return redirect()->back()->with('errors', $itemErrors)->withInput();
         }
 
-        if (empty($items)) {
-            return redirect()->back()
-                ->with('errors', ['Minimal satu bahan baku atau sub-resep harus diisi.'])
-                ->withInput();
-        }
-
         $db = \Config\Database::connect();
         $db->transStart();
 
@@ -236,7 +230,6 @@ class Recipes extends BaseController
 
         $db = \Config\Database::connect();
         $db->transStart();
-
         $updateData = [
             'yield_qty'  => (float) $this->request->getPost('yield_qty'),
             'yield_unit' => $this->request->getPost('yield_unit') ?: $recipe['yield_unit'],
@@ -283,6 +276,7 @@ class Recipes extends BaseController
         $errors       = [];
 
         $materialMap  = $this->getMaterialNameMap();
+        $materialMeta = $this->getMaterialMetaMap();
         $recipeMap    = $this->getRecipeNameMap();
 
         foreach ($itemsInput as $i => $row) {
@@ -297,6 +291,10 @@ class Recipes extends BaseController
 
             if ($type === 'recipe') {
                 $child = (int) ($row['child_recipe_id'] ?? 0);
+
+                if ($child <= 0 && $qty <= 0) {
+                    continue; // baris kosong
+                }
 
                 if ($child <= 0 || ! isset($recipeMap[$child])) {
                     $errors[] = "Sub-resep baris " . ($i + 1) . " tidak valid.";
@@ -325,9 +323,19 @@ class Recipes extends BaseController
             } else {
                 $rawId = (int) ($row['raw_material_id'] ?? 0);
 
+                if ($rawId <= 0 && $qty <= 0) {
+                    continue; // baris kosong
+                }
+
                 if ($rawId <= 0 || $qty <= 0) {
                     $label = $materialMap[$rawId] ?? 'baris ' . ($i + 1);
                     $errors[] = "Qty untuk {$label} harus > 0.";
+                    continue;
+                }
+
+                $meta = $materialMeta[$rawId] ?? null;
+                if ($meta && (int) ($meta['has_variants'] ?? 0) === 1) {
+                    $errors[] = "Bahan {$meta['name']} memiliki varian. Pilih varian lewat opsi menu, bukan di resep.";
                     continue;
                 }
 
@@ -352,6 +360,21 @@ class Recipes extends BaseController
             'name',
             'id'
         );
+    }
+
+    private function getMaterialMetaMap(): array
+    {
+        $rows = $this->rawModel->select('id, name, has_variants')->findAll();
+        $map = [];
+        foreach ($rows as $row) {
+            $id = (int) ($row['id'] ?? 0);
+            if ($id <= 0) {
+                continue;
+            }
+            $map[$id] = $row;
+        }
+
+        return $map;
     }
 
     private function getRecipeOptions(?int $excludeId = null): array

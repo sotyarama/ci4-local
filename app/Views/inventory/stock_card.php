@@ -69,6 +69,13 @@
             $currentStock = (float) ($selectedMaterial['current_stock'] ?? 0);
             $minStock     = (float) ($selectedMaterial['min_stock'] ?? 0);
             $isLow        = $minStock > 0 && $currentStock < $minStock;
+            $precision    = (int) ($selectedMaterial['qty_precision'] ?? 0);
+            if ($precision < 0) {
+                $precision = 0;
+            }
+            if ($precision > 3) {
+                $precision = 3;
+            }
         ?>
         <div style="padding:10px; border:1px solid var(--tr-border); border-radius:10px; background:var(--tr-secondary-beige); margin-bottom:12px;">
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:8px;">
@@ -79,7 +86,7 @@
                 <div>
                     <div style="font-size:11px; color:var(--tr-muted-text);">Stok saat ini (raw_materials)</div>
                     <div style="font-size:14px; color:var(--tr-text); font-weight:600; margin-top:2px;">
-                        <?= number_format($currentStock, 3, ',', '.'); ?>
+                        <?= number_format($currentStock, $precision, ',', '.'); ?>
                         <?php if ($isLow): ?>
                             <span style="margin-left:6px; padding:2px 8px; border-radius:999px; background:var(--tr-secondary-beige); color:var(--tr-accent-brown); border:1px solid var(--tr-accent-brown); font-size:10px; font-weight:700;">
                                 Low
@@ -90,7 +97,7 @@
                 <div>
                     <div style="font-size:11px; color:var(--tr-muted-text);">Min stok</div>
                     <div style="font-size:14px; color:var(--tr-text); font-weight:600; margin-top:2px;">
-                        <?= number_format($minStock, 3, ',', '.'); ?>
+                        <?= number_format($minStock, $precision, ',', '.'); ?>
                     </div>
                 </div>
                 <?php if (! empty($runningBalance)): ?>
@@ -103,19 +110,19 @@
                     <div>
                         <div style="font-size:11px; color:var(--tr-muted-text);">Opening balance (awal perhitungan)</div>
                         <div style="font-size:14px; color:var(--tr-text); font-weight:600; margin-top:2px;">
-                            <?= number_format($openingShown, 3, ',', '.'); ?>
+                            <?= number_format($openingShown, $precision, ',', '.'); ?>
                         </div>
                     </div>
                     <div>
                         <div style="font-size:11px; color:var(--tr-muted-text);">Saldo berjalan (hasil kartu stok)</div>
                         <div style="font-size:14px; color:var(--tr-text); font-weight:600; margin-top:2px;">
-                            <?= number_format($calcBalance, 3, ',', '.'); ?>
+                            <?= number_format($calcBalance, $precision, ',', '.'); ?>
                         </div>
                     </div>
                     <div>
                         <div style="font-size:11px; color:var(--tr-muted-text);">Selisih vs current_stock</div>
                         <div style="font-size:14px; font-weight:600; margin-top:2px; color:<?= $deltaColor; ?>;">
-                            <?= number_format($delta, 3, ',', '.'); ?>
+                            <?= number_format($delta, $precision, ',', '.'); ?>
                         </div>
                     </div>
                 <?php endif; ?>
@@ -159,10 +166,10 @@
                                 </span>
                             </td>
                             <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
-                                <?= number_format((float) $mv['qty'], 3, ',', '.'); ?>
+                                <?= number_format((float) $mv['qty'], $precision, ',', '.'); ?>
                             </td>
                             <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right; font-weight:600;">
-                                <?= number_format($balance, 3, ',', '.'); ?>
+                                <?= number_format($balance, $precision, ',', '.'); ?>
                             </td>
                             <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
                                 <?= esc($mv['ref_type'] ?? '-'); ?> #<?= esc($mv['ref_id'] ?? '-'); ?>

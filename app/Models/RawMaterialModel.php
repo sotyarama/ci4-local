@@ -26,6 +26,9 @@ class RawMaterialModel extends Model
     protected $allowedFields = [
         'name',
         'unit_id',
+        'qty_precision',
+        'has_variants',
+        'brand_id',
         'current_stock',
         'min_stock',
         'cost_last',

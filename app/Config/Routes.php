@@ -54,6 +54,10 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
             $routes->post('products/update/(:num)',  'Products::update/$1');
             $routes->post('products/delete/(:num)',  'Products::delete/$1');
 
+            // Menu Options (group + options)
+            $routes->get('menu-options',            'MenuOptions::index');
+            $routes->post('menu-options/save',       'MenuOptions::save');
+
             // Menu Categories
             $routes->get('categories',              'MenuCategories::index');
             $routes->get('categories/create',       'MenuCategories::create');
@@ -123,6 +127,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
             $routes->get('sales/create',        'Transactions\Sales::create');
             $routes->post('sales/store',         'Transactions\Sales::store');
             $routes->get('sales/detail/(:num)', 'Transactions\Sales::detail/$1');
+            $routes->get('sales/kitchen-ticket/(:num)', 'Transactions\Sales::kitchenTicket/$1');
             $routes->post('sales/void/(:num)',   'Transactions\Sales::void/$1');
         });
 

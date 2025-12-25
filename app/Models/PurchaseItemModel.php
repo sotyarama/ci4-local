@@ -14,6 +14,7 @@ class PurchaseItemModel extends Model
     protected $allowedFields = [
         'purchase_id',
         'raw_material_id',
+        'raw_material_variant_id',
         'qty',
         'unit_cost',
         'total_cost',

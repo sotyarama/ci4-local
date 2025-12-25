@@ -518,3 +518,140 @@ Setiap fitur/modul baru minimal cek:
 ## [2025-12] Master Data & Recipes Stabilization (Phase 1)
 
 Selama fase ini sejumlah modul (bukan hanya Recipes) direvisi untuk distabilkan: Master Recipes (Controller, Model, View, dan logika JS) direfaktor agar dropdown Raw Material vs Sub-Recipe konsisten, mencegah input mixed-state, dan menghilangkan eksekusi JavaScript rekursif yang memicu error maximum call stack; query SQL di berbagai model diperbaiki dengan kualifikasi kolom eksplisit seperti `is_active` agar tidak ambigu saat JOIN; penanganan Unit (termasuk dukungan `is_active`) diselesaikan dan diintegrasikan ke Raw Materials serta Recipes sehingga informasi unit terselesaikan konsisten di server dan client; sejumlah controller, model, view, serta logika terkait route pada Master Data, persiapan Inventory, dan file pendukung reporting diselaraskan untuk naming, filter, ordering, dan alur data yang konsisten, menghasilkan pembaruan di sekitar dua puluh-an file; fokus fase ini adalah correctness fungsional, integritas data, dan perilaku UI yang dapat diprediksi alih-alih polesan visual; sistem kini dianggap stabil untuk penggunaan harian, pembaruan sidebar/navigasi sengaja ditunda hingga seluruh master final, dan perbaikan berikutnya diarahkan ke ekstraksi JavaScript inline, penguatan UX safeguard, serta penyambungan Recipes lebih erat dengan Stock Movements dan snapshot HPP Sales.
+
+---
+
+## [2025-12-26] Modifiers & Add-ons (Raw Material Variant)
+
+### Discovery (sebelum perubahan)
+
+-   **Menus**: `menus` (id, name, menu_category_id, price, sku, is_active), relasi ke `menu_categories` (id, name, sort_order).
+-   **Sales**: `sales` (id, sale_date, total_amount, total_cost, status, void_reason, voided_at), detail di `sale_items` (sale_id, menu_id, qty, price, subtotal, hpp_snapshot).
+-   **Recipes/BOM**: `recipes` (menu_id, yield_qty, yield_unit), `recipe_items` (recipe_id, raw_material_id, qty, waste_pct, item_type, child_recipe_id).
+-   **Inventory**: stok on-hand di `raw_materials.current_stock`; ledger pergerakan di `stock_movements` (raw_material_id, movement_type, qty, ref_type/ref_id).
+-   **Purchases**: `purchases` + `purchase_items`, update stok dan cost_avg.
+-   **Brands/Variants**: belum ada tabel brand/variant; hanya `raw_materials`.
+-   **Order/Sales logic**: utama di `app/Controllers/Transactions/Sales.php` (validasi resep, hitung kebutuhan bahan, cek stok, simpan sale_items, stock OUT + movement). POS Touchscreen di `app/Views/pos/touchscreen.php`.
+
+### DB changes
+
+-   New tables: `raw_material_variants` (brand_id nullable, no brand table yet), `menu_option_groups`, `menu_options`, `sale_item_options` (FK + indexes, InnoDB).
+-   Consumption memakai `raw_materials.current_stock` + `stock_movements` (ref_type `sale`).
+-   Purchase items now track optional `raw_material_variant_id` (FK to `raw_material_variants`).
+
+### Files added/updated
+
+-   Migrations: `app/Database/Migrations/2025-12-26-080000_CreateRawMaterialVariantsTable.php`, `app/Database/Migrations/2025-12-26-080100_CreateMenuOptionGroupsTable.php`, `app/Database/Migrations/2025-12-26-080200_CreateMenuOptionsTable.php`, `app/Database/Migrations/2025-12-26-080300_CreateSaleItemOptionsTable.php`.
+-   Models: `app/Models/MenuOptionGroupModel.php`, `app/Models/MenuOptionModel.php`, `app/Models/OrderItemOptionModel.php`, `app/Models/RawMaterialVariantModel.php`.
+-   Service: `app/Services/StockConsumptionService.php`.
+-   POS UI: `app/Views/pos/touchscreen.php` (modal opsi + snapshot di cart).
+-   Sales flow: `app/Controllers/Transactions/Sales.php` (persist opsi, validasi, stock consumption, kitchen ticket).
+-   Kitchen ticket: `app/Views/transactions/kitchen_ticket.php`, route `transactions/sales/kitchen-ticket/(:num)`, link dari detail.
+-   Seeder: `app/Database/Seeds/MenuOptionsDemoSeeder.php`, wired in `app/Database/Seeds/DatabaseSeeder.php`.
+-   Raw material & purchases: variant list management + purchase form variant selection (`app/Controllers/Master/RawMaterials.php`, `app/Views/master/raw_materials_form.php`, `app/Views/master/raw_materials_index.php`, `app/Controllers/Transactions/Purchases.php`, `app/Views/transactions/purchases_form.php`, `app/Views/transactions/purchases_detail.php`).
+
+### How to test (end-to-end)
+
+1. Jalankan migrasi: `php spark migrate`.
+2. Seed demo: `php spark db:seed DatabaseSeeder`.
+3. Buka POS touchscreen: `/pos/touch`, pilih menu (Mie/Kopi), pilih opsi wajib + add-on, simpan transaksi.
+4. Cek stok: `raw_materials.current_stock` berkurang + `stock_movements` OUT untuk recipe + opsi.
+5. Cek detail transaksi: `/transactions/sales/detail/{id}` dan kitchen ticket: `/transactions/sales/kitchen-ticket/{id}`.
+
+### TODO / follow-up
+
+-   Auto-disable opsi saat stok varian 0 (opsional).
+-   Laporan margin yang memisah cost menu vs add-on (jika dibutuhkan).
+-   Snapshot nama grup opsi jika perlu stabil untuk print.
+
+---
+
+## [2025-12-27] Brand vs Variant Split (Raw Materials + Purchases)
+
+### DB changes
+
+-   New table: `brands` + FK dari `raw_material_variants.brand_id` (nullable, ON DELETE SET NULL).
+-   Migration split: variant lama yang berisi brand dipindah menjadi `brands`, `variant_name` di-set ke `Original`.
+
+### Files updated
+
+-   Seeder: `app/Database/Seeds/MenuOptionsDemoSeeder.php` (brand + variant terpisah; raw material `Mie Instan` / `Kopi Sachet`).
+-   Purchases UI: `app/Views/transactions/purchases_form.php` (filter brand + varian, sync otomatis), `app/Views/transactions/purchases_detail.php` (tampilkan brand + varian).
+
+### How to test
+
+1. Jalankan migrasi: `php spark migrate`.
+2. Seed demo: `php spark db:seed DatabaseSeeder`.
+3. Buka `/master/raw-materials` lalu edit bahan untuk input brand + varian.
+4. Buka `/purchases/create`: pilih bahan, pilih brand, varian harus ter-filter; simpan; lihat detail pembelian dan pastikan brand/varian tampil.
+
+### TODO
+
+-   (Opsional) Tambah master CRUD untuk Brands jika dibutuhkan.
+
+---
+
+## [2025-12-27] Variant Stock Tracking (Per Brand/Varian)
+
+### DB changes
+
+-   `raw_materials`: tambah `has_variants` + `brand_id` (opsional untuk bahan tanpa varian).
+-   `raw_material_variants`: tambah `current_stock` + `min_stock`.
+-   `stock_movements`: tambah `raw_material_variant_id` (nullable, FK).
+
+### Behavior changes
+
+-   Jika `has_variants = 1`, stok disimpan di level varian dan `raw_materials.current_stock` otomatis jadi agregat.
+-   Jika `has_variants = 0`, stok tetap di parent (raw_materials) dan brand diset di parent.
+-   Pembelian wajib memilih varian ketika bahan punya varian.
+-   Konsumsi stok add-on memakai stok varian; bahan resep yang punya varian diblok agar tidak ambigu.
+
+### Files updated
+
+-   Migrations: `app/Database/Migrations/2025-12-27-090000_AddVariantStockAndFlags.php`.
+-   Raw materials: `app/Controllers/Master/RawMaterials.php`, `app/Views/master/raw_materials_form.php`, `app/Views/master/raw_materials_index.php`.
+-   Stock flow: `app/Services/StockConsumptionService.php`, `app/Controllers/Transactions/Sales.php`, `app/Controllers/Transactions/Purchases.php`.
+-   Models: `app/Models/RawMaterialModel.php`, `app/Models/RawMaterialVariantModel.php`, `app/Models/StockMovementModel.php`.
+-   Seeder: `app/Database/Seeds/MenuOptionsDemoSeeder.php`.
+
+### How to test
+
+1. Jalankan migrasi: `php spark migrate`.
+2. Edit bahan baku: set “Memiliki Varian = Ya”, isi brand + varian + stok per varian, simpan.
+3. Buka pembelian: pilih bahan varian, pilih brand + varian, simpan.
+4. Lakukan transaksi POS dengan opsi varian; stok varian berkurang dan parent stock ter-update agregat.
+
+---
+
+## [2025-12-27] Menu Option Config UI
+
+### Files added/updated
+
+-   Controller + view: `app/Controllers/Master/MenuOptions.php`, `app/Views/master/menu_options_index.php`.
+-   Routes + sidebar: `app/Config/Routes.php`, `app/Views/layouts/main.php`.
+
+### Notes
+
+-   UI ini menyimpan group + opsi menu secara non-destruktif: item yang dihapus akan di-set `is_active=0`.
+-   Opsi wajib memilih varian; jika kosong akan ditolak.
+
+---
+
+## [2025-12-27] Qty Precision per Bahan
+
+### DB changes
+
+-   `raw_materials`: tambah `qty_precision` (default 0).
+
+### Behavior changes
+
+-   Presisi qty ditentukan per bahan (0/2/3 digit).
+-   Tampilan stok di Raw Materials, Riwayat Stok, dan Kartu Stok mengikuti `qty_precision`.
+-   Error stok di penjualan memakai presisi bahan.
+
+### Files updated
+
+-   Migration: `app/Database/Migrations/2025-12-27-101000_AddQtyPrecisionToRawMaterials.php`.
+-   Raw materials UI: `app/Views/master/raw_materials_form.php`, `app/Views/master/raw_materials_index.php`, `public/assets/js/datatables/raw_materials.js`.
+-   Stock views: `app/Views/inventory/stock_movements_index.php`, `app/Views/inventory/stock_card.php`.
+-   Logic: `app/Controllers/Master/RawMaterials.php`, `app/Controllers/Inventory/StockMovements.php`, `app/Controllers/Transactions/Sales.php`, `app/Services/StockConsumptionService.php`, `app/Models/StockMovementModel.php`, `app/Models/RawMaterialModel.php`.

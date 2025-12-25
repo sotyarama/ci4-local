@@ -11,10 +11,17 @@
                 Rincian transaksi penjualan dan ringkasan HPP & margin.
             </p>
         </div>
-        <a href="<?= site_url('transactions/sales'); ?>"
-           style="font-size:11px; padding:6px 10px; border-radius:999px; background:var(--tr-border); color:var(--tr-text); text-decoration:none;">
-            ← Kembali ke daftar
-        </a>
+                <div style="display:flex; gap:6px;">
+            <a href="<?= site_url('transactions/sales/kitchen-ticket/' . $sale['id']); ?>"
+               style="font-size:11px; padding:6px 10px; border-radius:999px; background:rgba(122,154,108,0.14); color:var(--tr-primary); text-decoration:none; border:1px solid var(--tr-primary);">
+                Ticket Dapur
+            </a>
+            <a href="<?= site_url('transactions/sales'); ?>"
+               style="font-size:11px; padding:6px 10px; border-radius:999px; background:var(--tr-border); color:var(--tr-text); text-decoration:none;">
+                Kembali ke daftar
+            </a>
+        </div>
+
     </div>
 
     <?php if (session()->getFlashdata('message')): ?>

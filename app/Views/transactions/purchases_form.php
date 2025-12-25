@@ -74,6 +74,8 @@
             <thead>
             <tr>
                 <th style="text-align:left; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Bahan</th>
+                <th style="text-align:left; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Brand</th>
+                <th style="text-align:left; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Varian</th>
                 <th style="text-align:right; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Qty</th>
                 <th style="text-align:left; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Satuan</th>
                 <th style="text-align:right; padding:6px 8px; border-bottom:1px solid var(--tr-border);">Harga / Satuan</th>
@@ -83,17 +85,47 @@
             <?php for ($i = 0; $i < 5; $i++): ?>
                 <?php
                 $oldItems = old('items', []);
-                $row = $oldItems[$i] ?? ['raw_material_id' => '', 'qty' => '', 'unit_cost' => ''];
+                $row = $oldItems[$i] ?? ['raw_material_id' => '', 'raw_material_variant_id' => '', 'qty' => '', 'unit_cost' => ''];
                 ?>
                 <tr>
                     <td style="padding:4px 8px; border-bottom:1px solid var(--tr-border);">
                         <select name="items[<?= $i; ?>][raw_material_id]"
+                                class="item-raw"
                                 style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:12px;">
                             <option value="">-- pilih bahan --</option>
                             <?php foreach ($materials as $m): ?>
                                 <option value="<?= $m['id']; ?>"
+                                    data-unit="<?= esc($m['unit_short'] ?? ''); ?>"
+                                    data-has-variants="<?= esc($m['has_variants'] ?? 0); ?>"
                                     <?= (string) ($row['raw_material_id'] ?? '') === (string) $m['id'] ? 'selected' : ''; ?>>
                                     <?= esc($m['name']); ?> (<?= esc($m['unit_short'] ?? ''); ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                    <td style="padding:4px 8px; border-bottom:1px solid var(--tr-border);">
+                        <select class="item-brand"
+                                style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:12px;">
+                            <option value="">-- pilih brand --</option>
+                            <?php foreach (($brands ?? []) as $b): ?>
+                                <option value="<?= $b['id']; ?>"
+                                    data-raw="<?= esc($b['raw_material_id'] ?? ''); ?>">
+                                    <?= esc($b['name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                    <td style="padding:4px 8px; border-bottom:1px solid var(--tr-border);">
+                        <select name="items[<?= $i; ?>][raw_material_variant_id]"
+                                class="item-variant"
+                                style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:12px;">
+                            <option value="">-- pilih varian --</option>
+                            <?php foreach (($variants ?? []) as $v): ?>
+                                <option value="<?= $v['id']; ?>"
+                                    data-raw="<?= esc($v['raw_material_id'] ?? ''); ?>"
+                                    data-brand="<?= esc($v['brand_id'] ?? ''); ?>"
+                                    <?= (string) ($row['raw_material_variant_id'] ?? '') === (string) $v['id'] ? 'selected' : ''; ?>>
+                                    <?= esc(trim(($v['brand_name'] ?? '') . ' - ' . ($v['variant_name'] ?? ''), ' -')); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -106,7 +138,7 @@
                                value="<?= esc($row['qty'] ?? ''); ?>"
                                style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:12px;">
                     </td>
-                    <td style="padding:4px 8px; border-bottom:1px solid var(--tr-border); font-size:11px; color:var(--tr-muted-text);">
+                    <td class="item-unit" style="padding:4px 8px; border-bottom:1px solid var(--tr-border); font-size:11px; color:var(--tr-muted-text);">
                         <!-- hanya info satuan dari dropdown -->
                         &mdash;
                     </td>
@@ -135,6 +167,103 @@
         </div>
     </form>
 </div>
+
+<script>
+    (function() {
+        const rows = document.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {
+            const rawSelect = row.querySelector('.item-raw');
+            const brandSelect = row.querySelector('.item-brand');
+            const variantSelect = row.querySelector('.item-variant');
+            const unitCell = row.querySelector('.item-unit');
+
+            if (!rawSelect || !brandSelect || !variantSelect || !unitCell) return;
+
+            const brandOptions = Array.from(brandSelect.querySelectorAll('option[data-raw]'));
+            const variantOptions = Array.from(variantSelect.querySelectorAll('option[data-raw]'));
+
+            function filterBrandOptions(rawId) {
+                let validSelection = false;
+                brandOptions.forEach(opt => {
+                    const match = rawId !== '' && opt.dataset.raw === rawId;
+                    opt.style.display = match ? '' : 'none';
+                    if (match && opt.value === brandSelect.value) {
+                        validSelection = true;
+                    }
+                });
+                if (!validSelection) {
+                    brandSelect.value = '';
+                }
+                brandSelect.disabled = rawId === '';
+            }
+
+            function syncBrandFromVariant() {
+                const selected = variantSelect.options[variantSelect.selectedIndex];
+                if (!selected || !selected.dataset) {
+                    brandSelect.value = '';
+                    return;
+                }
+                const brandId = selected.dataset.brand || '';
+                if (brandId !== '') {
+                    const candidate = brandSelect.querySelector(`option[value="${brandId}"]`);
+                    brandSelect.value = candidate ? brandId : '';
+                } else {
+                    brandSelect.value = '';
+                }
+            }
+
+            function filterVariantOptions(rawId, brandId) {
+                let validSelection = false;
+                variantOptions.forEach(opt => {
+                    const matchRaw = rawId !== '' && opt.dataset.raw === rawId;
+                    const optBrand = opt.dataset.brand || '';
+                    const matchBrand = brandId === '' || optBrand === brandId;
+                    const match = matchRaw && matchBrand;
+                    opt.style.display = match ? '' : 'none';
+                    if (match && opt.value === variantSelect.value) {
+                        validSelection = true;
+                    }
+                });
+                if (!validSelection) {
+                    variantSelect.value = '';
+                }
+                variantSelect.disabled = rawId === '';
+            }
+
+            function refreshRow() {
+                const rawId = rawSelect.value;
+                const unitText = rawSelect.options[rawSelect.selectedIndex]?.dataset.unit || '';
+                const hasVariants = rawSelect.options[rawSelect.selectedIndex]?.dataset.hasVariants === '1';
+                unitCell.textContent = unitText !== '' ? unitText : '-';
+
+                filterBrandOptions(rawId);
+                if (variantSelect.value) {
+                    syncBrandFromVariant();
+                }
+                filterVariantOptions(rawId, brandSelect.value);
+
+                if (!hasVariants) {
+                    brandSelect.value = '';
+                    variantSelect.value = '';
+                    brandSelect.disabled = true;
+                    variantSelect.disabled = true;
+                }
+            }
+
+            rawSelect.addEventListener('change', refreshRow);
+            brandSelect.addEventListener('change', () => {
+                filterVariantOptions(rawSelect.value, brandSelect.value);
+            });
+            variantSelect.addEventListener('change', () => {
+                syncBrandFromVariant();
+                filterVariantOptions(rawSelect.value, brandSelect.value);
+            });
+
+            refreshRow();
+        });
+    })();
+</script>
 
 <?= $this->endSection() ?>
 

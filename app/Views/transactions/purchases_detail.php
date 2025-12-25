@@ -83,6 +83,16 @@
                 <tr>
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
                         <?= esc($row['material_name'] ?? '-'); ?>
+                        <?php if (! empty($row['brand_name'])): ?>
+                            <div style="font-size:11px; color:var(--tr-muted-text);">
+                                Brand: <?= esc($row['brand_name']); ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if (! empty($row['variant_name'])): ?>
+                            <div style="font-size:11px; color:var(--tr-muted-text);">
+                                Varian: <?= esc($row['variant_name']); ?>
+                            </div>
+                        <?php endif; ?>
                     </td>
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
                         <?= number_format($qty, 2, ',', '.'); ?>

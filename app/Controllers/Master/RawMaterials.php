@@ -4,12 +4,16 @@ namespace App\Controllers\Master;
 
 use App\Controllers\BaseController;
 use App\Models\RawMaterialModel;
+use App\Models\RawMaterialVariantModel;
+use App\Models\BrandModel;
 use App\Models\UnitModel;
 use App\Models\AuditLogModel;
 
 class RawMaterials extends BaseController
 {
     protected RawMaterialModel $rawModel;
+    protected RawMaterialVariantModel $variantModel;
+    protected BrandModel $brandModel;
     protected UnitModel $unitModel;
     protected AuditLogModel $auditLogModel;
 
@@ -26,6 +30,8 @@ class RawMaterials extends BaseController
     public function __construct()
     {
         $this->rawModel      = new RawMaterialModel();
+        $this->variantModel  = new RawMaterialVariantModel();
+        $this->brandModel    = new BrandModel();
         $this->unitModel     = new UnitModel();
         $this->auditLogModel = new AuditLogModel();
     }
@@ -36,14 +42,41 @@ class RawMaterials extends BaseController
     public function index()
     {
         $materials = $this->rawModel
-            ->withUnit()
-            ->orderBy('name', 'ASC')
+            ->select('raw_materials.*, units.name AS unit_name, units.short_name AS unit_short, brands.name AS brand_name')
+            ->join('units', 'units.id = raw_materials.unit_id', 'left')
+            ->join('brands', 'brands.id = raw_materials.brand_id', 'left')
+            ->orderBy('raw_materials.name', 'ASC')
             ->findAll();
+
+        $variantsByMaterial = [];
+        if (! empty($materials)) {
+            $materialIds = array_column($materials, 'id');
+            $variantRows = $this->variantModel
+                ->select('raw_material_variants.*, brands.name AS brand_name')
+                ->join('brands', 'brands.id = raw_material_variants.brand_id', 'left')
+                ->whereIn('raw_material_variants.raw_material_id', $materialIds)
+                ->where('raw_material_variants.is_active', 1)
+                ->orderBy('brands.name', 'ASC')
+                ->orderBy('raw_material_variants.variant_name', 'ASC')
+                ->findAll();
+
+            foreach ($variantRows as $row) {
+                $materialId = (int) ($row['raw_material_id'] ?? 0);
+                if ($materialId <= 0) {
+                    continue;
+                }
+                if (! isset($variantsByMaterial[$materialId])) {
+                    $variantsByMaterial[$materialId] = [];
+                }
+                $variantsByMaterial[$materialId][] = $row;
+            }
+        }
 
         return view('master/raw_materials_index', [
             'title'     => 'Master Bahan Baku',
             'subtitle'  => 'Daftar bahan baku untuk resep & stok',
             'materials' => $materials,
+            'variantsByMaterial' => $variantsByMaterial,
         ]);
     }
 
@@ -57,6 +90,7 @@ class RawMaterials extends BaseController
             'subtitle'   => 'Daftarkan bahan baku baru',
             'units'      => $this->unitModel->getForDropdown(),
             'material'   => null,
+            'variants'   => [],
             'formAction' => site_url('master/raw-materials/store'),
         ]);
     }
@@ -80,10 +114,22 @@ class RawMaterials extends BaseController
                 ->withInput();
         }
 
+        $hasVariants = $this->request->getPost('has_variants') ? 1 : 0;
+        if ($hasVariants === 1 && ! $this->hasValidVariantRows()) {
+            return redirect()->back()
+                ->with('errors', ['Minimal satu baris varian harus diisi jika bahan memiliki varian.'])
+                ->withInput();
+        }
+
         $payload = $this->payloadFromRequest('create');
 
         $this->rawModel->insert($payload);
         $newId = (int) $this->rawModel->getInsertID();
+
+        if ($hasVariants === 1) {
+            $this->syncVariants($newId);
+            $this->recalculateParentStock($newId);
+        }
 
         if ($this->auditCreateUpdate) {
             $this->logRawMaterialChange($newId, 'create', $payload);
@@ -98,7 +144,11 @@ class RawMaterials extends BaseController
      */
     public function edit(int $id)
     {
-        $material = $this->rawModel->find($id);
+        $material = $this->rawModel
+            ->select('raw_materials.*, brands.name AS brand_name')
+            ->join('brands', 'brands.id = raw_materials.brand_id', 'left')
+            ->where('raw_materials.id', $id)
+            ->first();
         if (! $material) {
             return redirect()->to(site_url('master/raw-materials'))
                 ->with('error', 'Bahan baku tidak ditemukan.');
@@ -109,6 +159,13 @@ class RawMaterials extends BaseController
             'subtitle'   => 'Ubah data bahan baku',
             'units'      => $this->unitModel->getForDropdown(),
             'material'   => $material,
+            'variants'   => $this->variantModel
+                ->select('raw_material_variants.*, brands.name AS brand_name')
+                ->join('brands', 'brands.id = raw_material_variants.brand_id', 'left')
+                ->where('raw_material_variants.raw_material_id', $id)
+                ->orderBy('brands.name', 'ASC')
+                ->orderBy('raw_material_variants.variant_name', 'ASC')
+                ->findAll(),
             'formAction' => site_url('master/raw-materials/update/' . $id),
         ]);
     }
@@ -134,9 +191,20 @@ class RawMaterials extends BaseController
                 ->with('error', 'Bahan baku tidak ditemukan.');
         }
 
+        $hasVariants = $this->request->getPost('has_variants') ? 1 : 0;
+        if ($hasVariants === 1 && ! $this->hasValidVariantRows()) {
+            return redirect()->back()
+                ->with('errors', ['Minimal satu baris varian harus diisi jika bahan memiliki varian.'])
+                ->withInput();
+        }
+
         $payload = $this->payloadFromRequest('update', $material);
 
         $this->rawModel->update($id, $payload);
+        if ($hasVariants === 1) {
+            $this->syncVariants($id);
+            $this->recalculateParentStock($id);
+        }
 
         if ($this->auditCreateUpdate) {
             $this->logRawMaterialChange($id, 'update', $payload);
@@ -186,7 +254,9 @@ class RawMaterials extends BaseController
         $base = [
             'name'      => 'required|min_length[3]',
             'unit_id'   => 'required|integer',
+            'qty_precision' => 'permit_empty|integer|greater_than_equal_to[0]|less_than_equal_to[3]',
             'min_stock' => 'permit_empty|numeric|greater_than_equal_to[0]',
+            'has_variants' => 'permit_empty|in_list[0,1]',
         ];
 
         if ($mode === 'create') {
@@ -216,8 +286,23 @@ class RawMaterials extends BaseController
         $name     = trim((string) $this->request->getPost('name'));
         $unitId   = (int) $this->request->getPost('unit_id');
         $minStock = (float) ($this->request->getPost('min_stock') ?: 0);
+        $hasVariants = $this->request->getPost('has_variants') ? 1 : 0;
+        $precision = (int) ($this->request->getPost('qty_precision') ?? 0);
+        if ($precision < 0) {
+            $precision = 0;
+        }
+        if ($precision > 3) {
+            $precision = 3;
+        }
 
         $isActive = $this->request->getPost('is_active') ? 1 : 0;
+        $brandId = null;
+        if ($hasVariants === 0) {
+            $brandName = trim((string) $this->request->getPost('brand_name'));
+            if ($brandName !== '') {
+                $brandId = $this->findOrCreateBrand($brandName);
+            }
+        }
 
         if ($mode === 'create') {
             $initialStock = (float) ($this->request->getPost('initial_stock') ?: 0);
@@ -226,7 +311,10 @@ class RawMaterials extends BaseController
             return [
                 'name'          => $name,
                 'unit_id'       => $unitId,
-                'current_stock' => $initialStock,
+                'qty_precision' => $precision,
+                'has_variants'  => $hasVariants,
+                'brand_id'      => $brandId,
+                'current_stock' => $hasVariants ? 0 : $initialStock,
                 'min_stock'     => $minStock,
                 'cost_last'     => $initialCost,
                 'cost_avg'      => $initialStock > 0 ? $initialCost : 0,
@@ -245,8 +333,11 @@ class RawMaterials extends BaseController
         return [
             'name'          => $name,
             'unit_id'       => $unitId,
+            'qty_precision' => $precision,
+            'has_variants'  => $hasVariants,
+            'brand_id'      => $brandId,
             'min_stock'     => $minStock,
-            'current_stock' => $currentStock,
+            'current_stock' => $hasVariants ? $fallbackCurrent : $currentStock,
             'is_active'     => $isActive,
         ];
     }
@@ -267,5 +358,105 @@ class RawMaterials extends BaseController
             'user_id'     => $userId > 0 ? $userId : null,
             'created_at'  => date('Y-m-d H:i:s'),
         ]);
+    }
+
+    private function syncVariants(int $materialId): void
+    {
+        $rows = $this->request->getPost('variants');
+        if (! is_array($rows)) {
+            return;
+        }
+
+        $existing = $this->variantModel
+            ->where('raw_material_id', $materialId)
+            ->findAll();
+
+        $existingMap = [];
+        foreach ($existing as $row) {
+            $existingMap[(int) $row['id']] = $row;
+        }
+
+        foreach ($rows as $row) {
+            $variantId = (int) ($row['id'] ?? 0);
+            $brandName = trim((string) ($row['brand_name'] ?? ''));
+            $name = trim((string) ($row['variant_name'] ?? ''));
+            $sku  = trim((string) ($row['sku_code'] ?? ''));
+            $isActive = ! empty($row['is_active']) ? 1 : 0;
+            $currentStock = (float) ($row['current_stock'] ?? 0);
+            $minStock = (float) ($row['min_stock'] ?? 0);
+
+            if ($brandName === '' || $name === '') {
+                continue;
+            }
+
+            $brandId = $this->findOrCreateBrand($brandName);
+            if ($brandId <= 0) {
+                continue;
+            }
+
+            $payload = [
+                'brand_id'     => $brandId,
+                'variant_name' => $name,
+                'sku_code'     => $sku !== '' ? $sku : null,
+                'current_stock'=> $currentStock,
+                'min_stock'    => $minStock,
+                'is_active'    => $isActive,
+            ];
+
+            if ($variantId > 0 && isset($existingMap[$variantId])) {
+                $this->variantModel->update($variantId, $payload);
+            } else {
+                $payload['raw_material_id'] = $materialId;
+                $this->variantModel->insert($payload);
+            }
+        }
+    }
+
+    private function recalculateParentStock(int $materialId): void
+    {
+        $total = $this->variantModel
+            ->selectSum('current_stock', 'total_stock')
+            ->where('raw_material_id', $materialId)
+            ->get()
+            ->getRowArray();
+
+        $stock = (float) ($total['total_stock'] ?? 0);
+        $this->rawModel->update($materialId, ['current_stock' => $stock]);
+    }
+
+    private function hasValidVariantRows(): bool
+    {
+        $rows = $this->request->getPost('variants');
+        if (! is_array($rows)) {
+            return false;
+        }
+
+        foreach ($rows as $row) {
+            $brandName = trim((string) ($row['brand_name'] ?? ''));
+            $name = trim((string) ($row['variant_name'] ?? ''));
+            if ($brandName !== '' && $name !== '') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function findOrCreateBrand(string $name): int
+    {
+        $name = trim($name);
+        if ($name === '') {
+            return 0;
+        }
+
+        $existing = $this->brandModel->where('name', $name)->first();
+        if ($existing) {
+            return (int) ($existing['id'] ?? 0);
+        }
+
+        return (int) $this->brandModel->insert([
+            'name'      => $name,
+            'is_active' => 1,
+        ], true);
     }
 }

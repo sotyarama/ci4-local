@@ -5,9 +5,9 @@
 /**
  * Master Raw Materials - Index
  * - Fokus: minim inline style, konsisten dengan theme-temurasa.css
- * - Tetap pakai App.setupFilter (app.js)
+ * - DataTables untuk pencarian/sort/pagination
  */
-$fmtQty3  = static fn($v): string => number_format((float) ($v ?? 0), 3, ',', '.');
+$fmtQty  = static fn($v, int $precision): string => number_format((float) ($v ?? 0), $precision, ',', '.');
 $fmtMoney = static fn($v): string => number_format((float) ($v ?? 0), 0, ',', '.');
 ?>
 
@@ -49,10 +49,12 @@ $fmtMoney = static fn($v): string => number_format((float) ($v ?? 0), 0, ',', '.
                 placeholder="Cari bahan baku...">
         </div>
 
-        <table class="table">
+        <table class="table" id="rawMaterialsTable">
             <thead>
                 <tr>
+                    <th class="table__th table__th--center" style="width:36px;">#</th>
                     <th class="table__th">Nama Bahan</th>
+                    <th class="table__th">Varian / Brand</th>
                     <th class="table__th">Satuan</th>
                     <th class="table__th table__th--right">Stok Saat Ini</th>
                     <th class="table__th table__th--right">Min Stok</th>
@@ -75,27 +77,82 @@ $fmtMoney = static fn($v): string => number_format((float) ($v ?? 0), 0, ',', '.
                     $currentStock = (float) ($m['current_stock'] ?? 0);
                     $minStock     = (float) ($m['min_stock'] ?? 0);
                     $isLow        = ($minStock > 0) && ($currentStock < $minStock);
+                    $precision = (int) ($m['qty_precision'] ?? 0);
+                    if ($precision < 0) {
+                        $precision = 0;
+                    }
+                    if ($precision > 3) {
+                        $precision = 3;
+                    }
 
                     $costLast = (float) ($m['cost_last'] ?? 0);
                     $costAvg  = (float) ($m['cost_avg'] ?? 0);
+                    $hasVariants = ! empty($m['has_variants']);
+                    $brandName = (string) ($m['brand_name'] ?? '');
+                    $variants = $variantsByMaterial[$id] ?? [];
+                    $variantText = '';
+                    $variantPayload = [];
+                    if (! empty($variants)) {
+                        $pairs = [];
+                        foreach ($variants as $row) {
+                            $brandName = (string) ($row['brand_name'] ?? '');
+                            $variantName = (string) ($row['variant_name'] ?? '');
+                            $stock = isset($row['current_stock']) ? $fmtQty((float) $row['current_stock'], $precision) : null;
+                            $label = trim($brandName . ' - ' . $variantName, ' -');
+                            if ($stock !== null && $label !== '') {
+                                $label .= ' (stok ' . $stock . ')';
+                            }
+                            $pairs[] = $label;
+                            $variantPayload[] = [
+                                'brand_name'   => $brandName,
+                                'variant_name' => $variantName,
+                                'sku_code'     => (string) ($row['sku_code'] ?? ''),
+                                'current_stock' => (float) ($row['current_stock'] ?? 0),
+                                'min_stock'    => (float) ($row['min_stock'] ?? 0),
+                                'is_active'    => ! empty($row['is_active']),
+                            ];
+                        }
+                        $variantText = implode(', ', $pairs);
+                    }
+                    if (! $hasVariants) {
+                        $variantText = $brandName !== '' ? $brandName : $variantText;
+                    }
+                    $variantJson = json_encode($variantPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                     ?>
                     <tr
+                        data-variants="<?= esc($variantJson, 'attr'); ?>"
+                        data-precision="<?= esc((string) $precision, 'attr'); ?>"
                         data-name="<?= esc(strtolower($name)); ?>"
+                        data-variant="<?= esc(strtolower($variantText)); ?>"
                         data-unit="<?= esc(strtolower($unit)); ?>"
                         data-status="<?= esc($status); ?>">
 
+                        <td class="table__td table__td--center">
+                            <?php if ($hasVariants): ?>
+                                <button type="button" class="btn btn-secondary btn-xs rm-toggle" aria-expanded="false">+</button>
+                            <?php else: ?>
+                                <span class="muted">-</span>
+                            <?php endif; ?>
+                        </td>
                         <td class="table__td"><?= esc($name !== '' ? $name : '-'); ?></td>
+                        <td class="table__td">
+                            <?php if ($variantText !== ''): ?>
+                                <?= esc($variantText); ?>
+                            <?php else: ?>
+                                <span class="muted">-</span>
+                            <?php endif; ?>
+                        </td>
                         <td class="table__td"><?= esc($unit !== '' ? $unit : '-'); ?></td>
 
                         <td class="table__td table__td--right">
-                            <?= $fmtQty3($currentStock); ?>
+                            <?= $fmtQty($currentStock, $precision); ?>
 
                             <?php if ($isLow): ?>
                                 <span class="badge badge--low">Low</span>
                             <?php endif; ?>
                         </td>
 
-                        <td class="table__td table__td--right"><?= $fmtQty3($minStock); ?></td>
+                        <td class="table__td table__td--right"><?= $fmtQty($minStock, $precision); ?></td>
 
                         <td class="table__td table__td--right">Rp <?= $fmtMoney($costLast); ?></td>
                         <td class="table__td table__td--right">Rp <?= $fmtMoney($costAvg); ?></td>
@@ -126,10 +183,6 @@ $fmtMoney = static fn($v): string => number_format((float) ($v ?? 0), 0, ',', '.
                         </td>
                     </tr>
                 <?php endforeach; ?>
-
-                <tr id="rm-noresult" style="display:none;">
-                    <td colspan="8" class="table__td table__td--center muted">Tidak ada hasil.</td>
-                </tr>
             </tbody>
         </table>
 
@@ -141,22 +194,6 @@ $fmtMoney = static fn($v): string => number_format((float) ($v ?? 0), 0, ',', '.
 
 </div>
 
-<script>
-    (function() {
-        function initFilter() {
-            if (!window.App || !App.setupFilter) return setTimeout(initFilter, 50);
-
-            App.setupFilter({
-                input: '#rm-filter',
-                rows: document.querySelectorAll('#rm-table-body tr:not(#rm-noresult)'),
-                noResult: '#rm-noresult',
-                fields: ['name', 'unit', 'status'],
-                debounce: 200
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', initFilter);
-    })();
-</script>
+<script src="/assets/js/datatables/raw_materials.js" defer></script>
 
 <?= $this->endSection() ?>

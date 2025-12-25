@@ -7,6 +7,7 @@ use App\Models\PurchaseModel;
 use App\Models\PurchaseItemModel;
 use App\Models\SupplierModel;
 use App\Models\RawMaterialModel;
+use App\Models\RawMaterialVariantModel;
 use App\Models\StockMovementModel;
 
 class Purchases extends BaseController
@@ -15,6 +16,7 @@ class Purchases extends BaseController
     protected PurchaseItemModel $itemModel;
     protected SupplierModel $supplierModel;
     protected RawMaterialModel $rawModel;
+    protected RawMaterialVariantModel $variantModel;
     protected StockMovementModel $movementModel;
 
     public function __construct()
@@ -23,6 +25,7 @@ class Purchases extends BaseController
         $this->itemModel     = new PurchaseItemModel();
         $this->supplierModel = new SupplierModel();
         $this->rawModel      = new RawMaterialModel();
+        $this->variantModel  = new RawMaterialVariantModel();
         $this->movementModel = new StockMovementModel();
     }
 
@@ -52,15 +55,42 @@ class Purchases extends BaseController
         $suppliers = $this->supplierModel->getActive();
         $materials = $this->rawModel
             ->withUnit()
-            ->where('is_active', 1)
-            ->orderBy('name', 'ASC')
+            ->where('raw_materials.is_active', 1)
+            ->orderBy('raw_materials.name', 'ASC')
             ->findAll();
+
+        $variants = $this->variantModel
+            ->select('raw_material_variants.*, raw_materials.name AS raw_material_name, units.short_name AS unit_short, brands.name AS brand_name')
+            ->join('raw_materials', 'raw_materials.id = raw_material_variants.raw_material_id', 'left')
+            ->join('brands', 'brands.id = raw_material_variants.brand_id', 'left')
+            ->join('units', 'units.id = raw_materials.unit_id', 'left')
+            ->where('raw_material_variants.is_active', 1)
+            ->where('raw_materials.is_active', 1)
+            ->orderBy('raw_materials.name', 'ASC')
+            ->orderBy('brands.name', 'ASC')
+            ->orderBy('raw_material_variants.variant_name', 'ASC')
+            ->findAll();
+
+        $db = \Config\Database::connect();
+        $brands = $db->table('raw_material_variants rmv')
+            ->distinct()
+            ->select('b.id, b.name, rmv.raw_material_id')
+            ->join('brands b', 'b.id = rmv.brand_id', 'left')
+            ->join('raw_materials rm', 'rm.id = rmv.raw_material_id', 'left')
+            ->where('rmv.is_active', 1)
+            ->where('rm.is_active', 1)
+            ->where('b.is_active', 1)
+            ->orderBy('b.name', 'ASC')
+            ->get()
+            ->getResultArray();
 
         $data = [
             'title'     => 'Tambah Pembelian',
             'subtitle'  => 'Input pembelian bahan baku',
             'suppliers' => $suppliers,
             'materials' => $materials,
+            'variants'  => $variants,
+            'brands'    => $brands,
         ];
 
         return view('transactions/purchases_form', $data);
@@ -81,20 +111,28 @@ class Purchases extends BaseController
 
         $itemsInput = $this->request->getPost('items') ?? [];
         $items      = [];
+        $variantIds = [];
+        $rawIds     = [];
 
         // Bersihkan item kosong
         foreach ($itemsInput as $row) {
             $rawId = (int) ($row['raw_material_id'] ?? 0);
+            $variantId = (int) ($row['raw_material_variant_id'] ?? 0);
             $qty   = (float) ($row['qty'] ?? 0);
             $cost  = (float) ($row['unit_cost'] ?? 0);
 
             if ($rawId > 0 && $qty > 0 && $cost >= 0) {
                 $items[] = [
                     'raw_material_id' => $rawId,
+                    'raw_material_variant_id' => $variantId > 0 ? $variantId : null,
                     'qty'             => $qty,
                     'unit_cost'       => $cost,
                     'total_cost'      => $qty * $cost,
                 ];
+                if ($variantId > 0) {
+                    $variantIds[$variantId] = true;
+                }
+                $rawIds[$rawId] = true;
             }
         }
 
@@ -105,6 +143,55 @@ class Purchases extends BaseController
         }
 
         $db = \Config\Database::connect();
+        $variantMap = [];
+        if (! empty($variantIds)) {
+            $variantRows = $this->variantModel
+                ->select('raw_material_variants.id, raw_material_variants.raw_material_id')
+                ->whereIn('raw_material_variants.id', array_keys($variantIds))
+                ->findAll();
+
+            foreach ($variantRows as $row) {
+                $variantMap[(int) $row['id']] = (int) ($row['raw_material_id'] ?? 0);
+            }
+        }
+
+        $rawVariantFlags = [];
+        if (! empty($rawIds)) {
+            $rawRows = $this->rawModel
+                ->select('id, has_variants')
+                ->whereIn('id', array_keys($rawIds))
+                ->findAll();
+
+            foreach ($rawRows as $row) {
+                $rawVariantFlags[(int) $row['id']] = (int) ($row['has_variants'] ?? 0);
+            }
+        }
+
+        $errors = [];
+        foreach ($items as &$item) {
+            $variantId = (int) ($item['raw_material_variant_id'] ?? 0);
+            if ($variantId <= 0) {
+                $rawId = (int) ($item['raw_material_id'] ?? 0);
+                if (($rawVariantFlags[$rawId] ?? 0) === 1) {
+                    $errors[] = 'Varian wajib dipilih untuk bahan baku yang memiliki varian.';
+                }
+                continue;
+            }
+            $rawId = (int) ($item['raw_material_id'] ?? 0);
+            $variantRawId = (int) ($variantMap[$variantId] ?? 0);
+            if ($variantRawId <= 0 || $variantRawId !== $rawId) {
+                $errors[] = 'Varian tidak sesuai bahan baku yang dipilih.';
+                $item['raw_material_variant_id'] = null;
+            }
+        }
+        unset($item);
+
+        if (! empty($errors)) {
+            return redirect()->back()
+                ->with('errors', $errors)
+                ->withInput();
+        }
+
         $db->transStart();
 
         // Hitung total
@@ -150,15 +237,29 @@ class Purchases extends BaseController
                     $newAvg           = ($totalValueBefore + $totalValueNew) / $newStock;
                 }
 
-                $this->rawModel->update($material['id'], [
-                    'current_stock' => $newStock,
-                    'cost_last'     => $unitCost,
-                    'cost_avg'      => $newAvg,
-                ]);
+                $hasVariants = (int) ($material['has_variants'] ?? 0) === 1;
+                if ($hasVariants) {
+                    $this->updateVariantStock(
+                        (int) ($item['raw_material_variant_id'] ?? 0),
+                        $newQty
+                    );
+                    $this->rawModel->update($material['id'], [
+                        'cost_last' => $unitCost,
+                        'cost_avg'  => $newAvg,
+                    ]);
+                    $this->recalculateParentStock($material['id']);
+                } else {
+                    $this->rawModel->update($material['id'], [
+                        'current_stock' => $newStock,
+                        'cost_last'     => $unitCost,
+                        'cost_avg'      => $newAvg,
+                    ]);
+                }
 
                 // Catat pergerakan stok (IN)
                 $this->movementModel->insert([
                     'raw_material_id' => $material['id'],
+                    'raw_material_variant_id' => $hasVariants ? ($item['raw_material_variant_id'] ?? null) : null,
                     'movement_type'   => 'IN',
                     'qty'             => $newQty,
                     'ref_type'        => 'purchase',
@@ -197,9 +298,11 @@ class Purchases extends BaseController
         }
 
         $items = $db->table('purchase_items i')
-            ->select('i.*, r.name AS material_name, u.short_name AS unit_short')
+            ->select('i.*, r.name AS material_name, u.short_name AS unit_short, rmv.variant_name AS variant_name, b.name AS brand_name')
             ->join('raw_materials r', 'r.id = i.raw_material_id', 'left')
             ->join('units u', 'u.id = r.unit_id', 'left')
+            ->join('raw_material_variants rmv', 'rmv.id = i.raw_material_variant_id', 'left')
+            ->join('brands b', 'b.id = rmv.brand_id', 'left')
             ->where('i.purchase_id', $id)
             ->get()->getResultArray();
 
@@ -211,5 +314,36 @@ class Purchases extends BaseController
         ];
 
         return view('transactions/purchases_detail', $data);
+    }
+
+    private function updateVariantStock(int $variantId, float $qty): void
+    {
+        if ($variantId <= 0 || $qty <= 0) {
+            return;
+        }
+
+        $variant = $this->variantModel->find($variantId);
+        if (! $variant) {
+            return;
+        }
+
+        $current = (float) ($variant['current_stock'] ?? 0);
+        $newStock = $current + $qty;
+
+        $this->variantModel->update($variantId, [
+            'current_stock' => $newStock,
+        ]);
+    }
+
+    private function recalculateParentStock(int $materialId): void
+    {
+        $total = $this->variantModel
+            ->selectSum('current_stock', 'total_stock')
+            ->where('raw_material_id', $materialId)
+            ->get()
+            ->getRowArray();
+
+        $stock = (float) ($total['total_stock'] ?? 0);
+        $this->rawModel->update($materialId, ['current_stock' => $stock]);
     }
 }
