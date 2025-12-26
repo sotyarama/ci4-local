@@ -31,11 +31,14 @@
         <input type="hidden" name="sale_date" value="<?= esc($today); ?>">
         <input type="hidden" name="invoice_no" value="">
 
-        <div>
+        <div id="menu-list" style="max-height:70vh; overflow:auto; padding-right:6px;">
             <?php foreach ($menusByCategory as $cat => $menus): ?>
-                <div style="margin-bottom:10px;">
-                    <div style="font-weight:700; font-size:13px; margin:6px 0; color:var(--tr-primary-deep);"><?= esc($cat); ?></div>
-                    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px;">
+                <details open style="margin-bottom:10px; border:1px solid var(--tr-border); border-radius:12px; padding:8px; background:#fff;">
+                    <summary style="list-style:none; cursor:pointer; display:flex; align-items:center; justify-content:space-between; font-weight:700; font-size:13px; color:var(--tr-primary-deep);">
+                        <span><?= esc($cat); ?></span>
+                        <span class="menu-toggle-symbol" style="font-size:14px; color:var(--tr-muted-text);">-</span>
+                    </summary>
+                    <div style="margin-top:8px; display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px;">
                         <?php foreach ($menus as $m): ?>
                             <button type="button"
                                     class="menu-card"
@@ -48,7 +51,7 @@
                             </button>
                         <?php endforeach; ?>
                     </div>
-                </div>
+                </details>
             <?php endforeach; ?>
         </div>
 
@@ -57,22 +60,56 @@
                 <label style="font-size:11px; color:var(--tr-muted-text); display:block; margin-bottom:4px;">
                     Customer
                 </label>
-                <select name="customer_id"
-                        required
-                        style="width:100%; padding:6px 8px; font-size:12px; background:#fff; border:1px solid var(--tr-border); border-radius:8px; color:var(--tr-text);">
-                    <?php
-                        $defaultId = (int) ($defaultCustomerId ?? 0);
-                        $selectedId = (int) old('customer_id', $defaultId);
-                    ?>
-                    <?php foreach (($customers ?? []) as $cust): ?>
-                        <?php $cid = (int) ($cust['id'] ?? 0); ?>
-                        <option value="<?= $cid; ?>" <?= $selectedId === $cid ? 'selected' : ''; ?>>
-                            <?= esc($cust['name'] ?? '-'); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                <?php
+                    $defaultId = (int) ($defaultCustomerId ?? 0);
+                    $selectedId = (int) old('customer_id', $defaultId);
+                    $selectedName = 'Tamu';
+                    foreach (($customers ?? []) as $cust) {
+                        if ((int) ($cust['id'] ?? 0) === $selectedId) {
+                            $selectedName = (string) ($cust['name'] ?? 'Tamu');
+                            break;
+                        }
+                    }
+                ?>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <input type="text"
+                           id="customer-display"
+                           value="<?= esc($selectedName); ?>"
+                           readonly
+                           style="flex:1; padding:6px 8px; font-size:12px; background:#fff; border:1px solid var(--tr-border); border-radius:8px; color:var(--tr-text);">
+                    <button type="button"
+                            id="customer-open"
+                            title="Pilih Customer"
+                            style="width:36px; height:32px; border-radius:8px; border:1px solid var(--tr-border); background:#fff; cursor:pointer; font-size:16px;">
+                        👤
+                    </button>
+                </div>
+                <input type="hidden" name="customer_id" id="customer-id" value="<?= esc((string) $selectedId); ?>" required>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="font-weight:700; font-size:14px;">Keranjang</div>
+                    <div style="font-size:12px; color:var(--tr-muted-text);">Tap menu untuk tambah qty</div>
+                </div>
+                <button type="button" id="clear-cart" class="btn btn-secondary" style="padding:6px 10px; border-radius:8px; font-size:12px;">Kosongkan</button>
+            </div>
+
+            <div id="cart-list" style="flex:1; max-height:40vh; overflow:auto; border:1px dashed var(--tr-border); border-radius:8px; padding:8px; background:#fff;">
+                <div id="cart-empty" style="text-align:center; color:var(--tr-muted-text); font-size:12px;">Keranjang kosong</div>
+            </div>
+
+            <div style="border-top:1px solid var(--tr-border); padding-top:8px;">
+                <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
+                    <span>Total Item</span>
+                    <span id="total-items">0</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:700;">
+                    <span>Total Bayar</span>
+                    <span id="total-amount">Rp 0</span>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px;">
                 <div>
                     <label style="font-size:11px; color:var(--tr-muted-text); display:block; margin-bottom:4px;">
                         Metode
@@ -111,28 +148,6 @@
                        readonly
                        style="width:100%; padding:6px 8px; font-size:12px; background:#fff; border:1px solid var(--tr-border); border-radius:8px; color:var(--tr-text);">
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <div style="font-weight:700; font-size:14px;">Keranjang</div>
-                    <div style="font-size:12px; color:var(--tr-muted-text);">Tap menu untuk tambah qty</div>
-                </div>
-                <button type="button" id="clear-cart" class="btn btn-secondary" style="padding:6px 10px; border-radius:8px; font-size:12px;">Kosongkan</button>
-            </div>
-
-            <div id="cart-list" style="flex:1; overflow:auto; border:1px dashed var(--tr-border); border-radius:8px; padding:8px; background:#fff;">
-                <div id="cart-empty" style="text-align:center; color:var(--tr-muted-text); font-size:12px;">Keranjang kosong</div>
-            </div>
-
-            <div style="border-top:1px solid var(--tr-border); padding-top:8px;">
-                <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
-                    <span>Total Item</span>
-                    <span id="total-items">0</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:700;">
-                    <span>Total Bayar</span>
-                    <span id="total-amount">Rp 0</span>
-                </div>
-            </div>
 
             <div style="display:flex; gap:8px;">
                 <button type="submit" class="btn btn-primary" style="flex:1;">Simpan Transaksi</button>
@@ -163,6 +178,49 @@
     </div>
 </div>
 
+<div id="customer-modal" style="display:none; position:fixed; inset:0; background:rgba(20,20,20,0.4); align-items:center; justify-content:center; z-index:70;">
+    <div style="background:#fff; border-radius:14px; width:min(520px, 92vw); max-height:86vh; overflow:hidden; padding:16px; box-shadow:0 14px 30px rgba(0,0,0,0.18);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div>
+                <div style="font-weight:700; font-size:16px;">Pilih Customer</div>
+                <div style="font-size:12px; color:var(--tr-muted-text);">Cari dan pilih customer</div>
+            </div>
+            <button type="button" id="customer-close" style="border:none; background:transparent; font-size:18px; cursor:pointer; color:var(--tr-muted-text);">x</button>
+        </div>
+        <input type="text"
+               id="customer-filter"
+               placeholder="Cari nama / telepon / email..."
+               style="width:100%; padding:6px 8px; font-size:12px; border:1px solid var(--tr-border); border-radius:8px; background:#fff; color:var(--tr-text); margin-bottom:10px;">
+        <div id="customer-list" style="max-height:60vh; overflow:auto; display:flex; flex-direction:column; gap:6px;">
+            <?php foreach (($customers ?? []) as $cust): ?>
+                <?php
+                    $cid = (int) ($cust['id'] ?? 0);
+                    $cname = (string) ($cust['name'] ?? '');
+                    $cphone = (string) ($cust['phone'] ?? '');
+                    $cemail = (string) ($cust['email'] ?? '');
+                    $search = strtolower(trim($cname . ' ' . $cphone . ' ' . $cemail));
+                ?>
+                <button type="button"
+                        class="customer-item"
+                        data-id="<?= $cid; ?>"
+                        data-name="<?= esc($cname); ?>"
+                        data-search="<?= esc($search, 'attr'); ?>"
+                        style="text-align:left; padding:8px 10px; border:1px solid var(--tr-border); border-radius:8px; background:#fff; cursor:pointer;">
+                    <div style="font-weight:600;"><?= esc($cname !== '' ? $cname : '-'); ?></div>
+                    <?php if ($cphone !== '' || $cemail !== ''): ?>
+                        <div style="font-size:11px; color:var(--tr-muted-text); margin-top:2px;">
+                            <?= esc(trim($cphone . ($cphone !== '' && $cemail !== '' ? ' • ' : '') . $cemail)); ?>
+                        </div>
+                    <?php endif; ?>
+                </button>
+            <?php endforeach; ?>
+        </div>
+        <div id="customer-empty" style="display:none; margin-top:8px; font-size:12px; color:var(--tr-muted-text); text-align:center;">
+            Tidak ada hasil.
+        </div>
+    </div>
+</div>
+
 <script>
     (function() {
         const cart = [];
@@ -176,6 +234,14 @@
         const paymentMethodEl = document.getElementById('payment-method');
         const amountPaidEl = document.getElementById('amount-paid');
         const changeDisplayEl = document.getElementById('change-display');
+        const customerDisplayEl = document.getElementById('customer-display');
+        const customerIdEl = document.getElementById('customer-id');
+        const customerModal = document.getElementById('customer-modal');
+        const customerOpen = document.getElementById('customer-open');
+        const customerClose = document.getElementById('customer-close');
+        const customerFilter = document.getElementById('customer-filter');
+        const customerList = document.getElementById('customer-list');
+        const customerEmpty = document.getElementById('customer-empty');
         let lastTotal = 0;
 
         const modal = document.getElementById('options-modal');
@@ -206,7 +272,7 @@
             let totalItems = 0;
             let totalAmount = 0;
 
-            cart.forEach((item) => {
+            cart.forEach((item, idx) => {
                 totalItems += item.qty;
                 totalAmount += item.qty * item.unitPrice;
 
@@ -216,6 +282,7 @@
                 row.style.alignItems = 'center';
                 row.style.padding = '6px 4px';
                 row.style.borderBottom = '1px solid var(--tr-border)';
+                row.style.background = idx % 2 === 0 ? 'rgba(122,154,108,0.08)' : '#fff';
 
                 const left = document.createElement('div');
                 const title = document.createElement('div');
@@ -248,6 +315,35 @@
                     });
                 }
 
+                const noteWrap = document.createElement('div');
+                noteWrap.style.marginTop = '6px';
+                const noteLabel = document.createElement('div');
+                noteLabel.style.fontSize = '11px';
+                noteLabel.style.color = 'var(--tr-muted-text)';
+                noteLabel.textContent = 'Catatan';
+
+                const noteInput = document.createElement('textarea');
+                noteInput.rows = 2;
+                noteInput.placeholder = 'Catatan khusus (opsional)';
+                noteInput.value = item.note || '';
+                noteInput.style.width = '100%';
+                noteInput.style.marginTop = '4px';
+                noteInput.style.padding = '4px 6px';
+                noteInput.style.fontSize = '11px';
+                noteInput.style.border = '1px solid var(--tr-border)';
+                noteInput.style.borderRadius = '6px';
+                noteInput.style.resize = 'vertical';
+                noteInput.style.background = '#fff';
+
+                noteInput.addEventListener('input', () => {
+                    item.note = noteInput.value;
+                    item.lineKey = buildLineKey(item.menuId, item.options, item.note);
+                });
+
+                noteWrap.appendChild(noteLabel);
+                noteWrap.appendChild(noteInput);
+                left.appendChild(noteWrap);
+
                 const right = document.createElement('div');
                 right.style.display = 'flex';
                 right.style.alignItems = 'center';
@@ -273,8 +369,9 @@
 
                 const remove = document.createElement('button');
                 remove.type = 'button';
-                remove.textContent = 'x';
+                remove.textContent = '🗑';
                 remove.style.cssText = 'width:26px; height:26px; border-radius:6px; border:1px solid var(--tr-border); background:#fff; cursor:pointer; color:var(--tr-accent-brown);';
+                remove.title = 'Hapus item';
                 remove.onclick = () => removeItem(item.lineId);
 
                 right.append(minus, qty, plus, remove);
@@ -316,11 +413,10 @@
             if (method === 'qris') {
                 amountPaidEl.value = String(Math.round(lastTotal));
                 amountPaidEl.readOnly = true;
+                changeDisplayEl.disabled = true;
             } else {
                 amountPaidEl.readOnly = false;
-                if (amountPaidEl.value === '') {
-                    amountPaidEl.value = String(Math.round(lastTotal));
-                }
+                changeDisplayEl.disabled = false;
             }
 
             const paid = parseFloat(String(amountPaidEl.value).replace(',', '.')) || 0;
@@ -481,20 +577,22 @@
             return errors;
         }
 
-        function buildLineKey(menuId, selections) {
+        function buildLineKey(menuId, selections, note) {
             if (!selections || selections.length === 0) {
-                return menuId + '|no-options';
+                const noteKey = (note || '').trim().toLowerCase();
+                return menuId + '|no-options|' + noteKey;
             }
             const parts = selections
                 .map(opt => `${opt.optionId}:${opt.qtySelected || 1}`)
                 .sort();
-            return menuId + '|' + parts.join(',');
+            const noteKey = (note || '').trim().toLowerCase();
+            return menuId + '|' + parts.join(',') + '|' + noteKey;
         }
 
         function addItemToCart(menu, selections) {
             const optionDelta = selections.reduce((sum, opt) => sum + (opt.priceDelta || 0), 0);
             const unitPrice = menu.price + optionDelta;
-            const lineKey = buildLineKey(menu.id, selections);
+            const lineKey = buildLineKey(menu.id, selections, '');
             const existing = cart.find(item => item.lineKey === lineKey);
             if (existing) {
                 existing.qty += 1;
@@ -507,6 +605,7 @@
                     qty: 1,
                     unitPrice: unitPrice,
                     options: selections,
+                    note: '',
                 });
             }
             renderCart();
@@ -554,6 +653,7 @@
                 addHidden(base + '[menu_id]', item.menuId);
                 addHidden(base + '[qty]', item.qty);
                 addHidden(base + '[price]', item.unitPrice);
+                addHidden(base + '[note]', item.note || '');
                 if (item.options.length > 0) {
                     item.options.forEach((opt, optIndex) => {
                         const optBase = base + '[options][' + optIndex + ']';
@@ -609,6 +709,81 @@
         if (amountPaidEl) {
             amountPaidEl.addEventListener('input', updatePaymentInfo);
         }
+
+        function openCustomerModal() {
+            if (!customerModal) return;
+            customerModal.style.display = 'flex';
+            if (customerFilter) {
+                customerFilter.value = '';
+                filterCustomerList();
+                customerFilter.focus();
+            }
+        }
+
+        function closeCustomerModal() {
+            if (!customerModal) return;
+            customerModal.style.display = 'none';
+        }
+
+        function filterCustomerList() {
+            if (!customerFilter || !customerList) return;
+            const q = customerFilter.value.toLowerCase().trim();
+            let visible = 0;
+            customerList.querySelectorAll('.customer-item').forEach(btn => {
+                const hay = (btn.dataset.search || '').toLowerCase();
+                const show = q === '' || hay.includes(q);
+                btn.style.display = show ? '' : 'none';
+                if (show) visible += 1;
+            });
+            if (customerEmpty) {
+                customerEmpty.style.display = visible === 0 ? '' : 'none';
+            }
+        }
+
+        if (customerOpen) {
+            customerOpen.addEventListener('click', openCustomerModal);
+        }
+        if (customerClose) {
+            customerClose.addEventListener('click', closeCustomerModal);
+        }
+        if (customerModal) {
+            customerModal.addEventListener('click', function(e) {
+                if (e.target === customerModal) {
+                    closeCustomerModal();
+                }
+            });
+        }
+        if (customerFilter) {
+            customerFilter.addEventListener('input', filterCustomerList);
+        }
+        if (customerList) {
+            customerList.addEventListener('click', function(e) {
+                const btn = e.target.closest('.customer-item');
+                if (!btn) return;
+                const id = btn.getAttribute('data-id') || '';
+                const name = btn.getAttribute('data-name') || '';
+                if (customerIdEl) {
+                    customerIdEl.value = id;
+                }
+                if (customerDisplayEl) {
+                    customerDisplayEl.value = name || 'Tamu';
+                }
+                closeCustomerModal();
+            });
+        }
+
+        function syncMenuToggle(detailsEl) {
+            const symbol = detailsEl.querySelector('.menu-toggle-symbol');
+            if (!symbol) return;
+            symbol.textContent = detailsEl.open ? '-' : '+';
+        }
+
+        document.querySelectorAll('#menu-list details').forEach(detailsEl => {
+            syncMenuToggle(detailsEl);
+            detailsEl.addEventListener('toggle', function() {
+                syncMenuToggle(detailsEl);
+            });
+        });
 
         renderCart();
     })();

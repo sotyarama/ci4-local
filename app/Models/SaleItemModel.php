@@ -17,6 +17,7 @@ class SaleItemModel extends Model
         'price',
         'subtotal',
         'hpp_snapshot',
+        'item_note',
     ];
 
     // Tabel sale_items tidak punya created_at/updated_at

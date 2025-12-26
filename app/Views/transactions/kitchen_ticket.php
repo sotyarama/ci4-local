@@ -79,6 +79,11 @@
                             <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
+                    <?php if (! empty($item['item_note'])): ?>
+                        <div style="margin-top:6px; font-size:12px; color:var(--tr-muted-text);">
+                            Catatan: <?= esc($item['item_note']); ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
             <?php endforeach; ?>
         </div>

@@ -125,6 +125,11 @@
                 <tr>
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
                         <?= esc($row['menu_name'] ?? ''); ?>
+                        <?php if (! empty($row['item_note'])): ?>
+                            <div style="font-size:11px; color:var(--tr-muted-text); margin-top:4px;">
+                                Catatan: <?= esc($row['item_note']); ?>
+                            </div>
+                        <?php endif; ?>
                     </td>
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); color:var(--tr-muted-text);">
                         <?= esc($row['category_name'] ?? '-'); ?>

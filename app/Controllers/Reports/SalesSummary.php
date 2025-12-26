@@ -259,6 +259,195 @@ class SalesSummary extends BaseController
         return view('reports/sales_time', $data);
     }
 
+    /**
+     * Ringkasan penjualan per customer (order, omzet, HPP, margin).
+     */
+    public function perCustomer()
+    {
+        $dateFrom = $this->request->getGet('date_from') ?: null;
+        $dateTo   = $this->request->getGet('date_to') ?: null;
+        $perPage  = $this->sanitizePerPage($this->request->getGet('per_page'));
+        $page     = $this->sanitizePage($this->request->getGet('page'));
+        $wantCsv  = ($this->request->getGet('export') === 'csv');
+        $mode     = strtolower((string) ($this->request->getGet('mode') ?? 'full'));
+        if (! in_array($mode, ['full', 'compact'], true)) {
+            $mode = 'full';
+        }
+
+        $db = \Config\Database::connect();
+
+        $itemsSub = $db->table('sale_items')
+            ->select('sale_id, SUM(qty) AS total_items')
+            ->groupBy('sale_id');
+        $itemsSql = $itemsSub->getCompiledSelect();
+
+        $baseBuilder = $db->table('sales s')
+            ->select('s.customer_id')
+            ->select('COALESCE(c.name, s.customer_name, "Tamu") AS customer_name', false)
+            ->select('c.phone AS customer_phone')
+            ->select('c.email AS customer_email')
+            ->select('COUNT(s.id) AS total_orders')
+            ->select('SUM(COALESCE(si.total_items, 0)) AS total_items', false)
+            ->select('SUM(s.total_amount) AS total_sales')
+            ->select('SUM(s.total_cost) AS total_cost')
+            ->select('COUNT(DISTINCT s.sale_date) AS active_days')
+            ->select('MAX(s.sale_date) AS last_order_date')
+            ->join('customers c', 'c.id = s.customer_id', 'left')
+            ->join('(' . $itemsSql . ') si', 'si.sale_id = s.id', 'left', false)
+            ->where('s.status !=', 'void')
+            ->groupBy('s.customer_id, customer_name, c.phone, c.email')
+            ->orderBy('total_sales', 'DESC');
+
+        $this->applyDateFilter($baseBuilder, $dateFrom, $dateTo, 's.sale_date');
+
+        if ($wantCsv) {
+            $rows = (clone $baseBuilder)->get()->getResultArray();
+            return $this->exportPerCustomerCsv($rows, $dateFrom, $dateTo);
+        }
+
+        $totalRows  = $this->countCustomerRows($dateFrom, $dateTo);
+        $totalPages = max(1, (int) ceil($totalRows / $perPage));
+        if ($page > $totalPages) {
+            $page = $totalPages;
+        }
+        $offset = ($page - 1) * $perPage;
+
+        $rows = (clone $baseBuilder)
+            ->limit($perPage, $offset)
+            ->get()
+            ->getResultArray();
+
+        $totals = $this->aggregateCustomerTotals($dateFrom, $dateTo);
+
+        $data = [
+            'title'     => 'Penjualan per Customer',
+            'subtitle'  => 'Ringkasan order, omzet, HPP, dan margin per customer',
+            'rows'      => $rows,
+            'dateFrom'  => $dateFrom,
+            'dateTo'    => $dateTo,
+            'perPage'   => $perPage,
+            'page'      => $page,
+            'totalRows' => $totalRows,
+            'totalPages'=> $totalPages,
+            'mode'      => $mode,
+            'totalOrdersAll' => (int) ($totals['total_orders'] ?? 0),
+            'totalItemsAll'  => (float) ($totals['total_items'] ?? 0),
+            'totalSalesAll'  => (float) ($totals['total_sales'] ?? 0),
+            'totalCostAll'   => (float) ($totals['total_cost'] ?? 0),
+        ];
+
+        return view('reports/sales_customer', $data);
+    }
+
+    /**
+     * Detail penjualan per customer (list transaksi + ringkasan).
+     */
+    public function customerDetail(int $id)
+    {
+        $dateFrom = $this->request->getGet('date_from') ?: null;
+        $dateTo   = $this->request->getGet('date_to') ?: null;
+        $perPage  = $this->sanitizePerPage($this->request->getGet('per_page'));
+        $page     = $this->sanitizePage($this->request->getGet('page'));
+        $mode     = strtolower((string) ($this->request->getGet('mode') ?? ''));
+        if (! in_array($mode, ['full', 'compact'], true)) {
+            $mode = null;
+        }
+
+        $db = \Config\Database::connect();
+
+        $itemsSub = $db->table('sale_items')
+            ->select('sale_id, SUM(qty) AS total_items')
+            ->groupBy('sale_id');
+        $itemsSql = $itemsSub->getCompiledSelect();
+
+        $customer = $db->table('customers')
+            ->where('id', $id)
+            ->get()
+            ->getRowArray();
+
+        if (! $customer) {
+            $nameRow = $db->table('sales')
+                ->select('customer_name')
+                ->where('customer_id', $id)
+                ->limit(1)
+                ->get()
+                ->getRowArray();
+            $customer = [
+                'id' => $id,
+                'name' => $nameRow['customer_name'] ?? 'Tamu',
+                'phone' => null,
+                'email' => null,
+            ];
+        }
+
+        $summaryBuilder = $db->table('sales s')
+            ->select('COUNT(s.id) AS total_orders')
+            ->select('SUM(COALESCE(si.total_items, 0)) AS total_items', false)
+            ->select('SUM(s.total_amount) AS total_sales')
+            ->select('SUM(s.total_cost) AS total_cost')
+            ->select('COUNT(DISTINCT s.sale_date) AS active_days')
+            ->select('MAX(s.sale_date) AS last_order_date')
+            ->join('(' . $itemsSql . ') si', 'si.sale_id = s.id', 'left', false)
+            ->where('s.status !=', 'void')
+            ->where('s.customer_id', $id);
+
+        $this->applyDateFilter($summaryBuilder, $dateFrom, $dateTo, 's.sale_date');
+
+        $summary = $summaryBuilder->get()->getRowArray() ?? [
+            'total_orders' => 0,
+            'total_items' => 0,
+            'total_sales' => 0,
+            'total_cost' => 0,
+            'active_days' => 0,
+            'last_order_date' => null,
+        ];
+
+        $countBuilder = $db->table('sales s')
+            ->select('COUNT(s.id) AS cnt')
+            ->where('s.status !=', 'void')
+            ->where('s.customer_id', $id);
+
+        $this->applyDateFilter($countBuilder, $dateFrom, $dateTo, 's.sale_date');
+
+        $countRow = $countBuilder->get()->getRowArray();
+        $totalRows = (int) ($countRow['cnt'] ?? 0);
+
+        $totalPages = max(1, (int) ceil($totalRows / $perPage));
+        if ($page > $totalPages) {
+            $page = $totalPages;
+        }
+        $offset = ($page - 1) * $perPage;
+
+        $listBuilder = $db->table('sales s')
+            ->select('s.id, s.sale_date, s.invoice_no, s.total_amount, s.total_cost, s.payment_method, s.kitchen_status, s.created_at')
+            ->select('COALESCE(si.total_items, 0) AS total_items', false)
+            ->join('(' . $itemsSql . ') si', 'si.sale_id = s.id', 'left', false)
+            ->where('s.status !=', 'void')
+            ->where('s.customer_id', $id)
+            ->orderBy('s.sale_date', 'DESC')
+            ->orderBy('s.id', 'DESC')
+            ->limit($perPage, $offset);
+
+        $this->applyDateFilter($listBuilder, $dateFrom, $dateTo, 's.sale_date');
+
+        $rows = $listBuilder->get()->getResultArray();
+
+        return view('reports/sales_customer_detail', [
+            'title'      => 'Detail Penjualan Customer',
+            'subtitle'   => 'Rincian transaksi dan ringkasan per customer',
+            'customer'   => $customer,
+            'summary'    => $summary,
+            'rows'       => $rows,
+            'dateFrom'   => $dateFrom,
+            'dateTo'     => $dateTo,
+            'perPage'    => $perPage,
+            'page'       => $page,
+            'totalRows'  => $totalRows,
+            'totalPages' => $totalPages,
+            'mode'       => $mode,
+        ]);
+    }
+
     private function exportPerCategoryCsv(array $rows, ?string $dateFrom, ?string $dateTo)
     {
         $fh = fopen('php://temp', 'r+');
@@ -362,6 +551,51 @@ class SalesSummary extends BaseController
 
         $period = $this->formatPeriodLabel($dateFrom, $dateTo);
         $filename = 'sales_by_time_' . $group . '_' . $period . '.csv';
+
+        return $this->response
+            ->setHeader('Content-Type', 'text/csv')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->setBody($csv);
+    }
+
+    private function exportPerCustomerCsv(array $rows, ?string $dateFrom, ?string $dateTo)
+    {
+        $fh = fopen('php://temp', 'r+');
+
+        fputcsv($fh, ['Customer', 'Phone', 'Email', 'Orders', 'Items', 'Omzet', 'HPP', 'Margin', 'Margin %', 'Active Days', 'Avg Orders/Day', 'Last Order']);
+
+        foreach ($rows as $r) {
+            $orders = (int) ($r['total_orders'] ?? 0);
+            $items  = (float) ($r['total_items'] ?? 0);
+            $sales  = (float) ($r['total_sales'] ?? 0);
+            $cost   = (float) ($r['total_cost'] ?? 0);
+            $margin = $sales - $cost;
+            $marginPct = $sales > 0 ? ($margin / $sales * 100.0) : 0;
+            $activeDays = (int) ($r['active_days'] ?? 0);
+            $avgOrders  = $activeDays > 0 ? ($orders / $activeDays) : 0;
+
+            fputcsv($fh, [
+                $r['customer_name'] ?? 'Tamu',
+                $r['customer_phone'] ?? '',
+                $r['customer_email'] ?? '',
+                $orders,
+                $items,
+                $sales,
+                $cost,
+                $margin,
+                round($marginPct, 2),
+                $activeDays,
+                round($avgOrders, 2),
+                $r['last_order_date'] ?? '',
+            ]);
+        }
+
+        rewind($fh);
+        $csv = stream_get_contents($fh);
+        fclose($fh);
+
+        $period = $this->formatPeriodLabel($dateFrom, $dateTo);
+        $filename = 'sales_per_customer_' . $period . '.csv';
 
         return $this->response
             ->setHeader('Content-Type', 'text/csv')
@@ -500,6 +734,39 @@ class SalesSummary extends BaseController
         $this->applyDateFilter($builder, $dateFrom, $dateTo, 's.sale_date');
 
         return $builder->get()->getRowArray() ?? ['total_qty' => 0, 'total_sales' => 0, 'total_cost' => 0];
+    }
+
+    private function countCustomerRows(?string $dateFrom, ?string $dateTo): int
+    {
+        $db = \Config\Database::connect();
+
+        $builder = $db->table('sales s')
+            ->select('COUNT(DISTINCT s.customer_id) AS cnt')
+            ->where('s.status !=', 'void');
+
+        $this->applyDateFilter($builder, $dateFrom, $dateTo, 's.sale_date');
+
+        $row = $builder->get()->getRowArray();
+        return (int) ($row['cnt'] ?? 0);
+    }
+
+    private function aggregateCustomerTotals(?string $dateFrom, ?string $dateTo): array
+    {
+        $db = \Config\Database::connect();
+
+        $itemsSub = $db->table('sale_items')
+            ->select('sale_id, SUM(qty) AS total_items')
+            ->groupBy('sale_id');
+        $itemsSql = $itemsSub->getCompiledSelect();
+
+        $builder = $db->table('sales s')
+            ->select('COUNT(s.id) AS total_orders, SUM(COALESCE(si.total_items, 0)) AS total_items, SUM(s.total_amount) AS total_sales, SUM(s.total_cost) AS total_cost', false)
+            ->join('(' . $itemsSql . ') si', 'si.sale_id = s.id', 'left', false)
+            ->where('s.status !=', 'void');
+
+        $this->applyDateFilter($builder, $dateFrom, $dateTo, 's.sale_date');
+
+        return $builder->get()->getRowArray() ?? ['total_orders' => 0, 'total_items' => 0, 'total_sales' => 0, 'total_cost' => 0];
     }
 
     private function resolvePeriodExpressions(string $group): array

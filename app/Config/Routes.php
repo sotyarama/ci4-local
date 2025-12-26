@@ -159,6 +159,8 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         $routes->get('reports/sales/menu',          'Reports\SalesSummary::perMenu');
         $routes->get('reports/sales/category',      'Reports\SalesSummary::perCategory');
         $routes->get('reports/sales/time',          'Reports\SalesSummary::byTime');
+        $routes->get('reports/sales/customer',      'Reports\SalesSummary::perCustomer');
+        $routes->get('reports/sales/customer/(:num)', 'Reports\SalesSummary::customerDetail/$1');
 
         $routes->get('reports/purchases/supplier',  'Reports\PurchaseSummary::perSupplier');
         $routes->get('reports/purchases/material',  'Reports\PurchaseSummary::perMaterial');

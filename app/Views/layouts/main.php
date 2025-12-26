@@ -196,6 +196,7 @@
                     <?= $navLink('reports/sales/time', 'Penjualan by Time', $menuAllowed('reports'), $isActive(['reports/sales/time']), true); ?>
                     <?= $navLink('reports/sales/menu', 'Penjualan per Menu', $menuAllowed('reports'), $isActive(['reports/sales/menu']), true); ?>
                     <?= $navLink('reports/sales/category', 'Penjualan per Kategori', $menuAllowed('reports'), $isActive(['reports/sales/category']), true); ?>
+                    <?= $navLink('reports/sales/customer', 'Penjualan per Customer', $menuAllowed('reports'), $isActive(['reports/sales/customer']), true); ?>
                     <?= $navLink('reports/purchases/supplier', 'Pembelian per Supplier', $menuAllowed('reports'), $isActive(['reports/purchases/supplier']), true); ?>
                     <?= $navLink('reports/purchases/material', 'Pembelian per Bahan', $menuAllowed('reports'), $isActive(['reports/purchases/material']), true); ?>
                     <?= $navLink('reports/stock/variance', 'Stok & Selisih', $menuAllowed('reports'), $isActive(['reports/stock/variance']), true); ?>

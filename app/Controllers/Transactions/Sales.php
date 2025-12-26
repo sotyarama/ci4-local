@@ -153,6 +153,7 @@ class Sales extends BaseController
             $qty    = (float) ($row['qty'] ?? 0);
             $price  = (float) ($row['price'] ?? 0);
             $optionsInput = $row['options'] ?? [];
+            $itemNote = trim((string) ($row['note'] ?? ''));
 
             if ($menuId > 0 && $qty > 0 && $price >= 0) {
                 $items[] = [
@@ -160,6 +161,7 @@ class Sales extends BaseController
                     'qty'           => $qty,
                     'price'         => $price,
                     'options_input' => is_array($optionsInput) ? $optionsInput : [],
+                    'item_note'     => $itemNote !== '' ? $itemNote : null,
                 ];
                 $menuIds[$menuId] = true;
             }
@@ -639,6 +641,7 @@ class Sales extends BaseController
                 'price'        => $item['price'],
                 'subtotal'     => $item['subtotal'],
                 'hpp_snapshot' => $hppSnapshot,
+                'item_note'    => $item['item_note'] ?? null,
             ], true);
 
             foreach ($item['options'] as $optSel) {

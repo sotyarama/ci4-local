@@ -720,3 +720,52 @@ Selama fase ini sejumlah modul (bukan hanya Recipes) direvisi untuk distabilkan:
 -   Controller: `app/Controllers/Transactions/Sales.php`.
 -   Views: `app/Views/transactions/kitchen_queue.php`, `app/Views/transactions/kitchen_ticket.php`.
 -   Routes/Sidebar: `app/Config/Routes.php`, `app/Views/layouts/main.php`.
+
+---
+
+## [2025-12-27] Item Notes (POS + Kitchen Ticket)
+
+### DB changes
+
+-   `sale_items`: tambah `item_note` (opsional).
+
+### Behavior changes
+
+-   POS cart: catatan per item, split baris jika catatan berbeda.
+-   Catatan tampil di Kitchen Ticket & Sales Detail.
+
+### Files updated
+
+-   Migration: `app/Database/Migrations/2025-12-27-114000_AddItemNoteToSaleItems.php`.
+-   Models/Controllers: `app/Models/SaleItemModel.php`, `app/Controllers/Transactions/Sales.php`.
+-   Views: `app/Views/pos/touchscreen.php`, `app/Views/transactions/kitchen_ticket.php`, `app/Views/transactions/sales_detail.php`.
+
+---
+
+## [2025-12-27] Laporan Penjualan per Customer
+
+### Behavior changes
+
+-   Ringkasan per customer: total order, total item, omzet, HPP, margin, hari aktif, avg order/hari, order terakhir.
+-   Filter tanggal + export CSV.
+
+### Files updated
+
+-   Controller: `app/Controllers/Reports/SalesSummary.php` (perCustomer).
+-   View: `app/Views/reports/sales_customer.php`.
+-   Routes/Sidebar: `app/Config/Routes.php`, `app/Views/layouts/main.php`.
+
+---
+
+## [2025-12-27] Detail Penjualan per Customer
+
+### Behavior changes
+
+-   Tambah halaman detail per customer (ringkasan + daftar transaksi) dan tombol aksi dari laporan per customer.
+-   Detail transaksi menaut ke `Sales Detail` untuk cek item & kitchen ticket.
+
+### Files updated
+
+-   Controller: `app/Controllers/Reports/SalesSummary.php` (customerDetail).
+-   Views: `app/Views/reports/sales_customer.php`, `app/Views/reports/sales_customer_detail.php`.
+-   Routes: `app/Config/Routes.php`.
