@@ -74,6 +74,14 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
             $routes->post('raw-materials/update/(:num)', 'RawMaterials::update/$1');
             $routes->post('raw-materials/delete/(:num)', 'RawMaterials::delete/$1');
 
+            // Customers
+            $routes->get('customers',               'Customers::index');
+            $routes->get('customers/create',        'Customers::create');
+            $routes->post('customers/store',         'Customers::store');
+            $routes->get('customers/edit/(:num)',   'Customers::edit/$1');
+            $routes->post('customers/update/(:num)', 'Customers::update/$1');
+            $routes->post('customers/delete/(:num)', 'Customers::delete/$1');
+
             // Suppliers
             $routes->get('suppliers',               'Suppliers::index');
             $routes->get('suppliers/create',        'Suppliers::create');
@@ -129,6 +137,8 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
             $routes->get('sales/detail/(:num)', 'Transactions\Sales::detail/$1');
             $routes->get('sales/kitchen-ticket/(:num)', 'Transactions\Sales::kitchenTicket/$1');
             $routes->post('sales/void/(:num)',   'Transactions\Sales::void/$1');
+            $routes->get('kitchen',             'Transactions\Sales::kitchenQueue');
+            $routes->post('kitchen/done/(:num)', 'Transactions\Sales::kitchenDone/$1');
         });
 
 

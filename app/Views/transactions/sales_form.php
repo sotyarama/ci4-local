@@ -65,12 +65,64 @@
 
             <div>
                 <label style="font-size:11px; color:var(--tr-muted-text); display:block; margin-bottom:4px;">
-                    Nama Customer (opsional)
+                    Customer
+                </label>
+                <select name="customer_id"
+                        required
+                        style="width:100%; padding:6px 8px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text);">
+                    <?php
+                        $defaultId = (int) ($defaultCustomerId ?? 0);
+                        $selectedId = (int) old('customer_id', $defaultId);
+                    ?>
+                    <?php foreach (($customers ?? []) as $cust): ?>
+                        <?php $cid = (int) ($cust['id'] ?? 0); ?>
+                        <option value="<?= $cid; ?>" <?= $selectedId === $cid ? 'selected' : ''; ?>>
+                            <?= esc($cust['name'] ?? '-'); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <div style="font-size:11px; color:var(--tr-muted-text); margin-top:4px;">
+                    Default otomatis ke "Tamu" jika belum memilih.
+                </div>
+            </div>
+
+            <div>
+                <label style="font-size:11px; color:var(--tr-muted-text); display:block; margin-bottom:4px;">
+                    Metode Pembayaran
+                </label>
+                <select name="payment_method"
+                        id="payment-method"
+                        required
+                        style="width:100%; padding:6px 8px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text);">
+                    <?php $method = old('payment_method', 'cash'); ?>
+                    <option value="cash" <?= $method === 'cash' ? 'selected' : ''; ?>>Cash</option>
+                    <option value="qris" <?= $method === 'qris' ? 'selected' : ''; ?>>QRIS (manual)</option>
+                </select>
+            </div>
+
+            <div>
+                <label style="font-size:11px; color:var(--tr-muted-text); display:block; margin-bottom:4px;">
+                    Jumlah Bayar
+                </label>
+                <input type="number"
+                       min="0"
+                       step="1"
+                       name="amount_paid"
+                       id="amount-paid"
+                       required
+                       value="<?= esc(old('amount_paid', '')); ?>"
+                       placeholder="masukkan nominal"
+                       style="width:100%; padding:6px 8px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text);">
+            </div>
+
+            <div>
+                <label style="font-size:11px; color:var(--tr-muted-text); display:block; margin-bottom:4px;">
+                    Kembalian
                 </label>
                 <input type="text"
-                       name="customer_name"
-                       value="<?= old('customer_name'); ?>"
-                       placeholder="boleh dikosongkan"
+                       id="change-display"
+                       value="Rp 0"
+                       readonly
                        style="width:100%; padding:6px 8px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text);">
             </div>
         </div>
@@ -148,6 +200,10 @@
         const itemsBody   = document.getElementById('items-body');
         const btnAddRow   = document.getElementById('btn-add-row');
         const grandTotalEl = document.getElementById('grand-total-display');
+        const paymentMethodEl = document.getElementById('payment-method');
+        const amountPaidEl = document.getElementById('amount-paid');
+        const changeDisplayEl = document.getElementById('change-display');
+        let lastTotal = 0;
 
         function formatRupiah(num) {
             num = Number(num) || 0;
@@ -175,7 +231,27 @@
             rows.forEach(tr => {
                 total += parseFloat(tr.dataset.subtotal || '0');
             });
+            lastTotal = total;
             grandTotalEl.textContent = formatRupiah(total);
+            updatePaymentInfo();
+        }
+
+        function updatePaymentInfo() {
+            if (!paymentMethodEl || !amountPaidEl || !changeDisplayEl) return;
+            const method = paymentMethodEl.value || 'cash';
+            if (method === 'qris') {
+                amountPaidEl.value = String(Math.round(lastTotal));
+                amountPaidEl.readOnly = true;
+            } else {
+                amountPaidEl.readOnly = false;
+                if (amountPaidEl.value === '') {
+                    amountPaidEl.value = String(Math.round(lastTotal));
+                }
+            }
+
+            const paid = parseFloat(String(amountPaidEl.value).replace(',', '.')) || 0;
+            const change = Math.max(0, paid - lastTotal);
+            changeDisplayEl.value = formatRupiah(change);
         }
 
         function createRow(defaultMenuId = '', defaultQty = 1, defaultPrice = '') {
@@ -278,6 +354,13 @@
         // Auto add 1 row jika belum ada sama sekali
         if (itemsBody.querySelectorAll('tr').length === 0) {
             createRow();
+        }
+
+        if (paymentMethodEl) {
+            paymentMethodEl.addEventListener('change', updatePaymentInfo);
+        }
+        if (amountPaidEl) {
+            amountPaidEl.addEventListener('input', updatePaymentInfo);
         }
     })();
 </script>

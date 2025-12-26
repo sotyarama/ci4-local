@@ -6,18 +6,21 @@ use App\Controllers\BaseController;
 use App\Models\MenuModel;
 use App\Models\MenuOptionGroupModel;
 use App\Models\MenuOptionModel;
+use App\Models\CustomerModel;
 
 class Touchscreen extends BaseController
 {
     protected MenuModel $menuModel;
     protected MenuOptionGroupModel $optionGroupModel;
     protected MenuOptionModel $optionModel;
+    protected CustomerModel $customerModel;
 
     public function __construct()
     {
         $this->menuModel = new MenuModel();
         $this->optionGroupModel = new MenuOptionGroupModel();
         $this->optionModel = new MenuOptionModel();
+        $this->customerModel = new CustomerModel();
     }
 
     public function index()
@@ -92,6 +95,21 @@ class Touchscreen extends BaseController
         }
 
         $today = date('Y-m-d');
+        $customers = $this->customerModel->getActiveForDropdown();
+        $defaultCustomer = $this->customerModel->getDefaultCustomer();
+        $defaultId = (int) ($defaultCustomer['id'] ?? 0);
+        if ($defaultId > 0) {
+            $exists = false;
+            foreach ($customers as $cust) {
+                if ((int) ($cust['id'] ?? 0) === $defaultId) {
+                    $exists = true;
+                    break;
+                }
+            }
+            if (! $exists) {
+                $customers[] = $defaultCustomer;
+            }
+        }
 
         return view('pos/touchscreen', [
             'title'    => 'POS Touchscreen',
@@ -99,6 +117,8 @@ class Touchscreen extends BaseController
             'menusByCategory' => $grouped,
             'menuOptions' => $menuOptions,
             'today'    => $today,
+            'customers' => $customers,
+            'defaultCustomerId' => $defaultId,
         ]);
     }
 }

@@ -52,7 +52,7 @@
         </div>
         <div style="padding:8px 10px; border-radius:8px; background:var(--tr-bg); border:1px solid var(--tr-border);">
             <div style="color:var(--tr-muted-text); font-size:11px;">Customer</div>
-            <div style="font-weight:600;"><?= esc($sale['customer_name'] ?? '-') ?></div>
+            <div style="font-weight:600;"><?= esc(($sale['customer_name'] ?? '') !== '' ? $sale['customer_name'] : 'Tamu'); ?></div>
         </div>
         <div style="padding:8px 10px; border-radius:8px; background:var(--tr-bg); border:1px solid var(--tr-border);">
             <div style="color:var(--tr-muted-text); font-size:11px;">Status</div>
@@ -66,6 +66,19 @@
                     <?= $isVoid ? 'Void' : 'Completed'; ?>
                 </span>
             </div>
+        </div>
+        <div style="padding:8px 10px; border-radius:8px; background:var(--tr-bg); border:1px solid var(--tr-border);">
+            <div style="color:var(--tr-muted-text); font-size:11px;">Metode</div>
+            <?php $method = strtolower((string) ($sale['payment_method'] ?? 'cash')); ?>
+            <div style="font-weight:600;"><?= esc($method === 'qris' ? 'QRIS' : 'Cash'); ?></div>
+        </div>
+        <div style="padding:8px 10px; border-radius:8px; background:var(--tr-bg); border:1px solid var(--tr-border);">
+            <div style="color:var(--tr-muted-text); font-size:11px;">Dibayar</div>
+            <div style="font-weight:600;">Rp <?= number_format((float) ($sale['amount_paid'] ?? 0), 0, ',', '.'); ?></div>
+        </div>
+        <div style="padding:8px 10px; border-radius:8px; background:var(--tr-bg); border:1px solid var(--tr-border);">
+            <div style="color:var(--tr-muted-text); font-size:11px;">Kembalian</div>
+            <div style="font-weight:600;">Rp <?= number_format((float) ($sale['change_amount'] ?? 0), 0, ',', '.'); ?></div>
         </div>
         <div style="padding:8px 10px; border-radius:8px; background:rgba(122,154,108,0.14); border:1px solid var(--tr-primary);">
             <div style="color:var(--tr-secondary-green); font-size:11px;">Total Penjualan</div>

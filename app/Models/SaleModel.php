@@ -13,7 +13,13 @@ class SaleModel extends Model
     protected $allowedFields = [
         'sale_date',
         'invoice_no',
+        'customer_id',
         'customer_name',
+        'payment_method',
+        'amount_paid',
+        'change_amount',
+        'kitchen_status',
+        'kitchen_done_at',
         'total_amount',
         'total_cost',
         'notes',

@@ -30,7 +30,6 @@
         <?= csrf_field(); ?>
         <input type="hidden" name="sale_date" value="<?= esc($today); ?>">
         <input type="hidden" name="invoice_no" value="">
-        <input type="hidden" name="customer_name" value="">
 
         <div>
             <?php foreach ($menusByCategory as $cat => $menus): ?>
@@ -54,6 +53,64 @@
         </div>
 
         <div style="border:1px solid var(--tr-border); border-radius:12px; background:var(--tr-surface); padding:12px; display:flex; flex-direction:column; gap:10px; min-height:400px;">
+            <div>
+                <label style="font-size:11px; color:var(--tr-muted-text); display:block; margin-bottom:4px;">
+                    Customer
+                </label>
+                <select name="customer_id"
+                        required
+                        style="width:100%; padding:6px 8px; font-size:12px; background:#fff; border:1px solid var(--tr-border); border-radius:8px; color:var(--tr-text);">
+                    <?php
+                        $defaultId = (int) ($defaultCustomerId ?? 0);
+                        $selectedId = (int) old('customer_id', $defaultId);
+                    ?>
+                    <?php foreach (($customers ?? []) as $cust): ?>
+                        <?php $cid = (int) ($cust['id'] ?? 0); ?>
+                        <option value="<?= $cid; ?>" <?= $selectedId === $cid ? 'selected' : ''; ?>>
+                            <?= esc($cust['name'] ?? '-'); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <div>
+                    <label style="font-size:11px; color:var(--tr-muted-text); display:block; margin-bottom:4px;">
+                        Metode
+                    </label>
+                    <select name="payment_method"
+                            id="payment-method"
+                            required
+                            style="width:100%; padding:6px 8px; font-size:12px; background:#fff; border:1px solid var(--tr-border); border-radius:8px; color:var(--tr-text);">
+                        <?php $method = old('payment_method', 'cash'); ?>
+                        <option value="cash" <?= $method === 'cash' ? 'selected' : ''; ?>>Cash</option>
+                        <option value="qris" <?= $method === 'qris' ? 'selected' : ''; ?>>QRIS</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:11px; color:var(--tr-muted-text); display:block; margin-bottom:4px;">
+                        Jumlah Bayar
+                    </label>
+                    <input type="number"
+                           min="0"
+                           step="1"
+                           name="amount_paid"
+                           id="amount-paid"
+                           required
+                           value="<?= esc(old('amount_paid', '')); ?>"
+                           placeholder="nominal"
+                           style="width:100%; padding:6px 8px; font-size:12px; background:#fff; border:1px solid var(--tr-border); border-radius:8px; color:var(--tr-text);">
+                </div>
+            </div>
+            <div>
+                <label style="font-size:11px; color:var(--tr-muted-text); display:block; margin-bottom:4px;">
+                    Kembalian
+                </label>
+                <input type="text"
+                       id="change-display"
+                       value="Rp 0"
+                       readonly
+                       style="width:100%; padding:6px 8px; font-size:12px; background:#fff; border:1px solid var(--tr-border); border-radius:8px; color:var(--tr-text);">
+            </div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
                     <div style="font-weight:700; font-size:14px;">Keranjang</div>
@@ -116,6 +173,10 @@
         const totalAmountEl = document.getElementById('total-amount');
         const form = document.getElementById('pos-form');
         const menuOptions = <?= json_encode($menuOptions ?? []); ?>;
+        const paymentMethodEl = document.getElementById('payment-method');
+        const amountPaidEl = document.getElementById('amount-paid');
+        const changeDisplayEl = document.getElementById('change-display');
+        let lastTotal = 0;
 
         const modal = document.getElementById('options-modal');
         const modalTitle = document.getElementById('options-title');
@@ -136,6 +197,8 @@
                 cartEmpty.style.display = 'block';
                 totalItemsEl.textContent = '0';
                 totalAmountEl.textContent = 'Rp 0';
+                lastTotal = 0;
+                updatePaymentInfo();
                 return;
             }
             cartEmpty.style.display = 'none';
@@ -221,6 +284,8 @@
 
             totalItemsEl.textContent = totalItems.toString();
             totalAmountEl.textContent = 'Rp ' + numberFormat(totalAmount);
+            lastTotal = totalAmount;
+            updatePaymentInfo();
         }
 
         function changeQty(lineId, delta) {
@@ -243,6 +308,24 @@
 
         function numberFormat(val) {
             return val.toLocaleString('id-ID');
+        }
+
+        function updatePaymentInfo() {
+            if (!paymentMethodEl || !amountPaidEl || !changeDisplayEl) return;
+            const method = paymentMethodEl.value || 'cash';
+            if (method === 'qris') {
+                amountPaidEl.value = String(Math.round(lastTotal));
+                amountPaidEl.readOnly = true;
+            } else {
+                amountPaidEl.readOnly = false;
+                if (amountPaidEl.value === '') {
+                    amountPaidEl.value = String(Math.round(lastTotal));
+                }
+            }
+
+            const paid = parseFloat(String(amountPaidEl.value).replace(',', '.')) || 0;
+            const change = Math.max(0, paid - lastTotal);
+            changeDisplayEl.value = 'Rp ' + numberFormat(change);
         }
 
         function openOptionsModal(menu) {
@@ -457,6 +540,12 @@
                 alert('Keranjang masih kosong.');
                 return;
             }
+            const paid = parseFloat(String(amountPaidEl?.value || '0').replace(',', '.')) || 0;
+            if (paid < lastTotal) {
+                e.preventDefault();
+                alert('Pembayaran kurang dari total.');
+                return;
+            }
             // buang hidden items lama
             form.querySelectorAll('.cart-hidden').forEach(el => el.remove());
             let idx = 0;
@@ -513,6 +602,13 @@
             addItemToCart(pendingMenu, selections);
             closeModal();
         });
+
+        if (paymentMethodEl) {
+            paymentMethodEl.addEventListener('change', updatePaymentInfo);
+        }
+        if (amountPaidEl) {
+            amountPaidEl.addEventListener('input', updatePaymentInfo);
+        }
 
         renderCart();
     })();

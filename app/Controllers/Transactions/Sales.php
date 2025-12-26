@@ -12,6 +12,7 @@ use App\Models\StockMovementModel;
 use App\Models\MenuOptionGroupModel;
 use App\Models\MenuOptionModel;
 use App\Models\OrderItemOptionModel;
+use App\Models\CustomerModel;
 use App\Services\StockConsumptionService;
 
 class Sales extends BaseController
@@ -26,6 +27,7 @@ class Sales extends BaseController
     protected MenuOptionModel $optionModel;
     protected OrderItemOptionModel $orderItemOptionModel;
     protected StockConsumptionService $stockService;
+    protected CustomerModel $customerModel;
 
     public function __construct()
     {
@@ -39,6 +41,7 @@ class Sales extends BaseController
         $this->optionModel = new MenuOptionModel();
         $this->orderItemOptionModel = new OrderItemOptionModel();
         $this->stockService = new StockConsumptionService();
+        $this->customerModel = new CustomerModel();
     }
 
     /**
@@ -89,12 +92,29 @@ class Sales extends BaseController
             ->findAll();
 
         $today = date('Y-m-d');
+        $customers = $this->customerModel->getActiveForDropdown();
+        $defaultCustomer = $this->customerModel->getDefaultCustomer();
+        $defaultId = (int) ($defaultCustomer['id'] ?? 0);
+        if ($defaultId > 0) {
+            $exists = false;
+            foreach ($customers as $cust) {
+                if ((int) ($cust['id'] ?? 0) === $defaultId) {
+                    $exists = true;
+                    break;
+                }
+            }
+            if (! $exists) {
+                $customers[] = $defaultCustomer;
+            }
+        }
 
         $data = [
             'title'    => 'Input Penjualan',
             'subtitle' => 'Pencatatan transaksi penjualan harian',
             'menus'    => $menus,
             'today'    => $today,
+            'customers' => $customers,
+            'defaultCustomerId' => $defaultId,
         ];
 
         return view('transactions/sales_form', $data);
@@ -112,6 +132,9 @@ class Sales extends BaseController
     {
         $rules = [
             'sale_date' => 'required',
+            'customer_id' => 'required|integer|greater_than[0]',
+            'payment_method' => 'required|in_list[cash,qris]',
+            'amount_paid' => 'permit_empty|numeric',
         ];
 
         if (! $this->validate($rules)) {
@@ -147,6 +170,14 @@ class Sales extends BaseController
                 ->with('errors', ['items' => 'Minimal satu baris item penjualan harus diisi.'])
                 ->withInput();
         }
+
+        $customerId = (int) ($this->request->getPost('customer_id') ?? 0);
+        $customer = $customerId > 0 ? $this->customerModel->find($customerId) : null;
+        if (! $customer || (int) ($customer['is_active'] ?? 0) !== 1) {
+            $customer = $this->customerModel->getDefaultCustomer();
+        }
+        $customerId = (int) ($customer['id'] ?? 0);
+        $customerName = (string) ($customer['name'] ?? 'Tamu');
 
         $menus = [];
         if (! empty($menuIds)) {
@@ -559,10 +590,28 @@ class Sales extends BaseController
         $totalAmount = array_sum(array_column($items, 'subtotal'));
         $totalCost   = 0.0;
 
+        $paymentMethod = (string) ($this->request->getPost('payment_method') ?? 'cash');
+        $amountPaid = (float) ($this->request->getPost('amount_paid') ?? 0);
+        if ($paymentMethod === 'qris') {
+            $amountPaid = $totalAmount;
+        }
+        $changeAmount = $amountPaid - $totalAmount;
+
+        if ($amountPaid < $totalAmount) {
+            return redirect()->back()
+                ->with('errors', ['Pembayaran kurang dari total.'])
+                ->withInput();
+        }
+
         $headerData = [
             'sale_date'     => $this->request->getPost('sale_date'),
             'invoice_no'    => $this->request->getPost('invoice_no') ?: null,
-            'customer_name' => $this->request->getPost('customer_name') ?: null,
+            'customer_id'   => $customerId > 0 ? $customerId : null,
+            'customer_name' => $customerName !== '' ? $customerName : null,
+            'payment_method' => $paymentMethod,
+            'amount_paid'   => $amountPaid,
+            'change_amount' => $changeAmount > 0 ? $changeAmount : 0,
+            'kitchen_status' => 'open',
             'total_amount'  => $totalAmount,
             'total_cost'    => 0,
             'notes'         => $this->request->getPost('notes') ?: null,
@@ -850,6 +899,8 @@ class Sales extends BaseController
             'status'      => 'void',
             'void_reason' => $this->request->getPost('void_reason') ?: null,
             'voided_at'   => date('Y-m-d H:i:s'),
+            'kitchen_status' => 'done',
+            'kitchen_done_at' => date('Y-m-d H:i:s'),
         ]);
 
         $db->transComplete();
@@ -885,5 +936,68 @@ class Sales extends BaseController
     private function roundQty(float $value): float
     {
         return round($value, 6);
+    }
+
+    /**
+     * Kitchen queue (pesanan dapur).
+     */
+    public function kitchenQueue()
+    {
+        $filter = strtolower((string) ($this->request->getGet('status') ?? 'open'));
+        if (! in_array($filter, ['open', 'done', 'all'], true)) {
+            $filter = 'open';
+        }
+
+        $builder = $this->saleModel
+            ->orderBy('created_at', 'DESC')
+            ->orderBy('id', 'DESC');
+
+        // Hanya transaksi completed untuk dapur.
+        $builder->where('status', 'completed');
+
+        if ($filter === 'open') {
+            $builder->where('kitchen_status', 'open');
+        } elseif ($filter === 'done') {
+            $builder->where('kitchen_status', 'done');
+        }
+
+        $sales = $builder->findAll();
+
+        return view('transactions/kitchen_queue', [
+            'title' => 'Kitchen Queue',
+            'subtitle' => 'Daftar pesanan yang perlu disiapkan dapur.',
+            'sales' => $sales,
+            'filter' => $filter,
+        ]);
+    }
+
+    /**
+     * Tandai kitchen ticket selesai.
+     */
+    public function kitchenDone(int $id)
+    {
+        $sale = $this->saleModel->find($id);
+        if (! $sale) {
+            return redirect()->back()
+                ->with('error', 'Data penjualan tidak ditemukan.');
+        }
+
+        if (($sale['status'] ?? 'completed') !== 'completed') {
+            return redirect()->back()
+                ->with('error', 'Transaksi bukan status completed.');
+        }
+
+        if (($sale['kitchen_status'] ?? 'open') === 'done') {
+            return redirect()->back()
+                ->with('message', 'Ticket dapur sudah selesai.');
+        }
+
+        $this->saleModel->update($id, [
+            'kitchen_status' => 'done',
+            'kitchen_done_at' => date('Y-m-d H:i:s'),
+        ]);
+
+        return redirect()->back()
+            ->with('message', 'Ticket dapur ditandai selesai.');
     }
 }

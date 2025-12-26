@@ -655,3 +655,68 @@ Selama fase ini sejumlah modul (bukan hanya Recipes) direvisi untuk distabilkan:
 -   Raw materials UI: `app/Views/master/raw_materials_form.php`, `app/Views/master/raw_materials_index.php`, `public/assets/js/datatables/raw_materials.js`.
 -   Stock views: `app/Views/inventory/stock_movements_index.php`, `app/Views/inventory/stock_card.php`.
 -   Logic: `app/Controllers/Master/RawMaterials.php`, `app/Controllers/Inventory/StockMovements.php`, `app/Controllers/Transactions/Sales.php`, `app/Services/StockConsumptionService.php`, `app/Models/StockMovementModel.php`, `app/Models/RawMaterialModel.php`.
+
+---
+
+## [2025-12-27] Customer Module + Wajib Pilih di Penjualan
+
+### DB changes
+
+-   New table: `customers` (name, phone, email, is_active, timestamps) + default `Tamu`.
+-   `sales`: tambah `customer_id` (FK ke customers, default `Tamu`).
+
+### Behavior changes
+
+-   Penjualan wajib memilih customer; default otomatis ke `Tamu`.
+-   POS touchscreen menampilkan dropdown customer.
+-   Penjualan menyimpan `customer_id` dan snapshot `customer_name`.
+
+### Files updated
+
+-   Migrations: `app/Database/Migrations/2025-12-27-110000_CreateCustomersTable.php`, `app/Database/Migrations/2025-12-27-110100_AddCustomerIdToSales.php`.
+-   Models: `app/Models/CustomerModel.php`, `app/Models/SaleModel.php`.
+-   Controllers: `app/Controllers/Master/Customers.php`, `app/Controllers/Transactions/Sales.php`, `app/Controllers/Pos/Touchscreen.php`.
+-   Views: `app/Views/master/customers_index.php`, `app/Views/master/customers_form.php`, `app/Views/transactions/sales_form.php`, `app/Views/pos/touchscreen.php`.
+-   Routes/Sidebar: `app/Config/Routes.php`, `app/Views/layouts/main.php`.
+
+---
+
+## [2025-12-27] Modul Pembayaran (Cash/QRIS) + Kembalian
+
+### DB changes
+
+-   `sales`: tambah `payment_method`, `amount_paid`, `change_amount`.
+
+### Behavior changes
+
+-   Metode pembayaran: Cash atau QRIS (manual).
+-   Pembayaran tidak boleh kurang dari total; kembalian dihitung otomatis.
+-   QRIS mengunci nominal bayar = total.
+-   Info pembayaran tampil di Sales Detail & Kitchen Ticket.
+
+### Files updated
+
+-   Migration: `app/Database/Migrations/2025-12-27-112000_AddPaymentFieldsToSales.php`.
+-   Models/Controllers: `app/Models/SaleModel.php`, `app/Controllers/Transactions/Sales.php`.
+-   Views: `app/Views/transactions/sales_form.php`, `app/Views/pos/touchscreen.php`, `app/Views/transactions/sales_detail.php`, `app/Views/transactions/kitchen_ticket.php`.
+
+---
+
+## [2025-12-27] Kitchen Queue + Status Done
+
+### DB changes
+
+-   `sales`: tambah `kitchen_status`, `kitchen_done_at` (default open).
+
+### Behavior changes
+
+-   Kitchen Queue menampilkan pesanan status open/done.
+-   Tiap ticket bisa ditandai selesai (done) dari queue atau halaman ticket.
+-   Void transaksi otomatis menandai kitchen status done.
+
+### Files updated
+
+-   Migration: `app/Database/Migrations/2025-12-27-113000_AddKitchenStatusToSales.php`.
+-   Controller: `app/Controllers/Transactions/Sales.php`.
+-   Views: `app/Views/transactions/kitchen_queue.php`, `app/Views/transactions/kitchen_ticket.php`.
+-   Routes/Sidebar: `app/Config/Routes.php`, `app/Views/layouts/main.php`.

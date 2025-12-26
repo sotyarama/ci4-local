@@ -162,6 +162,7 @@
                     <?= $navLink('master/categories', 'Kategori Menu', $menuAllowed('master'), $isActive(['master/categories']), true); ?>
                     <?= $navLink('master/raw-materials', 'Bahan Baku', $menuAllowed('master'), $isActive(['master/raw-materials']), true); ?>
                     <?= $navLink('master/suppliers', 'Supplier', $menuAllowed('master'), $isActive(['master/suppliers']), true); ?>
+                    <?= $navLink('master/customers', 'Customer', $menuAllowed('master'), $isActive(['master/customers']), true); ?>
                     <?= $navLink('master/recipes', 'Resep', $menuAllowed('master'), $isActive(['master/recipes']), true); ?>
                     <?= $navLink('audit-logs', 'Audit Log', $menuAllowed('master'), $isActive(['audit-logs']), true); ?>
                 </div>
@@ -173,6 +174,7 @@
                 <div class="nav-group" id="nav-transactions">
                     <?= $navLink('purchases', 'Pembelian Bahan', $menuAllowed('transactions'), $isActive(['purchases']), true); ?>
                     <?= $navLink('transactions/sales', 'POS Penjualan', $menuAllowed('transactions'), $isActive(['transactions/sales']), true); ?>
+                    <?= $navLink('transactions/kitchen', 'Kitchen Queue', $menuAllowed('transactions'), $isActive(['transactions/kitchen']), true); ?>
                 </div>
 
                 <!-- Inventory -->

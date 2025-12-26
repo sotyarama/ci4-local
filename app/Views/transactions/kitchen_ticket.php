@@ -10,15 +10,54 @@
                 <?= esc($subtitle); ?>
             </p>
         </div>
-        <a href="<?= site_url('transactions/sales/detail/' . $sale['id']); ?>"
-           style="font-size:11px; padding:6px 10px; border-radius:999px; background:var(--tr-border); color:var(--tr-text); text-decoration:none;">
-            Kembali
-        </a>
+        <div style="display:flex; gap:6px;">
+            <?php if (($sale['kitchen_status'] ?? 'open') !== 'done'): ?>
+                <form method="post" action="<?= site_url('transactions/kitchen/done/' . $sale['id']); ?>" onsubmit="return confirm('Tandai pesanan ini selesai?');">
+                    <?= csrf_field(); ?>
+                    <button type="submit"
+                            style="font-size:11px; padding:6px 10px; border-radius:999px; border:1px solid var(--tr-primary); background:rgba(122,154,108,0.14); color:var(--tr-primary); cursor:pointer;">
+                        Done
+                    </button>
+                </form>
+            <?php endif; ?>
+            <a href="<?= site_url('transactions/kitchen'); ?>"
+               style="font-size:11px; padding:6px 10px; border-radius:999px; background:var(--tr-border); color:var(--tr-text); text-decoration:none;">
+                Kitchen Queue
+            </a>
+            <a href="<?= site_url('transactions/sales/detail/' . $sale['id']); ?>"
+               style="font-size:11px; padding:6px 10px; border-radius:999px; background:var(--tr-border); color:var(--tr-text); text-decoration:none;">
+                Detail
+            </a>
+        </div>
     </div>
 
     <?php if (empty($items)): ?>
         <div style="font-size:12px; color:var(--tr-muted-text);">Tidak ada item untuk tiket dapur.</div>
     <?php else: ?>
+        <?php
+            $method = strtolower((string) ($sale['payment_method'] ?? 'cash'));
+            $methodLabel = $method === 'qris' ? 'QRIS' : 'Cash';
+            $paid = (float) ($sale['amount_paid'] ?? 0);
+            $change = (float) ($sale['change_amount'] ?? 0);
+        ?>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:8px; margin-bottom:12px; font-size:12px;">
+            <div style="padding:8px 10px; border-radius:8px; background:var(--tr-bg); border:1px solid var(--tr-border);">
+                <div style="color:var(--tr-muted-text); font-size:11px;">Customer</div>
+                <div style="font-weight:600;"><?= esc(($sale['customer_name'] ?? '') !== '' ? $sale['customer_name'] : 'Tamu'); ?></div>
+            </div>
+            <div style="padding:8px 10px; border-radius:8px; background:var(--tr-bg); border:1px solid var(--tr-border);">
+                <div style="color:var(--tr-muted-text); font-size:11px;">Metode</div>
+                <div style="font-weight:600;"><?= esc($methodLabel); ?></div>
+            </div>
+            <div style="padding:8px 10px; border-radius:8px; background:var(--tr-bg); border:1px solid var(--tr-border);">
+                <div style="color:var(--tr-muted-text); font-size:11px;">Dibayar</div>
+                <div style="font-weight:600;">Rp <?= number_format($paid, 0, ',', '.'); ?></div>
+            </div>
+            <div style="padding:8px 10px; border-radius:8px; background:var(--tr-bg); border:1px solid var(--tr-border);">
+                <div style="color:var(--tr-muted-text); font-size:11px;">Kembalian</div>
+                <div style="font-weight:600;">Rp <?= number_format($change, 0, ',', '.'); ?></div>
+            </div>
+        </div>
         <div style="display:flex; flex-direction:column; gap:12px;">
             <?php foreach ($items as $item): ?>
                 <?php

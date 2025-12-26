@@ -91,7 +91,8 @@
                         ? 'background:var(--tr-secondary-beige); color:var(--tr-accent-brown); border:1px solid var(--tr-accent-brown);'
                         : 'background:rgba(122,154,108,0.14); color:var(--tr-primary); border:1px solid var(--tr-primary);';
                 ?>
-                <tr data-date="<?= esc(strtolower($row['sale_date'])); ?>" data-invoice="<?= esc(strtolower($row['invoice_no'] ?? '')); ?>" data-customer="<?= esc(strtolower($row['customer_name'] ?? '')); ?>" data-status="<?= strtolower($status); ?>">
+                    <?php $customerLabel = ($row['customer_name'] ?? '') !== '' ? $row['customer_name'] : 'Tamu'; ?>
+                    <tr data-date="<?= esc(strtolower($row['sale_date'])); ?>" data-invoice="<?= esc(strtolower($row['invoice_no'] ?? '')); ?>" data-customer="<?= esc(strtolower($customerLabel)); ?>" data-status="<?= strtolower($status); ?>">
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
                         <?= esc($row['sale_date']); ?>
                     </td>
@@ -99,7 +100,7 @@
                         <?= esc($row['invoice_no'] ?? '-'); ?>
                     </td>
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
-                        <?= esc($row['customer_name'] ?? '-'); ?>
+                        <?= esc($customerLabel); ?>
                     </td>
                     <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
                         <span style="padding:2px 8px; border-radius:999px; font-size:11px; <?= $statusStyle; ?>">
