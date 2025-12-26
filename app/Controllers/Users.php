@@ -85,6 +85,7 @@ class Users extends BaseController
         return view('users/users_form', [
             'title'      => 'Edit User',
             'subtitle'   => 'Ubah data akun pengguna',
+            'roles'      => $this->roleModel->getForDropdown(),
             'user'       => $user,
             'roleLabel'  => $roleLabel,
             'formAction' => site_url('users/update/' . $id),
@@ -106,6 +107,12 @@ class Users extends BaseController
         }
 
         $payload = $this->payloadForUpdate();
+        $roleId = $payload['role_id'] ?? null;
+        if ($roleId !== null && ! $this->roleExists((int) $roleId)) {
+            return redirect()->back()
+                ->with('errors', ['role_id' => 'Role tidak valid.'])
+                ->withInput();
+        }
 
         $this->userModel->update($id, $payload);
 
@@ -157,11 +164,17 @@ class Users extends BaseController
 
     private function rulesForUpdate(int $id): array
     {
-        return [
+        $rules = [
             'username'         => 'required|min_length[3]|max_length[50]|is_unique[users.username,id,' . $id . ']',
             'full_name'        => 'required|min_length[3]|max_length[100]',
             'email'            => 'required|valid_email|max_length[100]',
         ];
+
+        if ($this->isOwner()) {
+            $rules['role_id'] = 'required|is_natural_no_zero';
+        }
+
+        return $rules;
     }
 
     private function payloadForCreate(): array
@@ -187,11 +200,17 @@ class Users extends BaseController
         $fullName = trim((string) $this->request->getPost('full_name'));
         $email    = trim((string) $this->request->getPost('email'));
 
-        return [
+        $payload = [
             'username'  => $username,
             'full_name' => $fullName,
             'email'     => ($email !== '') ? $email : null,
         ];
+
+        if ($this->isOwner()) {
+            $payload['role_id'] = (int) $this->request->getPost('role_id');
+        }
+
+        return $payload;
     }
 
     private function roleExists(int $roleId): bool
@@ -240,5 +259,11 @@ class Users extends BaseController
         }
 
         return $label;
+    }
+
+    private function isOwner(): bool
+    {
+        $role = strtolower((string) (session('role') ?? session('role_name') ?? ''));
+        return $role === 'owner';
     }
 }

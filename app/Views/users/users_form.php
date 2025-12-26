@@ -85,6 +85,29 @@ $roleLabel  = (string) ($roleLabel ?? '-');
                         <?php endforeach; ?>
                     </select>
                 </div>
+            <?php elseif ($canManage): ?>
+                <div class="form-field">
+                    <label class="form-label">Role</label>
+                    <select class="form-input" name="role_id" required>
+                        <option value="">-- pilih role --</option>
+
+                        <?php foreach (($roles ?? []) as $r): ?>
+                            <?php
+                            $rid   = (string) ($r['id'] ?? '');
+                            $rname = (string) ($r['name'] ?? '');
+                            $rdesc = (string) ($r['description'] ?? '');
+                            $selected = ((string) old('role_id', $user['role_id'] ?? '') === $rid);
+                            $label = $rname !== '' ? ucfirst($rname) : '-';
+                            if ($rdesc !== '') {
+                                $label .= ' - ' . $rdesc;
+                            }
+                            ?>
+                            <option value="<?= esc($rid); ?>" <?= $selected ? 'selected' : ''; ?>>
+                                <?= esc($label); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
             <?php else: ?>
                 <div class="form-field">
                     <label class="form-label">Role</label>
@@ -112,5 +135,18 @@ $roleLabel  = (string) ($roleLabel ?? '-');
         </div>
     </form>
 </div>
+
+<?php if ($canManage): ?>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            ['username', 'full_name', 'email', 'role_id'].forEach(function(name) {
+                var el = document.querySelector('[name="' + name + '"]');
+                if (!el) return;
+                el.removeAttribute('readonly');
+                el.removeAttribute('disabled');
+            });
+        });
+    </script>
+<?php endif; ?>
 
 <?= $this->endSection() ?>

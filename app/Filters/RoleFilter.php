@@ -32,7 +32,10 @@ class RoleFilter implements FilterInterface
 
         // Staff: blokir update area sensitif (user, settings)
         if ($role === 'staff') {
-            $path = strtolower($request->uri->getPath());
+            $path = strtolower(trim($request->getUri()->getPath(), '/'));
+            if (str_starts_with($path, 'index.php/')) {
+                $path = substr($path, strlen('index.php/'));
+            }
             $blockedPrefixes = [
                 'users',
                 'settings',
