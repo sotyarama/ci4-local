@@ -1,0 +1,94 @@
+/* =========================================================
+   SIDEBAR NAV MODULE
+   - extracted from layout.css
+   - goal: keep layout.css structural only
+   - no visual changes intended
+   ========================================================= */
+
+/* Sidebar module typography */
+.sidebar-title {
+  font-size: var(--tr-fs-xl);         /* 18px */
+  font-weight: var(--tr-fw-semibold); /* 600 */
+  margin-bottom: 8px;
+  padding-top: 16px;
+  color: var(--accent-primary);
+}
+
+.sidebar-sub {
+  font-size: 11px;
+  color: var(--sidebar-text-muted);
+  margin-bottom: 16px;
+}
+
+/* Navigation */
+.nav-section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--sidebar-text-muted);
+  letter-spacing: .08em;
+  margin: 16px 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.nav-group { margin-bottom: 4px; }
+
+.nav-link {
+  display: block;
+  padding: 7px 8px;
+  border-radius: 8px;
+  font-size: var(--tr-fs-sm); /* 13px */
+  color: var(--sidebar-text);
+  text-decoration: none;
+  margin-bottom: 3px;
+  border: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-link.small {
+  font-size: var(--tr-fs-xs); /* 12px */
+  color: var(--sidebar-text-muted);
+}
+
+
+.nav-link:hover {
+  background: rgba(59, 130, 246, 0.16);
+  border-color: rgba(255, 255, 255, 0.10);
+}
+
+.nav-link.active {
+  background: rgba(59, 130, 246, 0.20);
+  border: 1px solid var(--accent-primary);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.28);
+}
+
+.disabled-link {
+  opacity: 0.35;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* Collapse arrow */
+.collapse-arrow {
+  font-size: 12px;
+  transition: transform 0.2s ease;
+  color: var(--sidebar-text-muted);
+  flex: 0 0 auto;
+}
+
+.collapsed .collapse-arrow {
+  transform: rotate(-90deg);
+}

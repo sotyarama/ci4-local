@@ -1,252 +1,179 @@
 /* =========================================================
    LAYOUT SYSTEM (Sidebar, Topbar, Content, Footer)
+   Target:
+   - NO browser/window scroll
+   - ONLY .content scrolls
+   - Sidebar full height
+   - Topbar stays on top (inside main)
+   - Footer stays at bottom (inside main, not scrolling)
    ========================================================= */
 
-/* Layout variables */
-:root{
-  --sidebar-width: 260px;   /* lebih proporsional & aman */
-  --topbar-height: 52px;    /* lebih tenang, tidak dominan */
-  --footer-height: 36px;
+   /* =========================================================
+   STATUS: UI BASELINE v1 — LOCKED
+   Do NOT change layout/scroll behavior.
+   Any change must be:
+   - component-level
+   - or new module CSS
+   ========================================================= */
+
+
+/* 1) Kill window scroll */
+html, body{
+  height: 100%;
+  overflow: hidden;
 }
 
-/* =========================================================
-   WRAPPER
-   ========================================================= */
-.layout {
+/* 2) Wrapper occupies viewport */
+.layout{
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
   overflow: hidden;
 }
 
 /* =========================================================
-   SIDEBAR
+   SIDEBAR (FULL HEIGHT)
    ========================================================= */
-.sidebar {
-  width: var(--sidebar-width);
+.sidebar{
+  width: var(--tr-sidebar-w);
   background: var(--bg-sidebar);
   border-right: 1px solid var(--border);
   padding: 0 14px 16px;
-  height: 100vh;
-  position: sticky;
-  top: 0;
+
+  height: 100%;
   flex-shrink: 0;
+
   display: flex;
   flex-direction: column;
+
   color: var(--sidebar-text);
-  overflow-x: hidden;
-
+  overflow: hidden;        /* important: scroll lives in .sidebar-scroll */
+  box-sizing: border-box;
 }
 
-.sidebar-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  padding-top: 16px;
-  color: var(--accent-primary);
-}
-
-.sidebar-sub {
-  font-size: 11px;
-  color: var(--sidebar-text-muted);
-  margin-bottom: 16px;
-}
-
-.sidebar-scroll {
-  overflow-y: auto;
-  overflow-x: hidden; /* ✅ penting */
+.sidebar-scroll{
   flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding-top: 8px;
+  min-height: 0;           /* important for flex children */
 }
 
-/* Navigation */
-.nav-section-title {
-  font-size: 11px;
-  text-transform: uppercase;
-  color: var(--sidebar-text-muted);
-  letter-spacing: .08em;
-  margin: 16px 0 6px;
+/* =========================================================
+   MAIN COLUMN (NO WINDOW SCROLL)
+   ========================================================= */
+.main{
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+
   display: flex;
-  align-items: center;
+  flex-direction: column;
+
+  padding: 0;              /* defensive */
+  overflow: hidden;        /* important: scroll lives in .content */
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   TOPBAR (NON-SCROLL AREA)
+   ========================================================= */
+.topbar{
+  height: var(--tr-header-h);
+  padding: 10px 18px;
+
+  display: flex;
   justify-content: space-between;
-  cursor: pointer;
+  align-items: center;
 
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  background: var(--bg-card);
+  color: var(--text-main);
+  border-bottom: 1px solid var(--border);
 
+  flex: 0 0 auto;          /* non-scroll */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.topbar-right{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   min-width: 0;
 }
 
-.nav-group { margin-bottom: 4px; }
-
-.nav-link {
-  display: block;
-  padding: 7px 8px;
-  border-radius: 8px;
-  font-size: 13px;
-  color: var(--sidebar-text);
-  text-decoration: none;
-  margin-bottom: 3px;
-  border: 1px solid transparent;
-  transition: background 0.15s ease, border-color 0.15s ease;
-
-  white-space: nowrap;       /* ✅ cegah wrap yang aneh */
-  overflow: hidden;          /* ✅ cegah konten melebar */
-  text-overflow: ellipsis;   /* ✅ tampil rapi */
-}
-
-.nav-link.small {
-  font-size: 12px;
-  color: var(--sidebar-text-muted);
-}
-
-.nav-link:hover {
-  background: rgba(59, 130, 246, 0.16);
-  border-color: rgba(255,255,255,0.10);
-}
-
-.nav-link.active {
-  background: rgba(59, 130, 246, 0.20);
-  border: 1px solid var(--accent-primary);
-  color: #ffffff;
-  font-weight: 600;
-  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.28);
-}
-
-.disabled-link {
-  opacity: 0.35;
-  pointer-events: none;
-  cursor: not-allowed;
-}
-
-.collapse-arrow {
-  font-size: 12px;
-  transition: transform 0.2s ease;
-  color: var(--sidebar-text-muted);
-  flex: 0 0 auto;
-}
-
-.collapsed .collapse-arrow {
-  transform: rotate(-90deg);
+.topbar-pill{
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* =========================================================
-   MAIN AREA
+   CONTENT (THE ONLY SCROLL AREA)
    ========================================================= */
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  min-width: 0; /* 🔑 WAJIB untuk cegah horizontal scroll */
-}
+.content{
+  flex: 1 1 auto;
+  min-height: 0;           /* CRITICAL: allows internal scroll */
+  min-width: 0;
 
-/* Topbar */
-.topbar {
-  padding: 10px 18px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  padding: var(--tr-content-pad-y) var(--tr-content-pad-x) var(--tr-content-pad-b);
 
-  /* Refactor: gunakan surface netral agar lebih POS-friendly (tetap kontras di light/dark) */
-  background: var(--bg-card);
-
-  position: fixed;
-  left: var(--sidebar-width);
-  right: 0;
-  top: 0;
-  height: var(--topbar-height);
-  z-index: 10;
-  color: var(--text-main);
-}
-
-.topbar-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-main);
-}
-
-.topbar-subtitle {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.topbar-right {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.topbar-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--accent-soft);
-  color: var(--text-main);
-}
-
-/* =========================================================
-   CONTENT
-   ========================================================= */
-.content {
-  padding: 18px 20px 32px;
   overflow-y: auto;
-  overflow-x: hidden; /* 🔒 kunci horizontal */
-  flex: 1;
-  height: calc(100vh - var(--topbar-height) - var(--footer-height));
-  margin-top: var(--topbar-height);
-  margin-bottom: var(--footer-height);
+  overflow-x: hidden;
+
   width: 100%;
-  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* =========================================================
-   FOOTER
+   FOOTER (NON-SCROLL AREA AT BOTTOM)
+   - stays visible at bottom of viewport
+   - does NOT scroll with content
    ========================================================= */
-.footer {
-  position: fixed;
-  left: var(--sidebar-width);
-  right: 0;
-  bottom: 0;
-  height: var(--footer-height);
+.footer{
+  height: var(--tr-footer-h);
+  padding: 6px 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
   border-top: 1px solid var(--border);
   background: var(--bg-sidebar);
   color: var(--text-muted);
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 16px;
+  font-size: var(--tr-fs-xs);
+
+  flex: 0 0 auto;          /* non-scroll */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* =========================================================
    SCROLLBAR (layout related)
    ========================================================= */
-.sidebar::-webkit-scrollbar,
-.content::-webkit-scrollbar {
+.sidebar-scroll::-webkit-scrollbar,
+.content::-webkit-scrollbar{
   width: 8px;
 }
 
-.sidebar::-webkit-scrollbar-track,
-.content::-webkit-scrollbar-track {
+.sidebar-scroll::-webkit-scrollbar-track,
+.content::-webkit-scrollbar-track{
   background: var(--bg-sidebar);
 }
 
-.sidebar::-webkit-scrollbar-thumb,
-.content::-webkit-scrollbar-thumb {
+.sidebar-scroll::-webkit-scrollbar-thumb,
+.content::-webkit-scrollbar-thumb{
   background: linear-gradient(180deg, var(--accent-primary), var(--accent-soft));
   border-radius: 10px;
   border: 1px solid var(--bg-sidebar);
 }
 
-.sidebar {
+.sidebar-scroll{
   scrollbar-color: var(--accent-primary) var(--bg-sidebar);
   scrollbar-width: thin;
 }
 
-.content {
+.content{
   scrollbar-color: var(--accent-soft) var(--bg-sidebar);
   scrollbar-width: thin;
 }
