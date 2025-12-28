@@ -1,0 +1,83 @@
+/* =========================================================
+   B2.4 — GLOBAL TABLE SYSTEM (Non-DataTables)
+   File: public/css/ui/tables.css
+   ========================================================= */
+
+/* Wrapper (optional) */
+.tr-table-wrap{
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Base table */
+.tr-table{
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--tr-surface, #fff);
+  color: var(--tr-text, #111);
+  font-size: 13px;
+}
+
+/* Head */
+.tr-table thead th{
+  position: sticky; /* optional, helpful inside cards */
+  top: 0;
+  z-index: 1;
+
+  text-align: left;
+  font-weight: 700;
+  font-size: 12px;
+
+  color: var(--tr-muted-text, #6b7280);
+  background: var(--tr-surface-2, #f7f7f8);
+
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--tr-border, #e5e7eb);
+}
+
+/* Body cells */
+.tr-table tbody td{
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--tr-border, #e5e7eb);
+  vertical-align: middle;
+}
+
+/* Last row border cleanup */
+.tr-table tbody tr:last-child td{
+  border-bottom: 0;
+}
+
+/* Hover (desktop-friendly) */
+.tr-table tbody tr:hover{
+  background: var(--tr-surface-2, #f7f7f8);
+}
+
+/* Alignment helpers */
+.tr-table .is-right{ text-align: right; }
+.tr-table .is-center{ text-align: center; }
+.tr-table .is-muted{ color: var(--tr-muted-text, #6b7280); }
+
+/* Compact variant */
+.tr-table--compact thead th,
+.tr-table--compact tbody td{
+  padding: 8px 10px;
+  font-size: 12.5px;
+}
+
+/* Striped variant (optional) */
+.tr-table--striped tbody tr:nth-child(even){
+  background: rgba(0,0,0,.02);
+}
+
+/* Empty state (place inside tbody) */
+.tr-table-empty{
+  text-align: center;
+  color: var(--tr-muted-text, #6b7280);
+  padding: 18px 12px;
+}
+
+/* Inside card polish */
+.tr-card .tr-table thead th{
+  background: var(--tr-surface, #fff);
+}

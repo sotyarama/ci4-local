@@ -57,7 +57,8 @@
 
             <!-- RIGHT: CART + PAYMENT -->
             <div class="pos-side">
-                <!-- TOP: Customer -->
+
+                <!-- TOP: Customer (tetap) -->
                 <div class="pos-side-top">
                     <div>
                         <label class="tr-label">Customer</label>
@@ -86,79 +87,95 @@
                         </div>
                         <input type="hidden" name="customer_id" id="customer-id" value="<?= esc((string) $selectedId); ?>" required>
                     </div>
+                </div>
 
-                    <div class="pos-cart-head">
+                <!-- CARD: Keranjang + Payment -->
+                <div class="tr-card tr-card--outlined pos-cart-card">
+
+                    <!-- HEADER: Keranjang -->
+                    <div class="tr-card__header">
                         <div>
-                            <div class="pos-section-title">Keranjang</div>
-                            <div class="pos-section-hint">Tap menu untuk tambah qty</div>
+                            <div class="tr-card__title">Keranjang</div>
+                            <div class="tr-card__subtitle">Tap menu untuk tambah qty</div>
                         </div>
-                        <button type="button" id="clear-cart" class="btn btn-secondary pos-small-btn">Kosongkan</button>
-                    </div>
-                </div>
 
-                <!-- MIDDLE: Scrollable Cart -->
-                <div id="cart-list" class="pos-cart-list">
-                    <div id="cart-empty" class="pos-empty">Keranjang kosong</div>
-                </div>
-
-                <!-- BOTTOM: Totals + Payment + Actions (sticky) -->
-                <div class="pos-side-bottom">
-                    <div class="pos-totals">
-                        <div class="pos-row">
-                            <span>Total Item</span>
-                            <span id="total-items">0</span>
-                        </div>
-                        <div class="pos-row pos-row-strong">
-                            <span>Total Bayar</span>
-                            <span id="total-amount">Rp 0</span>
+                        <div class="tr-card__actions">
+                            <button type="button" id="clear-cart" class="tr-btn tr-btn--secondary tr-btn--sm">Kosongkan</button>
                         </div>
                     </div>
 
-                    <!-- PAYMENT (B1.9 polished) -->
-                    <div class="pos-pay" id="pos-pay">
-                        <div class="pos-pay-method">
-                            <label class="tr-label">Metode</label>
-                            <select name="payment_method" id="payment-method" required class="tr-control">
-                                <?php $method = old('payment_method', 'cash'); ?>
-                                <option value="cash" <?= $method === 'cash' ? 'selected' : ''; ?>>Cash</option>
-                                <option value="qris" <?= $method === 'qris' ? 'selected' : ''; ?>>QRIS</option>
-                            </select>
-                            <div class="pos-pay-hint" id="pay-hint"></div>
+                    <!-- BODY: Scrollable Cart -->
+                    <div class="tr-card__body pos-cart-body">
+                        <div id="cart-list" class="pos-cart-list">
+                            <div id="cart-empty" class="pos-empty">Keranjang kosong</div>
                         </div>
+                    </div>
 
-                        <div class="pos-pay-amounts">
-                            <div>
-                                <label class="tr-label">Jumlah Bayar</label>
-                                <div class="pos-money" id="money-paid">
-                                    <span class="pos-money-prefix">Rp</span>
-                                    <input type="number"
-                                        min="0"
-                                        step="1"
-                                        name="amount_paid"
-                                        id="amount-paid"
-                                        required
-                                        value="<?= esc(old('amount_paid', '')); ?>"
-                                        placeholder="0"
-                                        class="tr-control pos-money-input">
-                                </div>
+                    <!-- FOOTER: Totals + Payment + Actions -->
+                    <div class="tr-card__footer pos-cart-footer">
+
+                        <div class="pos-totals">
+                            <div class="pos-row">
+                                <span>Total Item</span>
+                                <span id="total-items">0</span>
                             </div>
-
-                            <div>
-                                <label class="tr-label">Kembalian</label>
-                                <div class="pos-money is-readonly" id="money-change">
-                                    <span class="pos-money-prefix">Rp</span>
-                                    <input type="text"
-                                        id="change-display"
-                                        value="0"
-                                        readonly
-                                        class="tr-control pos-money-input">
-                                </div>
+                            <div class="pos-row pos-row-strong">
+                                <span>Total Bayar</span>
+                                <span id="total-amount">Rp 0</span>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="pos-actions">
-                        <button type="submit" class="btn btn-primary pos-save-btn">Simpan Transaksi</button>
+                        <div class="tr-divider"></div>
+
+                        <!-- PAYMENT (tetap) -->
+                        <div class="pos-pay" id="pos-pay">
+                            <div class="pos-pay-method">
+                                <label class="tr-label">Metode</label>
+                                <select name="payment_method" id="payment-method" required class="tr-control">
+                                    <?php $method = old('payment_method', 'cash'); ?>
+                                    <option value="cash" <?= $method === 'cash' ? 'selected' : ''; ?>>Cash</option>
+                                    <option value="qris" <?= $method === 'qris' ? 'selected' : ''; ?>>QRIS</option>
+                                </select>
+                                <div class="pos-pay-hint" id="pay-hint"></div>
+                            </div>
+
+                            <div class="pos-pay-amounts">
+                                <div>
+                                    <label class="tr-label">Jumlah Bayar</label>
+                                    <div class="pos-money" id="money-paid">
+                                        <span class="pos-money-prefix">Rp</span>
+                                        <input type="number"
+                                            min="0"
+                                            step="1"
+                                            name="amount_paid"
+                                            id="amount-paid"
+                                            required
+                                            value="<?= esc(old('amount_paid', '')); ?>"
+                                            placeholder="0"
+                                            class="tr-control pos-money-input">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="tr-label">Kembalian</label>
+                                    <div class="pos-money is-readonly" id="money-change">
+                                        <span class="pos-money-prefix">Rp</span>
+                                        <input type="text"
+                                            id="change-display"
+                                            value="0"
+                                            readonly
+                                            class="tr-control pos-money-input">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pos-actions">
+                            <button type="submit" class="tr-btn tr-btn--primary tr-btn--block">
+                                <span class="tr-btn__label">Simpan Transaksi</span>
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             </div>

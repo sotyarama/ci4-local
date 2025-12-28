@@ -1,0 +1,87 @@
+/* =========================================================
+   B2.2 — GLOBAL CARD SYSTEM (Temu Rasa)
+   File: public/css/ui/cards.css
+   ========================================================= */
+
+.tr-card{
+  background: var(--tr-surface, #fff);
+  border: 1px solid var(--tr-border, #e5e7eb);
+  border-radius: 16px;
+  box-shadow: var(--tr-shadow, 0 8px 22px rgba(0,0,0,.06));
+  overflow: hidden; /* biar header/footer rapi */
+}
+
+.tr-card--flat{
+  box-shadow: none;
+}
+
+.tr-card--outlined{
+  box-shadow: none;
+  border-color: var(--tr-border, #e5e7eb);
+}
+
+.tr-card--interactive{
+  transition: transform .06s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.tr-card--interactive:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(0,0,0,.10);
+}
+
+/* Sections */
+.tr-card__header,
+.tr-card__body,
+.tr-card__footer{
+  padding: 14px 14px;
+}
+
+.tr-card__header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  border-bottom: 1px solid var(--tr-border, #e5e7eb);
+  background: var(--tr-surface, #fff);
+}
+
+.tr-card__title{
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--tr-text, #111);
+}
+
+.tr-card__subtitle{
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: var(--tr-muted-text, #6b7280);
+}
+
+/* Footer */
+.tr-card__footer{
+  border-top: 1px solid var(--tr-border, #e5e7eb);
+  background: var(--tr-surface, #fff);
+}
+
+/* Compact spacing */
+.tr-card--compact .tr-card__header,
+.tr-card--compact .tr-card__body,
+.tr-card--compact .tr-card__footer{
+  padding: 12px 12px;
+}
+
+/* Card content helpers */
+.tr-card__actions{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Safe divider inside card body */
+.tr-divider{
+  height: 1px;
+  background: var(--tr-border, #e5e7eb);
+  margin: 12px 0;
+}

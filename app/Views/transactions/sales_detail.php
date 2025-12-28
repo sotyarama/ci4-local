@@ -11,13 +11,13 @@
                 Rincian transaksi penjualan dan ringkasan HPP & margin.
             </p>
         </div>
-                <div style="display:flex; gap:6px;">
+        <div style="display:flex; gap:6px;">
             <a href="<?= site_url('transactions/sales/kitchen-ticket/' . $sale['id']); ?>"
-               style="font-size:11px; padding:6px 10px; border-radius:999px; background:rgba(122,154,108,0.14); color:var(--tr-primary); text-decoration:none; border:1px solid var(--tr-primary);">
+                style="font-size:11px; padding:6px 10px; border-radius:999px; background:rgba(122,154,108,0.14); color:var(--tr-primary); text-decoration:none; border:1px solid var(--tr-primary);">
                 Ticket Dapur
             </a>
             <a href="<?= site_url('transactions/sales'); ?>"
-               style="font-size:11px; padding:6px 10px; border-radius:999px; background:var(--tr-border); color:var(--tr-text); text-decoration:none;">
+                style="font-size:11px; padding:6px 10px; border-radius:999px; background:var(--tr-border); color:var(--tr-text); text-decoration:none;">
                 Kembali ke daftar
             </a>
         </div>
@@ -36,8 +36,8 @@
     <?php endif; ?>
 
     <?php
-        $status = $sale['status'] ?? 'completed';
-        $isVoid = $status === 'void';
+    $status = $sale['status'] ?? 'completed';
+    $isVoid = $status === 'void';
     ?>
 
     <!-- HEADER -->
@@ -57,9 +57,9 @@
         <div style="padding:8px 10px; border-radius:8px; background:var(--tr-bg); border:1px solid var(--tr-border);">
             <div style="color:var(--tr-muted-text); font-size:11px;">Status</div>
             <?php
-                $statusStyle = $isVoid
-                    ? 'background:var(--tr-secondary-beige); color:var(--tr-accent-brown); border:1px solid var(--tr-accent-brown);'
-                    : 'background:rgba(122,154,108,0.14); color:var(--tr-primary); border:1px solid var(--tr-primary);';
+            $statusStyle = $isVoid
+                ? 'background:var(--tr-secondary-beige); color:var(--tr-accent-brown); border:1px solid var(--tr-accent-brown);'
+                : 'background:rgba(122,154,108,0.14); color:var(--tr-primary); border:1px solid var(--tr-primary);';
             ?>
             <div style="font-weight:600;">
                 <span style="padding:2px 8px; border-radius:999px; font-size:11px; <?= $statusStyle; ?>">
@@ -89,8 +89,8 @@
     </div>
 
     <?php
-        $totalRevenue = 0;
-        $totalHpp     = 0;
+    $totalRevenue = 0;
+    $totalHpp     = 0;
     ?>
 
     <?php if (empty($items)): ?>
@@ -99,80 +99,93 @@
 
         <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:12px;">
             <thead>
-            <tr>
-                <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:left;">Menu</th>
-                <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:left;">Kategori</th>
-                <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">Qty</th>
-                <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">Harga</th>
-                <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">Subtotal</th>
-                <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">HPP / Porsi</th>
-                <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">Total HPP</th>
-                <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">Margin</th>
-            </tr>
+                <tr>
+                    <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:left;">Menu</th>
+                    <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:left;">Kategori</th>
+                    <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">Qty</th>
+                    <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">Harga</th>
+                    <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">Subtotal</th>
+                    <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">HPP / Porsi</th>
+                    <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">Total HPP</th>
+                    <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">Margin</th>
+                </tr>
             </thead>
             <tbody>
-            <?php foreach ($items as $row): ?>
                 <?php
+                $items = (isset($items) && is_iterable($items)) ? $items : [];
+                ?>
+                <?php if (empty($items)): ?>
+                    <tr>
+                        <td colspan="8" class="tr-table-empty">Tidak ada data</td>
+                    </tr>
+                <?php else: ?>
+                    <?php foreach ($items as $row): ?>
+                        ...
+                    <?php endforeach; ?>
+                <?php endif; ?>
+
+                <?php foreach ($items as $row): ?>
+                    <?php
                     $qty          = (float) ($row['qty'] ?? 0);
                     $subtotal     = (float) ($row['subtotal'] ?? 0);
-                    $hppPerPortion= (float) ($row['hpp_snapshot'] ?? 0);
+                    $hppPerPortion = (float) ($row['hpp_snapshot'] ?? 0);
                     $totalHppItem = $hppPerPortion * $qty;
                     $marginItem   = $subtotal - $totalHppItem;
 
                     $totalRevenue += $subtotal;
                     $totalHpp     += $totalHppItem;
-                ?>
-                <tr>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
-                        <?= esc($row['menu_name'] ?? ''); ?>
-                        <?php if (! empty($row['item_note'])): ?>
-                            <div style="font-size:11px; color:var(--tr-muted-text); margin-top:4px;">
-                                Catatan: <?= esc($row['item_note']); ?>
-                            </div>
-                        <?php endif; ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); color:var(--tr-muted-text);">
-                        <?= esc($row['category_name'] ?? '-'); ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
-                        <?= number_format($qty, 2, ',', '.'); ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
-                        Rp <?= number_format($row['price'], 0, ',', '.'); ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
-                        Rp <?= number_format($subtotal, 0, ',', '.'); ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
-                        <?php if ($hppPerPortion > 0): ?>
-                            Rp <?= number_format($hppPerPortion, 0, ',', '.'); ?>
-                        <?php else: ?>
-                            <span style="color:var(--tr-muted-text);">-</span>
-                        <?php endif; ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
-                        <?php if ($totalHppItem > 0): ?>
-                            Rp <?= number_format($totalHppItem, 0, ',', '.'); ?>
-                        <?php else: ?>
-                            <span style="color:var(--tr-muted-text);">-</span>
-                        <?php endif; ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
-                        <?php
+                    ?>
+                    <tr>
+                        <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
+                            <?= esc($row['menu_name'] ?? ''); ?>
+                            <?php if (! empty($row['item_note'])): ?>
+                                <div style="font-size:11px; color:var(--tr-muted-text); margin-top:4px;">
+                                    Catatan: <?= esc($row['item_note']); ?>
+                                </div>
+                            <?php endif; ?>
+                        </td>
+                        <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); color:var(--tr-muted-text);">
+                            <?= esc($row['category_name'] ?? '-'); ?>
+                        </td>
+                        <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
+                            <?= number_format($qty, 2, ',', '.'); ?>
+                        </td>
+                        <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
+                            Rp <?= number_format($row['price'], 0, ',', '.'); ?>
+                        </td>
+                        <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
+                            Rp <?= number_format($subtotal, 0, ',', '.'); ?>
+                        </td>
+                        <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
+                            <?php if ($hppPerPortion > 0): ?>
+                                Rp <?= number_format($hppPerPortion, 0, ',', '.'); ?>
+                            <?php else: ?>
+                                <span style="color:var(--tr-muted-text);">-</span>
+                            <?php endif; ?>
+                        </td>
+                        <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
+                            <?php if ($totalHppItem > 0): ?>
+                                Rp <?= number_format($totalHppItem, 0, ',', '.'); ?>
+                            <?php else: ?>
+                                <span style="color:var(--tr-muted-text);">-</span>
+                            <?php endif; ?>
+                        </td>
+                        <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
+                            <?php
                             $colorMargin = $marginItem >= 0 ? 'var(--tr-primary-deep)' : 'var(--tr-accent-brown)';
-                        ?>
-                        <span style="color:<?= $colorMargin; ?>;">
-                            Rp <?= number_format($marginItem, 0, ',', '.'); ?>
-                        </span>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
+                            ?>
+                            <span style="color:<?= $colorMargin; ?>;">
+                                Rp <?= number_format($marginItem, 0, ',', '.'); ?>
+                            </span>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
             </tbody>
         </table>
 
         <?php
-            $grossMargin = $totalRevenue - $totalHpp;
-            $marginPct   = $totalRevenue > 0 ? ($grossMargin / $totalRevenue * 100) : 0;
+        $grossMargin = $totalRevenue - $totalHpp;
+        $marginPct   = $totalRevenue > 0 ? ($grossMargin / $totalRevenue * 100) : 0;
         ?>
 
         <div style="display:flex; justify-content:flex-end; margin-top:8px;">

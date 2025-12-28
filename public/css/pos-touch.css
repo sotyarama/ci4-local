@@ -13,32 +13,6 @@
   line-height: 1.35;
 }
 
-/* Form controls baseline (scoped) */
-.pos-touch .tr-label{
-  display: block;
-  margin: 0 0 6px;
-  font-size: 12px;
-  line-height: 1.2;
-  color: var(--tr-muted-text);
-}
-
-.pos-touch .tr-control{
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-
-  height: 38px;
-  padding: 8px 10px;
-
-  font-size: 13px;
-  line-height: 1.2;
-  color: var(--tr-text);
-
-  background: #fff;
-  border: 1px solid var(--tr-border);
-  border-radius: 12px;
-}
-
 /* textarea should not be forced to 38px */
 .pos-touch textarea.tr-control{
   height: auto;
@@ -993,4 +967,277 @@
     padding: 14px !important;
     border-radius: 14px !important;
   }
+}
+
+.pos-touch .pos-cart-card{
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.pos-touch .pos-cart-body{
+  flex: 1;
+  min-height: 0;
+  padding: 0; /* opsional: biar list mengatur padding sendiri */
+}
+
+/* Right panel: make card occupy full available height */
+.pos-touch .pos-side{
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.pos-touch .pos-cart-card{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* penting agar scroll bekerja */
+}
+
+/* Body becomes the scroll container (cart list area) */
+.pos-touch .pos-cart-body{
+  flex: 1;
+  min-height: 0;
+  padding: 0; /* biar pos-cart-list yang atur */
+  overflow: hidden; /* jaga border card */
+}
+
+.pos-touch .pos-cart-list{
+  height: 100%;
+  overflow: auto;
+  padding: 12px; /* optional: spacing dalam */
+}
+
+/* Footer stays at bottom naturally */
+.pos-touch .pos-cart-footer{
+  flex: 0 0 auto;
+}
+
+.pos-touch .pos-actions{
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--tr-border);
+}
+
+/* Bridge: pos-money -> tr-money */
+.pos-touch .pos-money{ display:flex; align-items:stretch; gap:0; }
+.pos-touch .pos-money-prefix{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:44px; padding:0 10px;
+  font-size:12px; font-weight:700;
+  color: var(--tr-muted-text);
+  background: var(--tr-surface-2);
+  border: 1px solid var(--tr-border);
+  border-right: 0;
+  border-radius: 12px 0 0 12px;
+}
+.pos-touch .pos-money .tr-control{ border-radius: 0 12px 12px 0; }
+.pos-touch .pos-money:focus-within .pos-money-prefix{ border-color: var(--tr-primary); }
+.pos-touch .pos-money:focus-within .tr-control{
+  border-color: var(--tr-primary);
+  box-shadow: 0 0 0 3px rgba(31,111,235,.18);
+}
+
+/* =========================================================
+   B2.3 Bridge — POS money input -> Global forms look
+   (Override legacy pos-money styling)
+   ========================================================= */
+
+.pos-touch .pos-money{
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+/* Prefix: make it neutral (NOT blue) */
+.pos-touch .pos-money-prefix{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 44px;
+  padding: 0 10px;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  color: var(--tr-muted-text, #6b7280);
+  background: var(--tr-surface-2, #f7f7f8);
+
+  border: 1px solid var(--tr-border, #e5e7eb);
+  border-right: 0;
+
+  border-radius: 12px 0 0 12px;
+
+  /* hard reset legacy */
+  box-shadow: none;
+}
+
+/* Input side: join seamlessly */
+.pos-touch .pos-money .tr-control{
+  border-left: 0;                 /* << penting biar nyatu */
+  border-radius: 0 12px 12px 0;
+  height: 38px;                   /* match tr-control */
+}
+
+/* If your input has extra class that adds weird padding, normalize */
+.pos-touch .pos-money-input{
+  padding-left: 10px;
+}
+
+/* Focus ring as one group */
+.pos-touch .pos-money:focus-within .pos-money-prefix{
+  border-color: var(--tr-primary, #1f6feb);
+}
+.pos-touch .pos-money:focus-within .tr-control{
+  border-color: var(--tr-primary, #1f6feb);
+  box-shadow: 0 0 0 3px rgba(31,111,235,.18);
+}
+
+/* Readonly group */
+.pos-touch .pos-money.is-readonly .pos-money-prefix{
+  background: var(--tr-surface-2, #f7f7f8);
+}
+.pos-touch .pos-money.is-readonly .tr-control{
+  background: var(--tr-surface-2, #f7f7f8);
+}
+
+.pos-touch .pos-money .tr-control{ border-left: 0 !important; }
+
+/* =========================================================
+   B2.3 Bridge (Hard) — unify money input as ONE control
+   ========================================================= */
+
+.pos-touch .pos-money{
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+
+  /* make the container the real “control” */
+  border: 1px solid var(--tr-border, #e5e7eb);
+  border-radius: 12px;
+  background: var(--tr-surface, #fff);
+  overflow: hidden;        /* IMPORTANT: clip inner radius */
+}
+
+/* prefix */
+.pos-touch .pos-money-prefix{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 44px;
+  padding: 0 10px;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  color: var(--tr-muted-text, #6b7280);
+  background: var(--tr-surface-2, #f7f7f8);
+
+  /* kill any legacy borders/radius/shadow */
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* input side */
+.pos-touch .pos-money .tr-control{
+  height: 38px;
+
+  /* kill borders so it visually merges with container */
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+
+  background: transparent; /* container already has bg */
+}
+
+/* group focus ring (on container) */
+.pos-touch .pos-money:focus-within{
+  border-color: var(--tr-primary, #1f6feb);
+  box-shadow: 0 0 0 3px rgba(31,111,235,.18);
+}
+
+/* readonly variant */
+.pos-touch .pos-money.is-readonly{
+  background: var(--tr-surface-2, #f7f7f8);
+}
+.pos-touch .pos-money.is-readonly .pos-money-prefix{
+  background: var(--tr-surface-2, #f7f7f8);
+}
+.pos-touch .pos-money.is-readonly .tr-control{
+  background: transparent;
+}
+
+/* HARD OVERRIDE — ensure Rp prefix matches system */
+.pos-touch #pos-pay .pos-money-prefix{
+  color: var(--tr-muted-text, #6b7280) !important;
+  background: var(--tr-surface-2, #f7f7f8) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+.pos-touch #pos-pay .pos-money{
+  background: var(--tr-surface, #fff) !important;
+  border: 1px solid var(--tr-border, #e5e7eb) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+.pos-touch #pos-pay .pos-money-prefix,
+.pos-touch #pos-pay .pos-money-prefix *{
+  color: var(--tr-muted-text, #6b7280) !important;
+}
+
+.pos-touch #pos-pay .pos-money-prefix{
+  background: var(--tr-surface, #fff) !important;
+}
+
+/* Fix vertical alignment for Rp prefix */
+.pos-touch #pos-pay .pos-money{
+  height: 38px !important;          /* match .tr-control default */
+}
+
+.pos-touch #pos-pay .pos-money-prefix{
+  height: 100% !important;
+  line-height: 1 !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.pos-touch #pos-pay .pos-money-prefix{ font-weight: 600 !important; }
+
+/* Re-stabilize number input vertical alignment */
+.pos-touch #pos-pay .pos-money{
+  height: 38px !important;
+  align-items: center !important;  /* just in case */
+}
+
+.pos-touch #pos-pay .pos-money .tr-control{
+  height: 100% !important;
+
+  /* restore comfortable padding */
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+  line-height: 1.2 !important;
+
+  /* prevent weird inner shadows on some browsers */
+  box-shadow: none !important;
+}
+
+.pos-touch #pos-pay .pos-money-prefix{
+  height: 100% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
