@@ -8,6 +8,7 @@
 
     <?php $assetVer = time(); ?>
     <link rel="stylesheet" href="<?= base_url('css/theme-temurasa.css') . '?v=' . $assetVer; ?>">
+    <link rel="stylesheet" href="<?= base_url('css/ui-baseline.css') . '?v=' . $assetVer; ?>">
     <link rel="stylesheet" href="<?= base_url('css/auth.css') . '?v=' . $assetVer; ?>">
 </head>
 

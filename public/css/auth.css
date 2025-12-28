@@ -152,3 +152,7 @@
     width: 120px;
   }
 }
+
+/* FIX: keep original look, only ensure spacing */
+.tr-auth-form{ gap: 14px; }               /* dari 12px -> 14px (sedikit) */
+.tr-auth-field label{ margin-bottom: 8px; } /* dari 5px -> 8px */

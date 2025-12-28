@@ -138,7 +138,7 @@ html, body{
   align-items: center;
   justify-content: space-between;
 
-  border-top: 1px solid var(--border);
+  border-top: none;
   background: var(--bg-sidebar);
   color: var(--text-muted);
   font-size: var(--tr-fs-xs);
@@ -177,3 +177,4 @@ html, body{
   scrollbar-color: var(--accent-soft) var(--bg-sidebar);
   scrollbar-width: thin;
 }
+

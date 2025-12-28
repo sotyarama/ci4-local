@@ -18,5 +18,6 @@
     <link rel="stylesheet" href="<?= base_url('css/ui-baseline.css') . '?v=' . $assetVer; ?>">
     <link rel="stylesheet" href="<?= base_url('css/layout.css') . '?v=' . $assetVer; ?>">
     <link rel="stylesheet" href="<?= base_url('css/sidebar-nav.css') . '?v=' . $assetVer; ?>">
+    <link rel="stylesheet" href="<?= base_url('css/pos-touch.css') . '?v=' . $assetVer; ?>">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
 </head>
