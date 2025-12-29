@@ -509,7 +509,9 @@
   border-radius: 0 !important;
   height: 100%;
 
-  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
   background: transparent;
   box-sizing: border-box;
 }
