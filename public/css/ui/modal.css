@@ -12,7 +12,7 @@
 }
 
 .tr-modal__title,
-.pos-modal-title{
+.tr-modal-title, .pos-modal-title{
 	font-size: 16px;
 	font-weight: 900;
 	line-height: 1.25;
@@ -20,14 +20,14 @@
 }
 
 .tr-modal__subtitle,
-.pos-modal-sub{
+.tr-modal-sub, .pos-modal-sub{
 	font-size: 12px;
 	color: var(--tr-muted-text);
 	margin-top: 2px;
 }
 
 .tr-modal__close,
-.pos-modal-x{
+.tr-modal-x, .pos-modal-x{
 	width: 34px;
 	height: 34px;
 	border-radius: 12px;
@@ -42,7 +42,7 @@
 }
 
 .tr-modal__close:hover,
-.pos-modal-x:hover{
+.tr-modal-x, .pos-modal-x:hover{
 	border-color: rgba(37, 99, 235, 0.35) !important;
 	background: rgba(37, 99, 235, 0.06) !important;
 	color: var(--tr-primary) !important;
@@ -50,19 +50,19 @@
 
 /* Search inside modal */
 .tr-modal .tr-control,
-.pos-modal-search .tr-control{
+.tr-modal-search, .pos-modal-search .tr-control{
 	height: 40px;
 	border-radius: 12px;
 }
 .tr-modal .tr-control:focus,
-.pos-modal-search .tr-control:focus{
+.tr-modal-search, .pos-modal-search .tr-control:focus{
 	outline: 2px solid rgba(31, 95, 255, .18);
 	border-color: rgba(31, 95, 255, .45);
 }
 
 /* Modal list items */
 .tr-modal__list,
-.pos-modal-list{ padding-right: 6px; }
+.tr-modal-list, .pos-modal-list{ padding-right: 6px; }
 
 .tr-list-item,
 .customer-item{

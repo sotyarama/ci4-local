@@ -171,7 +171,7 @@
 }
 
 /* Action & POS-specific button helpers (promoted from pos-touch.css) */
-.pos-icon-btn{
+.tr-icon-btn, .pos-icon-btn{
   width: 40px;
   height: 38px;
   border-radius: 12px;
@@ -187,7 +187,7 @@
   line-height: 1;
 }
 
-.pos-small-btn{
+.tr-small-btn, .pos-small-btn{
   padding: 6px 10px;
   border-radius: 10px;
   font-size: 12px;
@@ -196,7 +196,7 @@
 }
 
 /* Save/primary full-width variant used in POS */
-.pos-save-btn{
+.tr-save-btn, .pos-save-btn{
   width: 100%;
   border-radius: 12px;
   padding: 10px 12px;
@@ -204,12 +204,12 @@
 }
 
 /* Action group layout helper */
-.pos-actions{
+.tr-actions, .pos-actions{
   display: flex;
   gap: 10px;
 }
 
-.pos-actions .btn{
+.tr-actions, .pos-actions .btn{
   min-height: 40px;
   border-radius: 12px;
 }

@@ -1,6 +1,6 @@
 /* =========================================================
    POS Touch (Temu Rasa)
-   Scope: .pos-touch
+   Scope: .tr-touch, .pos-touch
    Stage: B1.12 (Typography + layout + modal polish + scroll system)
    ========================================================= */
 
@@ -20,20 +20,20 @@
    ========================================================= */
 
 /* Stop outer scroll only when POS page exists (Chrome/Edge) */
-.content:has(.pos-touch) {
+.content:has(.tr-touch, .pos-touch) {
     overflow: hidden;
 }
-.content:has(.pos-touch) .pos-touch {
+.content:has(.tr-touch, .pos-touch) .pos-touch {
     height: 100%;
 }
 
 /* Sticky can fail if parent has overflow hidden */
-.pos-touch .card {
+.tr-touch, .pos-touch .card {
     overflow: visible;
 }
 
 /* Card becomes layout container */
-.pos-touch .pos-card {
+.tr-touch, .pos-touch .tr-card, .pos-card {
     padding: 14px;
     height: 100%;
 
@@ -43,7 +43,7 @@
 }
 
 /* Main grid fills remaining space */
-.pos-touch .pos-grid {
+.tr-touch, .pos-touch .tr-grid, .pos-grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 14px;
@@ -53,20 +53,20 @@
 }
 
 /* Left & right columns allow internal scroll */
-.pos-touch .pos-menu-list,
-.pos-touch .pos-side {
+.tr-touch, .pos-touch .tr-menu-list, .pos-menu-list,
+.pos-touch .tr-side, .pos-side {
     min-height: 0;
 }
 
 /* Left: menu scroll lives here */
-.pos-touch .pos-menu-list {
+.tr-touch, .pos-touch .tr-menu-list, .pos-menu-list {
     max-height: 70vh; /* keep existing feel */
     overflow: auto;
     padding-right: 6px;
 }
 
 /* Right: panel fills available height */
-.pos-touch .pos-side {
+.tr-touch, .pos-touch .tr-side, .pos-side {
     height: 100%;
 }
 
@@ -74,7 +74,7 @@
    2) Header + Alert
    ========================================================= */
 
-.pos-touch .pos-header {
+.tr-touch, .pos-touch .tr-header, .pos-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -84,7 +84,7 @@
 }
 
 /* Sticky header inside card */
-.pos-touch .pos-header-sticky {
+.tr-touch, .pos-touch .tr-header-sticky, .pos-header-sticky {
     position: sticky;
     top: 0;
     z-index: 50;
@@ -94,7 +94,7 @@
     border-bottom: 1px solid var(--tr-border);
 }
 
-.pos-touch .pos-title {
+.tr-touch, .pos-touch .tr-title, .pos-title {
     margin: 0;
     font-size: 18px;
     line-height: 1.2;
@@ -103,7 +103,7 @@
     color: var(--tr-text);
 }
 
-.pos-touch .pos-subtitle {
+.tr-touch, .pos-touch .tr-subtitle, .pos-subtitle {
     margin: 4px 0 0;
     font-size: 12px;
     line-height: 1.3;
@@ -118,7 +118,7 @@
 
 /* small screen header stack */
 @media (max-width: 720px) {
-    .pos-touch .pos-header {
+    .tr-touch, .pos-touch .tr-header, .pos-header {
         flex-direction: column;
         align-items: stretch;
     }
@@ -128,7 +128,7 @@
    3) Menu Category (details/summary) + Menu Cards
    ========================================================= */
 
-.pos-touch #menu-list details {
+.tr-touch, .pos-touch #menu-list details {
     margin-bottom: 12px !important;
     border: 1px solid var(--tr-border) !important;
     border-radius: 16px !important;
@@ -136,7 +136,7 @@
     background: #fff !important;
 }
 
-.pos-touch #menu-list details > summary {
+.tr-touch, .pos-touch #menu-list details > summary {
     list-style: none;
     cursor: pointer;
     user-select: none;
@@ -157,21 +157,21 @@
     border: 1px solid rgba(0, 0, 0, 0.03);
 }
 
-.pos-touch #menu-list details > summary::-webkit-details-marker {
+.tr-touch, .pos-touch #menu-list details > summary::-webkit-details-marker {
     display: none;
 }
 
-.pos-touch #menu-list details > summary:hover {
+.tr-touch, .pos-touch #menu-list details > summary:hover {
     border-color: rgba(37, 99, 235, 0.35);
     background: rgba(37, 99, 235, 0.06);
 }
 
-.pos-touch #menu-list details[open] > summary {
+.tr-touch, .pos-touch #menu-list details[open] > summary {
     background: rgba(37, 99, 235, 0.06);
     border-color: rgba(37, 99, 235, 0.3);
 }
 
-.pos-touch #menu-list .menu-toggle-symbol {
+.tr-touch, .pos-touch #menu-list .menu-toggle-symbol {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -189,7 +189,7 @@
 }
 
 /* grid of menu cards */
-.pos-touch #menu-list details > div {
+.tr-touch, .pos-touch #menu-list details > div {
     margin-top: 12px !important;
 
     display: grid !important;
@@ -198,20 +198,20 @@
 }
 
 /* menu card */
-/* Menu-card styles moved to public/css/ui/cards.css (.pos-menu-card / .tr-card--menu) */
+/* Menu-card styles moved to public/css/ui/cards.css (.tr-menu-card, .pos-menu-card / .tr-card--menu) */
 
 @media (max-width: 980px) {
-    .pos-touch #menu-list details {
+    .tr-touch, .pos-touch #menu-list details {
         padding: 8px !important;
     }
-    .pos-touch #menu-list details > summary {
+    .tr-touch, .pos-touch #menu-list details > summary {
         padding: 9px 9px;
     }
-    .pos-touch #menu-list details > div {
+    .tr-touch, .pos-touch #menu-list details > div {
         gap: 10px !important;
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
     }
-    .pos-touch .pos-menu-card {
+    .tr-touch, .pos-touch .tr-menu-card, .pos-menu-card {
         min-height: 68px;
         padding: 10px 10px;
     }
@@ -221,7 +221,7 @@
    4) Right Panel (Cart + Totals + Payment)
    ========================================================= */
 
-.pos-touch .pos-side {
+.tr-touch, .pos-touch .tr-side, .pos-side {
     border: 1px solid var(--tr-border);
     border-radius: 16px;
     background: var(--tr-surface);
@@ -235,34 +235,34 @@
 }
 
 /* top section */
-.pos-touch .pos-side-top {
+.tr-touch, .pos-touch .tr-side-top, .pos-side-top {
     display: grid;
     gap: 10px;
 }
 
 /* customer row */
-.pos-touch .pos-customer-row {
+.tr-touch, .pos-touch .tr-customer-row, .pos-customer-row {
     display: flex;
     gap: 8px;
     align-items: center;
 }
 
 /* cart head */
-.pos-touch .pos-cart-head {
+.tr-touch, .pos-touch .tr-cart-head, .pos-cart-head {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 10px;
 }
 
-.pos-touch .pos-section-title {
+.tr-touch, .pos-touch .tr-section-title, .pos-section-title {
     font-weight: 900;
     font-size: 14px;
     line-height: 1.2;
     color: var(--tr-text);
 }
 
-.pos-touch .pos-section-hint {
+.tr-touch, .pos-touch .tr-section-hint, .pos-section-hint {
     margin-top: 3px;
     font-size: 12px;
     line-height: 1.3;
@@ -270,7 +270,7 @@
 }
 
 /* cart list scroll */
-.pos-touch .pos-cart-list {
+.tr-touch, .pos-touch .tr-cart-list, .pos-cart-list {
     flex: 1;
     min-height: 0;
     overflow: auto;
@@ -281,7 +281,7 @@
     background: #fff;
 }
 
-.pos-touch .pos-empty {
+.tr-touch, .pos-touch .tr-empty, .pos-empty {
     text-align: center;
     color: var(--tr-muted-text);
     font-size: 12px;
@@ -289,7 +289,7 @@
 }
 
 /* sticky bottom */
-.pos-touch .pos-side-bottom {
+.tr-touch, .pos-touch .tr-side-bottom, .pos-side-bottom {
     position: sticky;
     bottom: 0;
 
@@ -302,12 +302,12 @@
 }
 
 /* totals */
-.pos-touch .pos-totals {
+.tr-touch, .pos-touch .tr-totals, .pos-totals {
     display: grid;
     gap: 6px;
 }
 
-.pos-touch .pos-row {
+.tr-touch, .pos-touch .tr-row, .pos-row {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
@@ -317,19 +317,19 @@
     color: var(--tr-text);
 }
 
-.pos-touch .pos-row-strong {
+.tr-touch, .pos-touch .tr-row-strong, .pos-row-strong {
     font-weight: 900;
     font-size: 14px;
 }
 
 /* actions */
-/* Button helpers moved to public/css/ui/buttons.css (.pos-actions, .pos-icon-btn, .pos-small-btn, .pos-save-btn) */
+/* Button helpers moved to public/css/ui/buttons.css (.tr-actions, .pos-actions, .tr-icon-btn, .pos-icon-btn, .tr-small-btn, .pos-small-btn, .tr-save-btn, .pos-save-btn) */
 
 /* =========================================================
    5) Cart Items (rendered by JS)
    ========================================================= */
 
-.pos-touch .pos-cart-item {
+.tr-touch, .pos-touch .tr-cart-item, .pos-cart-item {
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: start;
@@ -339,26 +339,26 @@
     border-bottom: 1px solid var(--tr-border);
 }
 
-.pos-touch .pos-cart-item:last-child {
+.tr-touch, .pos-touch .tr-cart-item, .pos-cart-item:last-child {
     border-bottom: none;
 }
 
-.pos-touch .pos-cart-item.is-even {
+.tr-touch, .pos-touch .tr-cart-item, .pos-cart-item.is-even {
     background: rgba(0, 0, 0, 0.015);
 }
 
-.pos-touch .pos-cart-left {
+.tr-touch, .pos-touch .tr-cart-left, .pos-cart-left {
     min-width: 0;
 }
 
-.pos-touch .pos-cart-name {
+.tr-touch, .pos-touch .tr-cart-name, .pos-cart-name {
     font-weight: 900;
     font-size: 13px;
     line-height: 1.2;
     color: var(--tr-text);
 }
 
-.pos-touch .pos-cart-price {
+.tr-touch, .pos-touch .tr-cart-price, .pos-cart-price {
     margin-top: 3px;
     font-size: 11px;
     line-height: 1.2;
@@ -366,24 +366,24 @@
     color: var(--tr-muted-text);
 }
 
-.pos-touch .pos-cart-meta {
+.tr-touch, .pos-touch .tr-cart-meta, .pos-cart-meta {
     margin-top: 3px;
     font-size: 11px;
     line-height: 1.25;
     color: var(--tr-muted-text);
 }
 
-.pos-touch .pos-cart-note {
+.tr-touch, .pos-touch .tr-cart-note, .pos-cart-note {
     margin-top: 8px;
 }
 
-.pos-touch .pos-cart-note-label {
+.tr-touch, .pos-touch .tr-cart-note-label, .pos-cart-note-label {
     font-size: 11px;
     line-height: 1.2;
     color: var(--tr-muted-text);
 }
 
-.pos-touch .pos-cart-note textarea {
+.tr-touch, .pos-touch .tr-cart-note, .pos-cart-note textarea {
     width: 100%;
     margin-top: 6px;
     padding: 8px 10px;
@@ -398,7 +398,7 @@
 }
 
 /* qty controls */
-.pos-touch .pos-cart-right {
+.tr-touch, .pos-touch .tr-cart-right, .pos-cart-right {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -406,7 +406,7 @@
     padding-top: 2px;
 }
 
-.pos-touch .pos-qty {
+.tr-touch, .pos-touch .tr-qty, .pos-qty {
     min-width: 28px;
     text-align: center;
     font-weight: 900;
@@ -415,7 +415,7 @@
     color: var(--tr-text);
 }
 
-.pos-touch .pos-mini-btn {
+.tr-touch, .pos-touch .tr-mini-btn, .pos-mini-btn {
     width: 30px;
     height: 30px;
     border-radius: 10px;
@@ -429,11 +429,11 @@
     line-height: 1;
 }
 
-.pos-touch .pos-mini-btn:hover {
+.tr-touch, .pos-touch .tr-mini-btn, .pos-mini-btn:hover {
     border-color: rgba(37, 99, 235, 0.35);
 }
 
-.pos-touch .pos-mini-btn.is-danger {
+.tr-touch, .pos-touch .tr-mini-btn, .pos-mini-btn.is-danger {
     color: var(--tr-accent-brown);
 }
 
@@ -441,43 +441,43 @@
    6) Payment Area (Cash vs QRIS)
    ========================================================= */
 
-.pos-touch .pos-pay {
+.tr-touch, .pos-touch .tr-pay, .pos-pay {
     margin-top: 12px;
     display: grid;
     gap: 12px;
 }
 
-.pos-touch .pos-pay-method {
+.tr-touch, .pos-touch .tr-pay-method, .pos-pay-method {
     display: grid;
     gap: 6px;
 }
 
-.pos-touch .pos-pay-hint {
+.tr-touch, .pos-touch .tr-pay-hint, .pos-pay-hint {
     font-size: 11px;
     line-height: 1.3;
     color: var(--tr-muted-text);
     margin-top: 6px;
 }
 
-.pos-touch .pos-pay.is-qris .pos-pay-hint {
+.tr-touch, .pos-touch .tr-pay, .pos-pay.is-qris .tr-pay-hint, .pos-pay-hint {
     color: var(--tr-primary);
 }
 
-.pos-touch .pos-pay-amounts {
+.tr-touch, .pos-touch .tr-pay-amounts, .pos-pay-amounts {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
     align-items: start;
 }
 
-.pos-touch .pos-pay-amounts > div {
+.tr-touch, .pos-touch .tr-pay-amounts, .pos-pay-amounts > div {
     display: grid;
     gap: 6px;
 }
 
 /* money input group — rely on global ui/forms.css (.tr-money / .pos-money) for base styles */
 
-.pos-touch .pos-money-prefix {
+.tr-touch, .pos-touch .tr-money-prefix, .pos-money-prefix {
     /* page-specific tweak: add extra bottom padding to nudge text upward */
     padding: 0 10px 6px 10px;
     height: 100%;
@@ -496,37 +496,37 @@
     line-height: 38px;
 }
 
-.pos-touch .pos-money-input {
+.tr-touch, .pos-touch .tr-money-input, .pos-money-input {
     /* page-specific overrides (nudge/padding) kept here */
     padding: 0 10px 6px 10px;
     transform: translateY(-3px);
 }
 
-.pos-touch .pos-money:focus-within {
+.tr-touch, .pos-touch .tr-money, .pos-money:focus-within {
     outline: 2px solid rgba(31, 95, 255, 0.2);
     border-color: rgba(31, 95, 255, 0.45);
 }
 
-.pos-touch .pos-money.is-readonly {
+.tr-touch, .pos-touch .tr-money, .pos-money.is-readonly {
     background: rgba(0, 0, 0, 0.02);
 }
 
-.pos-touch .pos-money.is-readonly .pos-money-prefix {
+.tr-touch, .pos-touch .tr-money, .pos-money.is-readonly .tr-money-prefix, .pos-money-prefix {
     background: rgba(37, 99, 235, 0.06);
     color: var(--tr-primary);
 }
 
-.pos-touch .pos-money.is-readonly .pos-money-input {
+.tr-touch, .pos-touch .tr-money, .pos-money.is-readonly .tr-money-input, .pos-money-input {
     cursor: not-allowed;
 }
 
-.pos-touch .pos-pay:not(.is-qris) #money-paid:focus-within {
+.tr-touch, .pos-touch .tr-pay, .pos-pay:not(.is-qris) #money-paid:focus-within {
     outline: 2px solid rgba(31, 95, 255, 0.22);
     border-color: rgba(31, 95, 255, 0.55);
 }
 
 @media (max-width: 980px) {
-    .pos-touch .pos-pay-amounts {
+    .tr-touch, .pos-touch .tr-pay-amounts, .pos-pay-amounts {
         grid-template-columns: 1fr;
     }
 }
@@ -535,24 +535,24 @@
    7) Options Modal (Scoped)
    ========================================================= */
 
-.pos-touch #options-modal {
+.tr-touch, .pos-touch #options-modal {
     padding: 18px;
 }
 
-.pos-touch #options-modal > div {
+.tr-touch, .pos-touch #options-modal > div {
     background: #fff;
     border: 1px solid var(--tr-border);
     border-radius: 16px;
     box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
 }
 
-.pos-touch #options-title {
+.tr-touch, .pos-touch #options-title {
     font-size: 16px;
     font-weight: 800;
     line-height: 1.25;
 }
 
-.pos-touch #options-modal [id='options-close'] {
+.tr-touch, .pos-touch #options-modal [id='options-close'] {
     width: 34px;
     height: 34px;
     border-radius: 10px;
@@ -564,110 +564,110 @@
     justify-content: center;
 }
 
-.pos-touch #options-modal [id='options-close']:hover {
+.tr-touch, .pos-touch #options-modal [id='options-close']:hover {
     background: rgba(0, 0, 0, 0.02);
 }
 
-.pos-touch #options-body {
+.tr-touch, .pos-touch #options-body {
     gap: 12px;
 }
 
-.pos-touch #options-body > div {
+.tr-touch, .pos-touch #options-body > div {
     border-radius: 14px !important;
     padding: 12px !important;
     background: var(--tr-surface);
 }
 
-.pos-touch #options-body > div > div:first-child {
+.tr-touch, .pos-touch #options-body > div > div:first-child {
     font-size: 13px !important;
     font-weight: 800 !important;
     line-height: 1.25;
 }
 
-.pos-touch #options-body > div > div:nth-child(2) {
+.tr-touch, .pos-touch #options-body > div > div:nth-child(2) {
     white-space: pre-line;
     font-size: 11px;
     color: var(--tr-muted-text);
     margin-top: 2px;
 }
 
-.pos-touch #options-body > div > div:nth-child(3) {
+.tr-touch, .pos-touch #options-body > div > div:nth-child(3) {
     margin-top: 10px !important;
     gap: 8px !important;
 }
 
-.pos-touch #options-body > div > div:nth-child(3) > div {
+.tr-touch, .pos-touch #options-body > div > div:nth-child(3) > div {
     border-radius: 12px !important;
     padding: 10px 10px !important;
     background: #fff;
     transition: background 120ms ease, border-color 120ms ease;
 }
 
-.pos-touch #options-body > div > div:nth-child(3) > div:hover {
+.tr-touch, .pos-touch #options-body > div > div:nth-child(3) > div:hover {
     background: rgba(122, 154, 108, 0.06);
     border-color: rgba(122, 154, 108, 0.35);
 }
 
-.pos-touch #options-body input[type='checkbox'] {
+.tr-touch, .pos-touch #options-body input[type='checkbox'] {
     width: 16px;
     height: 16px;
     accent-color: var(--tr-primary);
 }
 
-.pos-touch #options-body input[type='checkbox'] + span {
+.tr-touch, .pos-touch #options-body input[type='checkbox'] + span {
     font-size: 13px;
     line-height: 1.25;
     color: var(--tr-text);
 }
 
-.pos-touch #options-body > div > div:nth-child(3) > div > div:last-child {
+.tr-touch, .pos-touch #options-body > div > div:nth-child(3) > div > div:last-child {
     font-size: 12px !important;
     color: var(--tr-muted-text) !important;
     line-height: 1.2;
     white-space: nowrap;
 }
 
-.pos-touch #options-body > div > div:nth-child(3) > div:has(input[type='checkbox']:checked) {
+.tr-touch, .pos-touch #options-body > div > div:nth-child(3) > div:has(input[type='checkbox']:checked) {
     background: rgba(122, 154, 108, 0.1);
     border-color: rgba(122, 154, 108, 0.45);
 }
 
-.pos-touch #options-total {
+.tr-touch, .pos-touch #options-total {
     font-weight: 900;
     font-size: 14px;
 }
 
-.pos-touch #options-error {
+.tr-touch, .pos-touch #options-error {
     border-radius: 12px;
 }
 
-.pos-touch #options-modal .btn {
+.tr-touch, .pos-touch #options-modal .btn {
     border-radius: 12px !important;
     padding: 10px 12px !important;
 }
 
 /* Modal and list styles moved to public/css/ui/modal.css */
 
-.pos-touch .pos-cart-card {
+.tr-touch, .pos-touch .tr-cart-card, .pos-cart-card {
     display: flex;
     flex-direction: column;
     min-height: 0;
 }
 
-.pos-touch .pos-cart-body {
+.tr-touch, .pos-touch .tr-cart-body, .pos-cart-body {
     flex: 1;
     min-height: 0;
     padding: 0; /* opsional: biar list mengatur padding sendiri */
 }
 
 /* Right panel: make card occupy full available height */
-.pos-touch .pos-side {
+.tr-touch, .pos-touch .tr-side, .pos-side {
     display: flex;
     flex-direction: column;
     min-height: 0;
 }
 
-.pos-touch .pos-cart-card {
+.tr-touch, .pos-touch .tr-cart-card, .pos-cart-card {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -675,25 +675,25 @@
 }
 
 /* Body becomes the scroll container (cart list area) */
-.pos-touch .pos-cart-body {
+.tr-touch, .pos-touch .tr-cart-body, .pos-cart-body {
     flex: 1;
     min-height: 0;
     padding: 0; /* biar pos-cart-list yang atur */
     overflow: hidden; /* jaga border card */
 }
 
-.pos-touch .pos-cart-list {
+.tr-touch, .pos-touch .tr-cart-list, .pos-cart-list {
     height: 100%;
     overflow: auto;
     padding: 12px; /* optional: spacing dalam */
 }
 
 /* Footer stays at bottom naturally */
-.pos-touch .pos-cart-footer {
+.tr-touch, .pos-touch .tr-cart-footer, .pos-cart-footer {
     flex: 0 0 auto;
 }
 
-.pos-touch .pos-actions {
+.tr-touch, .pos-touch .tr-actions, .pos-actions {
     margin-top: 10px;
     padding-top: 10px;
     border-top: 1px solid var(--tr-border);
@@ -701,12 +701,12 @@
 
 /* Bridge: pos-money -> tr-money */
 /* Minimal page-specific overrides — rely on global ui/forms.css (.tr-money, .tr-control) */
-.pos-touch #pos-pay .pos-money {
+.tr-touch, .pos-touch #pos-pay .pos-money {
     height: 38px;
     align-items: center;
 }
 
-.pos-touch #pos-pay .pos-money .tr-control {
+.tr-touch, .pos-touch #pos-pay .tr-money, .pos-money .tr-control {
     height: 100%;
     padding-top: 8px; /* preserve comfortable vertical padding */
     padding-bottom: 8px;

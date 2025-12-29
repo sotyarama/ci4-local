@@ -158,7 +158,7 @@ select.tr-control {
 }
 
 /* Compatibility aliases for legacy POS selectors (kept during migration) */
-.pos-money {
+.tr-money, .pos-money {
     display: flex;
     align-items: stretch;
     gap: 0;
@@ -169,7 +169,7 @@ select.tr-control {
     overflow: hidden;
 }
 
-.pos-money-prefix {
+.tr-money-prefix, .pos-money-prefix {
     padding: 0 10px;
     min-width: 44px;
 
@@ -187,7 +187,7 @@ select.tr-control {
     line-height: 38px;
 }
 
-.pos-money-input {
+.tr-money-input, .pos-money-input {
     border: none !important;
     border-radius: 0 !important;
     height: 100%;
