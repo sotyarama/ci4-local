@@ -83,7 +83,7 @@
                             <button type="button"
                                 id="customer-open"
                                 title="Pilih Customer"
-                                class="pos-icon-btn">👤</button>
+                                class="tr-icon-btn pos-icon-btn">👤</button>
                         </div>
                         <input type="hidden" name="customer_id" id="customer-id" value="<?= esc((string) $selectedId); ?>" required>
                     </div>
@@ -170,7 +170,7 @@
                             </div>
                         </div>
 
-                        <div class="pos-actions">
+                        <div class="tr-actions pos-actions">
                             <button type="submit" class="tr-btn tr-btn--primary tr-btn--block">
                                 <span class="tr-btn__label">Simpan Transaksi</span>
                             </button>
@@ -432,7 +432,7 @@
 
                     const minus = document.createElement('button');
                     minus.type = 'button';
-                    minus.className = 'pos-mini-btn';
+                    minus.className = 'tr-icon-btn pos-mini-btn';
                     minus.textContent = '-';
                     minus.onclick = () => changeQty(item.lineId, -1);
 
@@ -442,13 +442,13 @@
 
                     const plus = document.createElement('button');
                     plus.type = 'button';
-                    plus.className = 'pos-mini-btn';
+                    plus.className = 'tr-icon-btn pos-mini-btn';
                     plus.textContent = '+';
                     plus.onclick = () => changeQty(item.lineId, 1);
 
                     const remove = document.createElement('button');
                     remove.type = 'button';
-                    remove.className = 'pos-mini-btn is-danger';
+                    remove.className = 'tr-icon-btn pos-mini-btn is-danger';
                     remove.textContent = '🗑';
                     remove.title = 'Hapus item';
                     remove.onclick = () => removeItem(item.lineId);
