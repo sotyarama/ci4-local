@@ -29,6 +29,36 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        // Fallback: attach per-section toggle handlers if not already present
+        document.querySelectorAll('.nav-section-title.collapsible').forEach(function (title) {
+            // avoid adding duplicate listeners
+            if (title.dataset.sidebarToggleAttached) return;
+            title.dataset.sidebarToggleAttached = '1';
+            title.setAttribute('role', 'button');
+            title.setAttribute('tabindex', '0');
+            title.addEventListener('click', function () {
+                var isCollapsed = title.classList.contains('collapsed');
+                if (isCollapsed) {
+                    title.classList.remove('collapsed');
+                    var grp = title.nextElementSibling;
+                    if (grp && grp.classList.contains('nav-group')) grp.style.display = '';
+                    title.setAttribute('aria-expanded', 'true');
+                    if (grp) grp.setAttribute('aria-hidden', 'false');
+                } else {
+                    title.classList.add('collapsed');
+                    var grp2 = title.nextElementSibling;
+                    if (grp2 && grp2.classList.contains('nav-group')) grp2.style.display = 'none';
+                    title.setAttribute('aria-expanded', 'false');
+                    if (grp2) grp2.setAttribute('aria-hidden', 'true');
+                }
+            });
+            title.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    title.click();
+                }
+            });
+        });
         var btn = document.getElementById('sidebar-collapse-all-btn');
         if (!btn) return;
         // Set initial icon based on current state
@@ -45,3 +75,25 @@
         });
     });
 })();
+
+// Delegate: ensure clicks on any .nav-section-title toggle the section (robust if elements are dynamic)
+document.addEventListener('click', function (ev) {
+    var title = ev.target.closest && ev.target.closest('.nav-section-title.collapsible');
+    if (!title) return;
+    // ignore clicks on the collapse-all button
+    if (title.id === 'sidebar-collapse-all-btn' || title.closest('#sidebar-collapse-all-btn')) return;
+    // toggle this section
+    var isCollapsed = title.classList.contains('collapsed');
+    var grp = title.nextElementSibling;
+    if (isCollapsed) {
+        title.classList.remove('collapsed');
+        title.setAttribute('aria-expanded', 'true');
+        if (grp && grp.classList.contains('nav-group')) grp.style.display = '';
+        if (grp) grp.setAttribute('aria-hidden', 'false');
+    } else {
+        title.classList.add('collapsed');
+        title.setAttribute('aria-expanded', 'false');
+        if (grp && grp.classList.contains('nav-group')) grp.style.display = 'none';
+        if (grp) grp.setAttribute('aria-hidden', 'true');
+    }
+});

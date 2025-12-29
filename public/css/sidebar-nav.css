@@ -186,7 +186,6 @@
 .nav-section-title .collapse-arrow {
     color: var(--sidebar-text-muted, rgba(255, 255, 255, 0.5));
     transition: none;
-    font-size: 11px;
 }
 
 /* Dark-theme blend overrides for sidebar */
