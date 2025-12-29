@@ -122,3 +122,6 @@ _modules/*
 state.json
 pos_money_element.png
 pos_money_page.png
+
+# CI4 writable placeholders
+/writable/**/index.html

@@ -81,7 +81,7 @@ class Cache extends BaseConfig
      * @var array{storePath?: string, mode?: int}
      */
     public array $file = [
-        'storePath' => WRITEPATH . 'cache/',
+        'storePath' => '/tmp/ci4-cache/',
         'mode'      => 0640,
     ];
 
