@@ -488,7 +488,8 @@
 }
 
 .pos-touch .pos-money-prefix {
-    padding: 0 10px;
+    /* top right bottom left: add extra bottom padding to nudge text upward */
+    padding: 0 10px 6px 10px;
     height: 100%;
     min-height: 38px;
 
