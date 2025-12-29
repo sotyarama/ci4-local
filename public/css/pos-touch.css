@@ -111,41 +111,10 @@
 }
 
 /* Date pill */
-.pos-touch .pos-pill{
-  padding: 7px 10px;
-  border-radius: 999px;
-  white-space: nowrap;
-
-  background: rgba(37, 99, 235, 0.12);
-  border: 1px solid rgba(37, 99, 235, 0.45);
-  color: var(--tr-primary);
-
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1;
-}
+/* Date pill moved to public/css/ui/badges.css (.tr-pill / .pos-pill) */
 
 /* Alert */
-.pos-touch .pos-alert{
-  padding: 10px 12px;
-  margin-bottom: 12px;
-  border-radius: 12px;
-
-  background: var(--tr-secondary-beige);
-  border: 1px solid var(--tr-accent-brown);
-  color: var(--tr-text);
-
-  font-size: 12px;
-  line-height: 1.35;
-}
-
-.pos-touch .pos-alert ul{
-  margin: 0;
-  padding-left: 18px;
-}
-.pos-touch .pos-alert li{
-  margin: 2px 0;
-}
+/* Inline alert moved to public/css/ui/alerts.css (.tr-alert / .pos-alert) */
 
 /* small screen header stack */
 @media (max-width: 720px){
@@ -229,64 +198,7 @@
 }
 
 /* menu card */
-.pos-touch .pos-menu-card{
-  border: 1px solid var(--tr-border);
-  background: #fff;
-  border-radius: 14px;
-  padding: 12px 12px;
-
-  text-align: left;
-  cursor: pointer;
-
-  min-height: 74px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 6px;
-
-  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
-  transition: transform .08s ease, box-shadow .12s ease, border-color .12s ease;
-}
-
-.pos-touch .pos-menu-card:hover{
-  border-color: var(--tr-primary);
-  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.18);
-}
-
-.pos-touch .pos-menu-card:active{
-  transform: translateY(1px);
-  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
-}
-
-.pos-touch .pos-menu-name{
-  font-weight: 800;
-  font-size: 14px;
-  line-height: 1.15;
-  color: var(--tr-text);
-
-  /* clamp base */
-  display: -webkit-box;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  -webkit-box-orient: vertical;
-
-  /* satisfy linter */
-  line-clamp: 2;
-}
-
-@supports (-webkit-line-clamp: 2){
-  .pos-touch .pos-menu-name{
-    line-clamp: 2;
-    -webkit-line-clamp: 2;
-  }
-}
-
-.pos-touch .pos-menu-price{
-  font-size: 12px;
-  line-height: 1.1;
-  font-weight: 600;
-  color: var(--tr-muted-text);
-}
+/* Menu-card styles moved to public/css/ui/cards.css (.pos-menu-card / .tr-card--menu) */
 
 @media (max-width: 980px){
   .pos-touch #menu-list details{

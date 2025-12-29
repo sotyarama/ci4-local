@@ -1,0 +1,22 @@
+/* Badges / Pills
+	 Global badge styles used across pages. */
+.tr-pill,
+.pill,
+.pos-pill{
+	display: inline-block;
+	padding: 7px 10px;
+	border-radius: 999px;
+	white-space: nowrap;
+
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 1;
+}
+
+/* Primary accent pill */
+.tr-pill{
+	background: rgba(37, 99, 235, 0.12);
+	border: 1px solid rgba(37, 99, 235, 0.45);
+	color: var(--tr-primary);
+}
+

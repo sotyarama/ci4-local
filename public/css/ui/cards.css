@@ -85,3 +85,40 @@
   background: var(--tr-border, #e5e7eb);
   margin: 12px 0;
 }
+
+/* POS-specific menu card pattern (promoted to global so other pages can reuse) */
+.pos-menu-card,
+.tr-card--menu{
+  border: 1px solid var(--tr-border);
+  background: #fff;
+  border-radius: 14px;
+  padding: 12px 12px;
+
+  text-align: left;
+  cursor: pointer;
+
+  min-height: 74px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+  transition: transform .08s ease, box-shadow .12s ease, border-color .12s ease;
+}
+
+.pos-menu-card:hover,
+.tr-card--menu:hover{
+  border-color: var(--tr-primary);
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.18);
+}
+
+.pos-menu-card:active,
+.tr-card--menu:active{
+  transform: translateY(1px);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
+}
+
+.pos-menu-name{ font-weight: 800; font-size:14px; line-height:1.15; color:var(--tr-text); display:-webkit-box; overflow:hidden; text-overflow:ellipsis; -webkit-box-orient:vertical; line-clamp:2; }
+.pos-menu-price{ font-size:12px; line-height:1.1; font-weight:600; color:var(--tr-muted-text); }
+
