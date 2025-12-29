@@ -13,21 +13,7 @@
   line-height: 1.35;
 }
 
-/* textarea should not be forced to 38px */
-.pos-touch textarea.tr-control{
-  height: auto;
-  min-height: 56px;
-}
-
-/* Number input consistency */
-.pos-touch input[type="number"].tr-control{
-  appearance: textfield;
-}
-.pos-touch input[type="number"].tr-control::-webkit-outer-spin-button,
-.pos-touch input[type="number"].tr-control::-webkit-inner-spin-button{
-  -webkit-appearance: none;
-  margin: 0;
-}
+/* NOTE: textarea and number-input resets are provided by global ui/forms.css */
 
 /* =========================================================
    1) Page Layout (POS inside .content)
