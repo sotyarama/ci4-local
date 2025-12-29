@@ -147,10 +147,21 @@ def main():
     ap.add_argument('--width', type=int, help='Viewport width to use for capture (px)')
     ap.add_argument('--height', type=int, help='Viewport height to use for capture (px)')
     ap.add_argument('--headless', action='store_true')
+    ap.add_argument('--no-state-for-auth', action='store_true', default=True,
+                    help='Do not use storage state for auth pages (login/forgot/reset)')
     args = ap.parse_args()
 
     print('Capturing pages to', args.out)
-    res = capture_pages(args.base_url, args.pages, args.out, state_file=args.state, headless=args.headless, width=args.width, height=args.height)
+    res = capture_pages(
+        args.base_url,
+        args.pages,
+        args.out,
+        state_file=args.state,
+        headless=args.headless,
+        width=args.width,
+        height=args.height,
+        no_state_for_auth=args.no_state_for_auth,
+    )
     for url, file in res:
         print('Captured', url, '->', file)
 
