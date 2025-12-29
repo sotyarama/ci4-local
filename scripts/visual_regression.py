@@ -47,7 +47,16 @@ def capture_pages(base_url, pages, out_dir, state_file=None, headless=True, widt
 
     def is_auth_page(path: str) -> bool:
         p = path.lower()
-        return ('/login' in p) or ('/auth/login' in p) or ('/auth/forgot' in p) or ('/auth/reset' in p)
+        # detect by URL segments or by filename references (e.g., app/Views/auth/login.php)
+        return (
+            ('/login' in p)
+            or ('/auth/login' in p)
+            or ('/auth/forgot' in p)
+            or ('/auth/reset' in p)
+            or ('login.php' in p)
+            or ('forgot.php' in p)
+            or ('reset.php' in p)
+        )
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=headless)
