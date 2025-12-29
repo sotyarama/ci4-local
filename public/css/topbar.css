@@ -1,0 +1,57 @@
+/* Topbar component styles extracted from inline/partial styles
+   Uses design tokens from ui-baseline.css when available. */
+.topbar-greeting {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.greeting-text {
+    font-size: var(--tr-type-body, 1rem);
+    font-weight: var(--tr-type-weight-title, 600);
+    line-height: 1;
+    color: var(--tr-text, #111827);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.greeting-datetime {
+    font-size: var(--tr-fs-sm, 13px);
+    color: var(--tr-text-muted, rgba(0, 0, 0, 0.6));
+    display: flex;
+    gap: var(--tr-space-sm, 12px);
+    align-items: center;
+    margin-top: var(--tr-space-2xs, 4px);
+}
+
+.topbar-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.breadcrumb-link {
+    color: var(--tr-primary, var(--accent-primary, #0ea5a4));
+    text-decoration: none;
+    font-weight: var(--tr-fw-medium, 500);
+}
+
+.breadcrumb-link:hover {
+    text-decoration: underline;
+}
+
+.breadcrumb-sep {
+    color: var(--tr-text-muted, rgba(0, 0, 0, 0.5));
+}
+
+.breadcrumb-current {
+    font-weight: var(--tr-type-weight-title, 600);
+    color: var(--tr-text, #111827);
+}
+
+@media (max-width: 640px) {
+    .greeting-datetime {
+        display: none;
+    }
+}

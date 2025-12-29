@@ -1,9 +1,76 @@
 <header class="topbar">
     <div>
-        <div class="topbar-title"><?= esc($title ?? ''); ?></div>
-        <?php if (! empty($subtitle)): ?>
-            <div class="topbar-subtitle"><?= esc($subtitle); ?></div>
-        <?php endif; ?>
+        <?php
+        $hour = (int) date('G');
+        $minute = (int) date('i');
+        $minutes = $hour * 60 + $minute; // minutes since midnight
+
+        // Ranges provided:
+        // Pagi : 00:01 - 10:59
+        // Siang : 11:00 - 14:59
+        // Sore : 15:00 - 17:59
+        // Petang : 18:00 - 18:59
+        // Malam : 19:00 - 00:00 (and 00:00)
+
+        if ($minutes >= 1 && $minutes <= (10 * 60 + 59)) {
+            $greeting = 'Selamat Pagi';
+        } elseif ($minutes >= (11 * 60) && $minutes <= (14 * 60 + 59)) {
+            $greeting = 'Selamat Siang';
+        } elseif ($minutes >= (15 * 60) && $minutes <= (17 * 60 + 59)) {
+            $greeting = 'Selamat Sore';
+        } elseif ($minutes >= (18 * 60) && $minutes <= (18 * 60 + 59)) {
+            $greeting = 'Selamat Petang';
+        } else {
+            $greeting = 'Selamat Malam';
+        }
+        ?>
+
+        <div class="topbar-greeting">
+            <div id="topbar-greeting-text" class="greeting-text"><?= esc($greeting); ?></div>
+            <div class="greeting-datetime">
+                <span id="topbar-date"><?= date('d M Y'); ?></span>
+                <span id="topbar-time"><?= date('H:i:s'); ?></span>
+            </div>
+        </div>
+
+        <script>
+            (function() {
+                function updateDateTime() {
+                    var now = new Date();
+                    var dateStr = now.toLocaleDateString('id-ID', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    var timeStr = now.toLocaleTimeString('id-ID');
+                    var d = document.getElementById('topbar-date');
+                    var t = document.getElementById('topbar-time');
+                    if (d) d.textContent = dateStr;
+                    if (t) t.textContent = timeStr;
+                    // update greeting according to same ranges
+                    var g = document.getElementById('topbar-greeting-text');
+                    if (g) {
+                        var minutes = now.getHours() * 60 + now.getMinutes();
+                        var greeting = 'Selamat Malam';
+                        if (minutes >= 1 && minutes <= (10 * 60 + 59)) {
+                            greeting = 'Selamat Pagi';
+                        } else if (minutes >= (11 * 60) && minutes <= (14 * 60 + 59)) {
+                            greeting = 'Selamat Siang';
+                        } else if (minutes >= (15 * 60) && minutes <= (17 * 60 + 59)) {
+                            greeting = 'Selamat Sore';
+                        } else if (minutes >= (18 * 60) && minutes <= (18 * 60 + 59)) {
+                            greeting = 'Selamat Petang';
+                        } else {
+                            greeting = 'Selamat Malam';
+                        }
+                        g.textContent = greeting;
+                    }
+                }
+                updateDateTime();
+                setInterval(updateDateTime, 1000);
+            })();
+        </script>
     </div>
 
     <div class="topbar-right">
