@@ -247,21 +247,6 @@
   align-items: center;
 }
 
-.pos-touch .pos-icon-btn{
-  width: 40px;
-  height: 38px;
-  border-radius: 12px;
-  border: 1px solid var(--tr-border);
-  background: #fff;
-  cursor: pointer;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  font-size: 16px;
-  line-height: 1;
-}
 
 /* cart head */
 .pos-touch .pos-cart-head{
@@ -285,13 +270,6 @@
   color: var(--tr-muted-text);
 }
 
-.pos-touch .pos-small-btn{
-  padding: 6px 10px;
-  border-radius: 10px;
-  font-size: 12px;
-  line-height: 1;
-  white-space: nowrap;
-}
 
 /* cart list scroll */
 .pos-touch .pos-cart-list{
@@ -347,22 +325,7 @@
 }
 
 /* actions */
-.pos-touch .pos-actions{
-  display: flex;
-  gap: 10px;
-}
-
-.pos-touch .pos-save-btn{
-  width: 100%;
-  border-radius: 12px;
-  padding: 10px 12px;
-  font-weight: 700;
-}
-
-.pos-touch .pos-actions .btn{
-  min-height: 40px;
-  border-radius: 12px;
-}
+/* Button helpers moved to public/css/ui/buttons.css (.pos-actions, .pos-icon-btn, .pos-small-btn, .pos-save-btn) */
 
 /* =========================================================
    5) Cart Items (rendered by JS)
