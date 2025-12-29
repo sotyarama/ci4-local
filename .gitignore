@@ -48,20 +48,9 @@ Vagrantfile
 #-------------------------
 # Temporary Files
 #-------------------------
-writable/cache/*
-!writable/cache/index.html
+/writable/*
+!/writable/.htaccess
 
-writable/logs/*
-!writable/logs/index.html
-
-writable/session/*
-!writable/session/index.html
-
-writable/uploads/*
-!writable/uploads/index.html
-
-writable/debugbar/*
-!writable/debugbar/index.html
 
 # Local backups of sensitive runtime artifacts
 backups/*
