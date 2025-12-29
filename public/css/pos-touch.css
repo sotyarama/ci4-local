@@ -478,28 +478,18 @@
 /* money input group — rely on global ui/forms.css (.tr-money / .pos-money) for base styles */
 
 .tr-touch, .pos-touch .tr-money-prefix, .pos-money-prefix {
-    /* page-specific tweak: add extra bottom padding to nudge text upward */
-    padding: 0 10px 6px 10px;
-    height: 100%;
-    min-height: 38px;
-
-    display: flex;
+    /* Use global money prefix spacing (no page nudge) */
+    padding: 0 10px;
+    display: inline-flex;
     align-items: center;
-
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--tr-muted-text);
-
-    border-right: 1px solid var(--tr-border);
-    background: rgba(0, 0, 0, 0.02);
+    min-width: 44px;
     box-sizing: border-box;
-    line-height: 38px;
 }
 
 .tr-touch, .pos-touch .tr-money-input, .pos-money-input {
-    /* page-specific overrides (nudge/padding) kept here */
-    padding: 0 10px 6px 10px;
-    transform: translateY(-3px);
+    /* Use global money input spacing (no nudge/translate) */
+    padding: 0 10px;
+    transform: none;
 }
 
 .tr-touch, .pos-touch .tr-money, .pos-money:focus-within {
