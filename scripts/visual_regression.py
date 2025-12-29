@@ -32,7 +32,7 @@ def slug(path: str) -> str:
     return s or 'root'
 
 
-def capture_pages(base_url, pages, out_dir, state_file=None, headless=True, width=None, height=None):
+def capture_pages(base_url, pages, out_dir, state_file=None, headless=True, width=None, height=None, no_state_for_auth=False):
     from playwright.sync_api import sync_playwright
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -45,22 +45,36 @@ def capture_pages(base_url, pages, out_dir, state_file=None, headless=True, widt
         else:
             print(f'Warning: state file {state_file} not found — continuing without storage state')
 
+    def is_auth_page(path: str) -> bool:
+        p = path.lower()
+        return ('/login' in p) or ('/auth/login' in p) or ('/auth/forgot' in p) or ('/auth/reset' in p)
+
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=headless)
-        context_kwargs = {}
-        if storage:
-            context_kwargs['storage_state'] = storage
-        # set explicit viewport if provided (matches local display)
-        if width and height:
-            context_kwargs['viewport'] = {'width': int(width), 'height': int(height)}
-        context = browser.new_context(**context_kwargs)
-        page = context.new_page()
 
         results = []
         for pg in pages:
+            # determine per-page context args
+            context_kwargs = {}
+            use_storage = bool(storage)
+            if no_state_for_auth and is_auth_page(pg):
+                use_storage = False
+            if use_storage:
+                context_kwargs['storage_state'] = storage
+            if width and height:
+                context_kwargs['viewport'] = {'width': int(width), 'height': int(height)}
+            # create a fresh context per page to allow different storage usage
+            context = browser.new_context(**context_kwargs)
+            page = context.new_page()
+
             url = pg if pg.startswith('http') else base_url.rstrip('/') + '/' + pg.lstrip('/')
             print('Loading', url)
-            page.goto(url, wait_until='networkidle')
+            try:
+                page.goto(url, wait_until='networkidle')
+            except Exception:
+                # fallback to a simple goto
+                page.goto(url)
+
             name = slug(pg)
             out_file = out_dir / f'{name}.png'
             # try to capture main content area if available
@@ -72,9 +86,10 @@ def capture_pages(base_url, pages, out_dir, state_file=None, headless=True, widt
                     page.screenshot(path=str(out_file), full_page=True)
             except Exception:
                 page.screenshot(path=str(out_file), full_page=True)
-            results.append((url, str(out_file)))
 
-        context.close()
+            results.append((url, str(out_file)))
+            context.close()
+
         browser.close()
 
     return results
