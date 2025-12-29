@@ -7,22 +7,23 @@
 
 /* Sidebar module typography */
 .sidebar-title {
-    font-size: var(--tr-fs-xl); /* 18px */
+    font-size: var(--tr-fs-2xl); /* 18px */
     font-weight: var(--tr-fw-semibold); /* 600 */
     margin-bottom: 8px;
-    padding-top: 16px;
-    color: var(--accent-primary, #2563eb);
+    padding-top: 0px;
+    color: var(--temu-accent, #8fb78f);
 }
 
-.sidebar-sub {
-    font-size: 11px;
-    color: var(--sidebar-text-muted, rgba(0, 0, 0, 0.6));
-    margin-bottom: 16px;
+/* Prevent hover animations on the sidebar title */
+.sidebar-title,
+.sidebar-title * {
+    transition: none !important;
+    transform: none !important;
 }
 
 /* Navigation */
 .nav-section-title {
-    font-size: 11px;
+    font-size: var(--tr-fs-lg); /* 16px */
     text-transform: uppercase;
     color: var(--sidebar-text-muted, rgba(0, 0, 0, 0.6));
     letter-spacing: 0.08em;
@@ -46,7 +47,7 @@
     display: block;
     padding: 7px 8px;
     border-radius: 8px;
-    font-size: var(--tr-fs-sm); /* 13px */
+    font-size: var(--tr-fs-lg); /* 16px */
     color: var(--sidebar-text, #111827);
     text-decoration: none;
     margin-bottom: 3px;
@@ -59,7 +60,7 @@
 }
 
 .nav-link.small {
-    font-size: var(--tr-fs-xs); /* 12px */
+    font-size: var(--tr-fs-md); /* 14px */
     color: var(--sidebar-text-muted, rgba(0, 0, 0, 0.6));
 }
 
@@ -84,7 +85,7 @@
 
 /* Collapse arrow */
 .collapse-arrow {
-    font-size: 12px;
+    font-size: var(--tr-fs-2xl); /* 18px */
     transition: transform 0.2s ease;
     color: var(--sidebar-text-muted, rgba(0, 0, 0, 0.6));
     flex: 0 0 auto;
@@ -102,4 +103,172 @@
 /* Small visual easing when sections expand/collapse. */
 .nav-group {
     transition: max-height 0.18s ease, opacity 0.12s ease;
+}
+
+/* Brand logo alignment */
+.sidebar-brand {
+    padding: 8px 12px;
+}
+
+.sidebar-brand-link {
+    display: block;
+    text-align: left;
+}
+
+.sidebar-logo {
+    max-width: 180px;
+    height: auto;
+    display: block;
+    margin: 8px 0;
+    filter: brightness(0.96);
+    opacity: 0.95;
+}
+
+/* Divider under logo */
+.sidebar-brand::after {
+    content: '';
+    display: block;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.03);
+    margin-top: 8px;
+    margin-bottom: 12px;
+    /* Expand the divider to reach the sidebar edges (account for .sidebar-brand padding) */
+    width: calc(100% + 24px);
+    margin-left: -12px;
+    box-sizing: border-box;
+}
+
+/* Visual differentiation between section titles and links (blend-friendly) */
+.nav-section-title {
+    text-transform: uppercase;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    color: var(--sidebar-text-muted, rgba(255, 255, 255, 0.46));
+    margin: 18px 0 8px;
+    padding: 0 4px;
+    font-weight: 600;
+    cursor: default;
+    transition: none !important;
+}
+
+.nav-group {
+    padding-top: 6px;
+    margin-bottom: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.nav-link {
+    display: block;
+    padding: 8px 10px;
+    border-radius: 8px;
+    color: var(--sidebar-text, rgba(255, 255, 255, 0.86));
+    background: transparent;
+    transition: background 160ms ease;
+}
+
+.nav-link.small {
+    color: var(--sidebar-text-muted, rgba(255, 255, 255, 0.72));
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.02);
+    text-decoration: none;
+}
+
+.nav-link.active {
+    background: rgba(143, 183, 143, 0.06);
+    color: #ffffff;
+    font-weight: 600;
+    border-left: 2px solid rgba(143, 183, 143, 0.6);
+    padding-left: 8px;
+}
+
+.nav-section-title .collapse-arrow {
+    color: var(--sidebar-text-muted, rgba(255, 255, 255, 0.5));
+    transition: none;
+    font-size: 11px;
+}
+
+/* Dark-theme blend overrides for sidebar */
+.sidebar {
+    background: var(--sidebar-bg, #091022);
+    color: var(--tr-text, #e6eef6);
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.sidebar-sub {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+/* Title row with collapse button */
+.sidebar-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-right: 8px;
+}
+
+.sidebar-collapse-btn {
+    font-size: 12px;
+    padding: 6px 8px;
+}
+
+@media (max-width: 420px) {
+    .sidebar-collapse-btn {
+        display: none;
+    }
+}
+
+/* Small icon styling for collapse button */
+.sidebar-collapse-btn {
+    width: 36px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+}
+
+.sidebar-collapse-btn .collapse-icon {
+    font-size: 14px;
+    line-height: 1;
+    color: var(--text-on-primary-muted, rgba(255, 255, 255, 0.82));
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.92);
+    background: transparent;
+}
+
+.nav-link.small {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: transparent;
+}
+
+.nav-link.active {
+    background: rgba(143, 183, 143, 0.06);
+    border: none;
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: none;
+    border-left: 2px solid rgba(143, 183, 143, 0.6);
+    padding-left: 8px; /* compensate for left border */
+}
+
+/* Make section titles more subtle on dark bg */
+.nav-section-title {
+    color: rgba(255, 255, 255, 0.46);
+}
+
+/* Slightly smaller logo on very narrow viewports */
+@media (max-width: 420px) {
+    .sidebar-logo {
+        max-width: 120px;
+    }
 }

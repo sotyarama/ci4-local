@@ -1,6 +1,69 @@
+<?php
+// Provide safe fallbacks so this partial can be rendered standalone
+if (! isset($navLink) || ! is_callable($navLink)) {
+    $navLink = static function (
+        string $href,
+        string $label,
+        bool $allowed = true,
+        bool $active = false,
+        bool $small = true
+    ): string {
+        $classes = ['nav-link'];
+        if ($small) $classes[] = 'small';
+        if (! $allowed) $classes[] = 'disabled-link';
+        if ($active) $classes[] = 'active';
+
+        $classAttr = implode(' ', $classes);
+        return '<a href="' . site_url($href) . '" class="' . esc($classAttr) . '">' . esc($label) . '</a>';
+    };
+}
+
+if (! isset($menuAllowed) || ! is_callable($menuAllowed)) {
+    $menuAllowed = static function (string $k): bool {
+        return true;
+    };
+}
+
+if (! isset($isActive) || ! is_callable($isActive)) {
+    $isActive = static function (array $paths): bool {
+        return false;
+    };
+}
+
+if (! isset($currentPath)) {
+    $uri = service('uri');
+    $currentPath = strtolower(trim($uri->getPath(), '/'));
+    $reqUri = strtolower(trim(parse_url(current_url(false), PHP_URL_PATH) ?? '', '/'));
+    if ($reqUri !== '') {
+        $currentPath = $reqUri;
+    }
+    if (str_starts_with($currentPath, 'index.php/')) {
+        $currentPath = substr($currentPath, strlen('index.php/'));
+    }
+}
+
+if (! isset($canManageUsers)) {
+    $canManageUsers = false;
+}
+
+?>
+
+<?php // Logo / brand (optional). Provide `$logoUrl` from layout data to override.
+?>
 <aside class="sidebar">
-    <div class="sidebar-title">Cafe POS</div>
-    <div class="sidebar-sub">CodeIgniter 4 Dev</div>
+    <div class="sidebar-brand">
+        <a href="<?= site_url('dashboard') ?>" class="sidebar-brand-link">
+            <img
+                src="<?= esc($logoUrl ?? base_url('images/temurasa_horizontal_fit.png')) ?>"
+                alt="<?= esc($title ?? 'Temu Rasa Cafe') ?>"
+                class="sidebar-logo" />
+        </a>
+    </div>
+
+    <div class="sidebar-title-row">
+        <div class="sidebar-title">Point of Sales</div>
+        <button id="sidebar-collapse-all-btn" class="btn btn-ghost sidebar-collapse-btn" aria-label="Collapse all"><span class="collapse-icon">−</span></button>
+    </div>
 
     <div class="sidebar-scroll">
         <!-- Main -->
@@ -9,7 +72,7 @@
         </div>
         <div class="nav-group" id="nav-main">
             <?= $navLink('/', 'Dashboard', $menuAllowed('dashboard'), $isActive(['', 'dashboard']), false); ?>
-            <?= $navLink('pos/touch', 'POS UI (Touch)', $menuAllowed('transactions'), $isActive(['pos/touch']), true); ?>
+            <?= $navLink('pos/touch', 'Main Sales UI', $menuAllowed('transactions'), $isActive(['pos/touch']), true); ?>
         </div>
 
         <!-- Master -->
@@ -76,7 +139,7 @@
 
         <!-- Settings -->
         <div class="nav-section-title collapsible" data-target="settings">
-            Settings <span class="collapse-arrow">ƒ-ó</span>
+            Settings <span class="collapse-arrow">▾</span>
         </div>
         <div class="nav-group" id="nav-settings">
             <?= $navLink('users', 'User Management', $canManageUsers, $isActive(['users']), true); ?>
