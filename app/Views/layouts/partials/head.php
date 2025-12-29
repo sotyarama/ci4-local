@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="<?= base_url('css/theme-temurasa.css') . '?v=' . $assetVer; ?>">
     <link rel="stylesheet" href="<?= base_url('css/ui-baseline.css') . '?v=' . $assetVer; ?>">
     <link rel="stylesheet" href="<?= base_url('css/layout.css') . '?v=' . $assetVer; ?>">
+    <link rel="stylesheet" href="<?= base_url('css/footer.css') . '?v=' . $assetVer; ?>">
     <link rel="stylesheet" href="<?= base_url('css/topbar.css') . '?v=' . $assetVer; ?>">
     <link rel="stylesheet" href="<?= base_url('css/sidebar-nav.css') . '?v=' . $assetVer; ?>">
     <link rel="stylesheet" href="<?= base_url('css/pos-touch.css') . '?v=' . $assetVer; ?>">

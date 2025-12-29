@@ -1,0 +1,36 @@
+/* Footer component styles (extracted from layout.css)
+   - Keeps the visual appearance separate from structural layout
+   - Loaded after layout.css so it can override layout defaults when needed
+*/
+
+.footer {
+    height: var(--tr-footer-h);
+    padding: 6px 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    background: var(--bg-sidebar);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    color: var(--text-muted);
+    font-size: var(--tr-fs-sm, 13px);
+
+    position: relative;
+    z-index: 1;
+
+    flex: 0 0 auto; /* non-scroll */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Make the two spans inside the footer have a compact appearance */
+.footer > span {
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.9;
+}
