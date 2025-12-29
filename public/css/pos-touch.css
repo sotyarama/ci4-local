@@ -514,6 +514,8 @@
   box-sizing: border-box;
   line-height: 38px;
   font-size: 12px;
+  /* Small visual nudge to vertically align numeric value with prefix */
+  transform: translateY(-2px);
 }
 
 .pos-touch .pos-money:focus-within{
