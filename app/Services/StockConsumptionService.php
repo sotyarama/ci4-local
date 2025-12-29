@@ -252,7 +252,7 @@ class StockConsumptionService
                 }
 
                 $qtySelected  = (float) ($sel['qty_selected'] ?? 1);
-                $qtyMultiplier= (float) ($opt['qty_multiplier'] ?? 1);
+                $qtyMultiplier = (float) ($opt['qty_multiplier'] ?? 1);
                 $qtyToDeduct  = $this->roundQty($qty * $qtySelected * $qtyMultiplier);
                 if ($qtyToDeduct <= 0) {
                     continue;

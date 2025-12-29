@@ -620,7 +620,8 @@ class Sales extends BaseController
             'status'        => 'completed',
         ];
 
-        $saleId = $this->saleModel->insert($headerData, true);
+        $db->table('sales')->insert($headerData);
+        $saleId = (int) $db->insertID();
 
         foreach ($items as $item) {
             $menuId = $item['menu_id'];
@@ -634,7 +635,7 @@ class Sales extends BaseController
             $lineCost  = $hppSnapshot * $qty;
             $totalCost += $lineCost;
 
-            $saleItemId = $this->saleItemModel->insert([
+            $db->table('sale_items')->insert([
                 'sale_id'      => $saleId,
                 'menu_id'      => $menuId,
                 'qty'          => $qty,
@@ -642,7 +643,9 @@ class Sales extends BaseController
                 'subtotal'     => $item['subtotal'],
                 'hpp_snapshot' => $hppSnapshot,
                 'item_note'    => $item['item_note'] ?? null,
-            ], true);
+            ]);
+
+            $saleItemId = (int) $db->insertID();
 
             foreach ($item['options'] as $optSel) {
                 $opt = $optionById[$optSel['option_id']] ?? null;
@@ -650,12 +653,12 @@ class Sales extends BaseController
                     continue;
                 }
 
-                $this->orderItemOptionModel->insert([
+                $db->table('sale_item_options')->insert([
                     'sale_item_id'        => $saleItemId,
                     'option_id'           => $optSel['option_id'],
                     'qty_selected'        => $optSel['qty_selected'] ?? 1,
-                    'option_name_snapshot'=> $opt['name'] ?? 'Option',
-                    'price_delta_snapshot'=> $opt['price_delta'] ?? 0,
+                    'option_name_snapshot' => $opt['name'] ?? 'Option',
+                    'price_delta_snapshot' => $opt['price_delta'] ?? 0,
                     'variant_id_snapshot' => $opt['variant_id'] ?? null,
                 ]);
             }
@@ -671,7 +674,7 @@ class Sales extends BaseController
         }
 
         $totalCost = round($totalCost, 6);
-        $this->saleModel->update($saleId, [
+        $db->table('sales')->where('id', $saleId)->update([
             'total_cost' => $totalCost,
         ]);
 
@@ -714,7 +717,7 @@ class Sales extends BaseController
 
         $data = [
             'title'   => 'Detail Penjualan',
-            'subtitle'=> 'Rincian transaksi',
+            'subtitle' => 'Rincian transaksi',
             'sale'    => $sale,
             'items'   => $items,
         ];
@@ -774,7 +777,7 @@ class Sales extends BaseController
 
         return view('transactions/kitchen_ticket', [
             'title'   => 'Kitchen Ticket',
-            'subtitle'=> 'Ringkasan pesanan untuk dapur',
+            'subtitle' => 'Ringkasan pesanan untuk dapur',
             'sale'    => $sale,
             'items'   => $items,
             'optionsByItem' => $optionsByItem,
@@ -833,7 +836,7 @@ class Sales extends BaseController
 
         // Kembalikan stok dan catat movement IN
         foreach ($rollbackVariantMap as $variantId => $qty) {
-            $variant = \Config\Database::connect()
+            $variant = $db
                 ->table('raw_material_variants')
                 ->where('id', $variantId)
                 ->get()
@@ -846,23 +849,23 @@ class Sales extends BaseController
             $currentStock = $this->roundQty((float) ($variant['current_stock'] ?? 0));
             $newStock     = $this->roundQty($currentStock + $qty);
 
-            \Config\Database::connect()
+            $db
                 ->table('raw_material_variants')
                 ->where('id', $variantId)
                 ->update(['current_stock' => $newStock]);
 
             if ($rawId > 0) {
-                $total = \Config\Database::connect()
+                $total = $db
                     ->table('raw_material_variants')
                     ->selectSum('current_stock', 'total_stock')
                     ->where('raw_material_id', $rawId)
                     ->get()
                     ->getRowArray();
                 $stock = (float) ($total['total_stock'] ?? 0);
-                $this->rawModel->update($rawId, ['current_stock' => $stock]);
+                $db->table('raw_materials')->where('id', $rawId)->update(['current_stock' => $stock]);
             }
 
-            $this->movementModel->insert([
+            $db->table('stock_movements')->insert([
                 'raw_material_id' => $rawId,
                 'raw_material_variant_id' => $variantId,
                 'movement_type'   => 'IN',
@@ -875,7 +878,7 @@ class Sales extends BaseController
         }
 
         foreach ($rollbackMap as $rawId => $qty) {
-            $material = $this->rawModel->find($rawId);
+            $material = $db->table('raw_materials')->where('id', $rawId)->get()->getRowArray();
             if (! $material) {
                 continue;
             }
@@ -883,9 +886,9 @@ class Sales extends BaseController
             $currentStock = $this->roundQty((float) ($material['current_stock'] ?? 0));
             $newStock     = $this->roundQty($currentStock + $qty);
 
-            $this->rawModel->update($rawId, ['current_stock' => $newStock]);
+            $db->table('raw_materials')->where('id', $rawId)->update(['current_stock' => $newStock]);
 
-            $this->movementModel->insert([
+            $db->table('stock_movements')->insert([
                 'raw_material_id' => $rawId,
                 'raw_material_variant_id' => null,
                 'movement_type'   => 'IN',
@@ -898,7 +901,7 @@ class Sales extends BaseController
         }
 
         // Tandai sale void
-        $this->saleModel->update($id, [
+        $db->table('sales')->where('id', $id)->update([
             'status'      => 'void',
             'void_reason' => $this->request->getPost('void_reason') ?: null,
             'voided_at'   => date('Y-m-d H:i:s'),
