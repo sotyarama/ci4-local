@@ -1,0 +1,16 @@
+name: Deploy reminder (NAS)
+
+on:
+    push:
+        branches: ['deploy/nas']
+
+jobs:
+    reminder:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Reminder log
+              run: |
+                  echo "Reminder: pull latest code on NAS (deploy/nas pushed)"
+                  echo "If composer.lock or composer.json changed, run 'composer install' on the NAS."
+                  echo "If files under 'writable/' are new or inaccessible, fix ownership/permissions for the webserver user."
+                  echo "Clear CI4 cache after deploy (e.g. 'php spark cache:clear' or remove writable/cache contents)."
