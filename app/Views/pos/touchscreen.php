@@ -2,7 +2,7 @@
 
 <?= $this->section('content') ?>
 
-<div class="tr-touch pos-touch">
+<div class="pos-touch">
     <div class="tr-card card pos-card">
         <div class="tr-header pos-header pos-header-sticky">
             <div>
