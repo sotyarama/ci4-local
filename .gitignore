@@ -128,3 +128,8 @@ _modules/*
 
 /results/
 /phpunit*.xml
+
+# Playwright auth state and screenshots
+state.json
+pos_money_element.png
+pos_money_page.png
