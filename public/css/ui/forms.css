@@ -4,106 +4,106 @@
    ========================================================= */
 
 /* Label */
-.tr-label{
-  display: block;
-  margin: 0 0 6px;
-  font-size: 12px;
-  line-height: 1.2;
-  color: var(--tr-muted-text, #6b7280);
+.tr-label {
+    display: block;
+    margin: 0 0 6px;
+    font-size: 12px;
+    line-height: 1.2;
+    color: var(--tr-muted-text, #6b7280);
 }
 
 /* Control base (input, select, textarea) */
-.tr-control{
-  --ctl-h: 38px;
+.tr-control {
+    --ctl-h: 38px;
 
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
 
-  height: var(--ctl-h);
-  padding: 8px 10px;
+    height: var(--ctl-h);
+    padding: 8px 10px;
 
-  font-size: 13px;
-  line-height: 1.2;
-  color: var(--tr-text, #111);
+    font-size: 13px;
+    line-height: 1.2;
+    color: var(--tr-text, #111);
 
-  background: var(--tr-surface, #fff);
-  border: 1px solid var(--tr-border, #e5e7eb);
-  border-radius: 12px;
+    background: var(--tr-surface, #fff);
+    border: 1px solid var(--tr-border, #e5e7eb);
+    border-radius: 12px;
 
-  transition: box-shadow .12s ease, border-color .12s ease, background-color .12s ease;
+    transition: box-shadow 0.12s ease, border-color 0.12s ease, background-color 0.12s ease;
 }
 
 /* textarea */
-textarea.tr-control{
-  height: auto;
-  min-height: 96px;
-  resize: vertical;
-  padding: 10px;
+textarea.tr-control {
+    height: auto;
+    min-height: 96px;
+    resize: vertical;
+    padding: 10px;
 }
 
 /* Number input: normalize spin buttons across browsers */
-input[type="number"].tr-control{
-  appearance: textfield;
+input[type='number'].tr-control {
+    appearance: textfield;
 }
-input[type="number"].tr-control::-webkit-outer-spin-button,
-input[type="number"].tr-control::-webkit-inner-spin-button{
-  -webkit-appearance: none;
-  margin: 0;
+input[type='number'].tr-control::-webkit-outer-spin-button,
+input[type='number'].tr-control::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 /* select: keep native arrow but align */
-select.tr-control{
-  padding-right: 34px;
+select.tr-control {
+    padding-right: 34px;
 }
 
 /* Focus ring */
-.tr-control:focus{
-  outline: none;
+.tr-control:focus {
+    outline: none;
 }
-.tr-control:focus-visible{
-  border-color: var(--tr-primary, #1f6feb);
-  box-shadow: 0 0 0 3px rgba(31,111,235,.18);
+.tr-control:focus-visible {
+    border-color: var(--tr-primary, #1f6feb);
+    box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.18);
 }
 
 /* Placeholder */
-.tr-control::placeholder{
-  color: var(--tr-muted-text, #6b7280);
-  opacity: .9;
+.tr-control::placeholder {
+    color: var(--tr-muted-text, #6b7280);
+    opacity: 0.9;
 }
 
 /* Disabled */
-.tr-control:disabled{
-  background: var(--tr-surface-2, #f7f7f8);
-  color: rgba(17,17,17,.65);
-  cursor: not-allowed;
+.tr-control:disabled {
+    background: var(--tr-surface-2, #f7f7f8);
+    color: rgba(17, 17, 17, 0.65);
+    cursor: not-allowed;
 }
 
 /* Readonly */
-.tr-control[readonly]{
-  background: var(--tr-surface-2, #f7f7f8);
+.tr-control[readonly] {
+    background: var(--tr-surface-2, #f7f7f8);
 }
 
 /* Error state (pakai class di wrapper atau langsung di control) */
 .tr-control.is-error,
-.tr-field.is-error .tr-control{
-  border-color: var(--tr-danger, #dc2626);
-  box-shadow: 0 0 0 3px rgba(220,38,38,.14);
+.tr-field.is-error .tr-control {
+    border-color: var(--tr-danger, #dc2626);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.14);
 }
 
 /* Helper text */
-.tr-help{
-  margin-top: 6px;
-  font-size: 12px;
-  color: var(--tr-muted-text, #6b7280);
+.tr-help {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--tr-muted-text, #6b7280);
 }
-.tr-help.is-error{
-  color: var(--tr-danger, #dc2626);
+.tr-help.is-error {
+    color: var(--tr-danger, #dc2626);
 }
 
 /* Field wrapper (optional but recommended) */
-.tr-field{
-  margin: 0 0 12px;
+.tr-field {
+    margin: 0 0 12px;
 }
 
 /* =========================================================
@@ -111,48 +111,89 @@ select.tr-control{
    ========================================================= */
 
 /* Container yang membungkus prefix + input */
-.tr-money{
-  display: flex;
-  align-items: stretch;
-  gap: 0;
+.tr-money {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
 }
 
-.tr-money__prefix{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.tr-money__prefix {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 
-  min-width: 44px;
-  padding: 0 10px;
+    min-width: 44px;
+    padding: 0 10px;
 
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--tr-muted-text, #6b7280);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--tr-muted-text, #6b7280);
 
-  background: var(--tr-surface-2, #f7f7f8);
-  border: 1px solid var(--tr-border, #e5e7eb);
-  border-right: 0;
+    background: var(--tr-surface-2, #f7f7f8);
+    border: 1px solid var(--tr-border, #e5e7eb);
+    border-right: 0;
 
-  border-radius: 12px 0 0 12px;
+    border-radius: 12px 0 0 12px;
 }
 
-.tr-money .tr-control{
-  border-radius: 0 12px 12px 0;
+.tr-money .tr-control {
+    border-radius: 0 12px 12px 0;
 }
 
 /* Focus ring untuk satu grup */
-.tr-money:focus-within .tr-money__prefix{
-  border-color: var(--tr-primary, #1f6feb);
+.tr-money:focus-within .tr-money__prefix {
+    border-color: var(--tr-primary, #1f6feb);
 }
-.tr-money:focus-within .tr-control{
-  border-color: var(--tr-primary, #1f6feb);
-  box-shadow: 0 0 0 3px rgba(31,111,235,.18);
+.tr-money:focus-within .tr-control {
+    border-color: var(--tr-primary, #1f6feb);
+    box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.18);
 }
 
 /* Readonly style untuk grup */
-.tr-money.is-readonly .tr-money__prefix{
-  background: var(--tr-surface-2, #f7f7f8);
+.tr-money.is-readonly .tr-money__prefix {
+    background: var(--tr-surface-2, #f7f7f8);
 }
-.tr-money.is-readonly .tr-control{
-  background: var(--tr-surface-2, #f7f7f8);
+.tr-money.is-readonly .tr-control {
+    background: var(--tr-surface-2, #f7f7f8);
+}
+
+/* Compatibility aliases for legacy POS selectors (kept during migration) */
+.pos-money {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+
+    border: 1px solid var(--tr-border, #e5e7eb);
+    border-radius: 12px;
+    background: var(--tr-surface, #fff);
+    overflow: hidden;
+}
+
+.pos-money-prefix {
+    padding: 0 10px;
+    min-width: 44px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--tr-muted-text, #6b7280);
+
+    border-right: 1px solid var(--tr-border, #e5e7eb);
+    background: var(--tr-surface-2, #f7f7f8);
+    box-sizing: border-box;
+    line-height: 38px;
+}
+
+.pos-money-input {
+    border: none !important;
+    border-radius: 0 !important;
+    height: 100%;
+    padding: 0 10px;
+    background: transparent;
+    box-sizing: border-box;
+    line-height: 38px;
+    font-size: 12px;
 }
