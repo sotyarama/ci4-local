@@ -514,6 +514,7 @@
   padding: 0 10px;
   background: transparent;
   box-sizing: border-box;
+  line-height: 38px;
 }
 
 .pos-touch .pos-money:focus-within{
