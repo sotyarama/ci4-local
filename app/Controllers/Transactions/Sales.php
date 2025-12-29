@@ -661,7 +661,7 @@ class Sales extends BaseController
             }
         }
 
-        $consume = $this->stockService->consumeForOrder($saleId);
+        $consume = $this->stockService->consumeForOrder($saleId, $db);
         if (! $consume['ok']) {
             $db->transRollback();
 

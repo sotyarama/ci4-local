@@ -21,15 +21,18 @@ class StockConsumptionService
         $this->variantModel  = new RawMaterialVariantModel();
         $this->movementModel = new StockMovementModel();
     }
-
     /**
      * Konsumsi stok untuk 1 transaksi sale (resep + opsi menu).
+     * Accepts an optional database connection so it can participate in an
+     * external transaction (recommended).
      *
+     * @param int $saleId
+     * @param \CodeIgniter\Database\BaseConnection|null $db
      * @return array{ok:bool,errors:string[]}
      */
-    public function consumeForOrder(int $saleId): array
+    public function consumeForOrder(int $saleId, ?\CodeIgniter\Database\BaseConnection $db = null): array
     {
-        $db = \Config\Database::connect();
+        $db = $db ?? \Config\Database::connect();
 
         $items = $db->table('sale_items')
             ->where('sale_id', $saleId)
