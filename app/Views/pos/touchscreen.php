@@ -3,20 +3,20 @@
 <?= $this->section('content') ?>
 
 <div class="pos-touch">
-    <div class="tr-card card pos-card">
-        <div class="tr-header pos-header pos-header-sticky">
+    <div class="card pos-card">
+        <div class="pos-header pos-header-sticky">
             <div>
-                <h2 class="tr-title pos-title"><?= esc($title); ?></h2>
-                <p class="tr-subtitle pos-subtitle"><?= esc($subtitle); ?></p>
+                <h2 class="pos-title"><?= esc($title); ?></h2>
+                <p class="pos-subtitle"><?= esc($subtitle); ?></p>
             </div>
             <div>
-                <span class="pill tr-pill pos-pill"><?= esc($today); ?></span>
+                <span class="pill pos-pill"><?= esc($today); ?></span>
             </div>
         </div>
 
         <?php if (session()->getFlashdata('errors')): ?>
             <?php $errs = (array) session()->getFlashdata('errors'); ?>
-            <div class="tr-alert pos-alert">
+            <div class="pos-alert">
                 <ul style="margin:0; padding-left:16px;">
                     <?php foreach ($errs as $e): ?>
                         <li><?= $e; ?></li>
@@ -25,29 +25,29 @@
             </div>
         <?php endif; ?>
 
-        <form id="pos-form" method="post" action="<?= site_url('transactions/sales/store'); ?>" class="tr-grid pos-grid">
+        <form id="pos-form" method="post" action="<?= site_url('transactions/sales/store'); ?>" class="pos-grid">
             <?= csrf_field(); ?>
             <input type="hidden" name="sale_date" value="<?= esc($today); ?>">
             <input type="hidden" name="invoice_no" value="">
 
             <!-- LEFT: MENU -->
-            <div id="menu-list" class="tr-menu-list pos-menu-list">
+            <div id="menu-list" class="pos-menu-list">
                 <?php foreach ($menusByCategory as $cat => $menus): ?>
-                    <details open class="tr-cat pos-cat">
-                        <summary class="tr-cat-summary pos-cat-summary">
+                    <details open class="pos-cat">
+                        <summary class="pos-cat-summary">
                             <span><?= esc($cat); ?></span>
-                            <span class="menu-toggle-symbol tr-cat-symbol pos-cat-symbol">-</span>
+                            <span class="menu-toggle-symbol pos-cat-symbol">-</span>
                         </summary>
 
-                        <div class="tr-cat-grid pos-cat-grid">
+                        <div class="pos-cat-grid">
                             <?php foreach ($menus as $m): ?>
                                 <button type="button"
-                                    class="menu-card tr-menu-card pos-menu-card"
+                                    class="menu-card pos-menu-card"
                                     data-id="<?= $m['id']; ?>"
                                     data-name="<?= esc($m['name']); ?>"
                                     data-price="<?= (float) $m['price']; ?>">
-                                    <div class="tr-menu-name pos-menu-name"><?= esc($m['name']); ?></div>
-                                    <div class="tr-menu-price pos-menu-price">Rp <?= number_format((float) $m['price'], 0, ',', '.'); ?></div>
+                                    <div class="pos-menu-name"><?= esc($m['name']); ?></div>
+                                    <div class="pos-menu-price">Rp <?= number_format((float) $m['price'], 0, ',', '.'); ?></div>
                                 </button>
                             <?php endforeach; ?>
                         </div>
@@ -56,10 +56,9 @@
             </div>
 
             <!-- RIGHT: CART + PAYMENT -->
-            <div class="tr-side pos-side">
-
-                <!-- TOP: Customer (tetap) -->
-                <div class="tr-side-top pos-side-top">
+            <div class="pos-side">
+                <!-- TOP: Customer -->
+                <div class="pos-side-top">
                     <div>
                         <label class="tr-label">Customer</label>
                         <?php
@@ -73,7 +72,7 @@
                             }
                         }
                         ?>
-                        <div class="tr-customer-row pos-customer-row">
+                        <div class="pos-customer-row">
                             <input type="text"
                                 id="customer-display"
                                 value="<?= esc($selectedName); ?>"
@@ -83,99 +82,83 @@
                             <button type="button"
                                 id="customer-open"
                                 title="Pilih Customer"
-                                class="tr-icon-btn pos-icon-btn">👤</button>
+                                class="pos-icon-btn">👤</button>
                         </div>
                         <input type="hidden" name="customer_id" id="customer-id" value="<?= esc((string) $selectedId); ?>" required>
                     </div>
+
+                    <div class="pos-cart-head">
+                        <div>
+                            <div class="pos-section-title">Keranjang</div>
+                            <div class="pos-section-hint">Tap menu untuk tambah qty</div>
+                        </div>
+                        <button type="button" id="clear-cart" class="btn btn-secondary pos-small-btn">Kosongkan</button>
+                    </div>
                 </div>
 
-                <!-- CARD: Keranjang + Payment -->
-                <div class="tr-card tr-card--outlined tr-cart-card pos-cart-card">
+                <!-- MIDDLE: Scrollable Cart -->
+                <div id="cart-list" class="pos-cart-list">
+                    <div id="cart-empty" class="pos-empty">Keranjang kosong</div>
+                </div>
 
-                    <!-- HEADER: Keranjang -->
-                    <div class="tr-card__header">
-                        <div>
-                            <div class="tr-card__title">Keranjang</div>
-                            <div class="tr-card__subtitle">Tap menu untuk tambah qty</div>
+                <!-- BOTTOM: Totals + Payment + Actions (sticky) -->
+                <div class="pos-side-bottom">
+                    <div class="pos-totals">
+                        <div class="pos-row">
+                            <span>Total Item</span>
+                            <span id="total-items">0</span>
                         </div>
-
-                        <div class="tr-card__actions">
-                            <button type="button" id="clear-cart" class="tr-btn tr-btn--secondary tr-btn--sm">Kosongkan</button>
-                        </div>
-                    </div>
-
-                    <!-- BODY: Scrollable Cart -->
-                    <div class="tr-card__body tr-cart-body pos-cart-body">
-                        <div id="cart-list" class="tr-cart-list pos-cart-list">
-                            <div id="cart-empty" class="tr-empty pos-empty">Keranjang kosong</div>
+                        <div class="pos-row pos-row-strong">
+                            <span>Total Bayar</span>
+                            <span id="total-amount">Rp 0</span>
                         </div>
                     </div>
 
-                    <!-- FOOTER: Totals + Payment + Actions -->
-                    <div class="tr-card__footer tr-cart-footer pos-cart-footer">
-
-                        <div class="tr-totals pos-totals">
-                            <div class="tr-row pos-row">
-                                <span>Total Item</span>
-                                <span id="total-items">0</span>
-                            </div>
-                            <div class="tr-row tr-row-strong pos-row pos-row-strong">
-                                <span>Total Bayar</span>
-                                <span id="total-amount">Rp 0</span>
-                            </div>
+                    <!-- PAYMENT (B1.9 polished) -->
+                    <div class="pos-pay" id="pos-pay">
+                        <div class="pos-pay-method">
+                            <label class="tr-label">Metode</label>
+                            <select name="payment_method" id="payment-method" required class="tr-control">
+                                <?php $method = old('payment_method', 'cash'); ?>
+                                <option value="cash" <?= $method === 'cash' ? 'selected' : ''; ?>>Cash</option>
+                                <option value="qris" <?= $method === 'qris' ? 'selected' : ''; ?>>QRIS</option>
+                            </select>
+                            <div class="pos-pay-hint" id="pay-hint"></div>
                         </div>
 
-                        <div class="tr-divider"></div>
-
-                        <!-- PAYMENT (tetap) -->
-                        <div class="tr-pay pos-pay" id="pos-pay">
-                            <div class="pos-pay-method">
-                                <label class="tr-label">Metode</label>
-                                <select name="payment_method" id="payment-method" required class="tr-control">
-                                    <?php $method = old('payment_method', 'cash'); ?>
-                                    <option value="cash" <?= $method === 'cash' ? 'selected' : ''; ?>>Cash</option>
-                                    <option value="qris" <?= $method === 'qris' ? 'selected' : ''; ?>>QRIS</option>
-                                </select>
-                                <div class="tr-pay-hint pos-pay-hint" id="pay-hint"></div>
+                        <div class="pos-pay-amounts">
+                            <div>
+                                <label class="tr-label">Jumlah Bayar</label>
+                                <div class="pos-money" id="money-paid">
+                                    <span class="pos-money-prefix">Rp</span>
+                                    <input type="number"
+                                        min="0"
+                                        step="1"
+                                        name="amount_paid"
+                                        id="amount-paid"
+                                        required
+                                        value="<?= esc(old('amount_paid', '')); ?>"
+                                        placeholder="0"
+                                        class="tr-control pos-money-input">
+                                </div>
                             </div>
 
-                            <div class="pos-pay-amounts">
-                                <div>
-                                    <label class="tr-label">Jumlah Bayar</label>
-                                    <div class="tr-money pos-money" id="money-paid">
-                                        <span class="tr-money-prefix pos-money-prefix">Rp</span>
-                                        <input type="number"
-                                            min="0"
-                                            step="1"
-                                            name="amount_paid"
-                                            id="amount-paid"
-                                            required
-                                            value="<?= esc(old('amount_paid', '')); ?>"
-                                            placeholder="0"
-                                            class="tr-control tr-money-input pos-money-input">
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="tr-label">Kembalian</label>
-                                    <div class="tr-money pos-money is-readonly" id="money-change">
-                                        <span class="tr-money-prefix pos-money-prefix">Rp</span>
-                                        <input type="text"
-                                            id="change-display"
-                                            value="0"
-                                            readonly
-                                            class="tr-control tr-money-input pos-money-input">
-                                    </div>
+                            <div>
+                                <label class="tr-label">Kembalian</label>
+                                <div class="pos-money is-readonly" id="money-change">
+                                    <span class="pos-money-prefix">Rp</span>
+                                    <input type="text"
+                                        id="change-display"
+                                        value="0"
+                                        readonly
+                                        class="tr-control pos-money-input">
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="tr-actions pos-actions">
-                            <button type="submit" class="tr-btn tr-btn--primary tr-btn--block">
-                                <span class="tr-btn__label">Simpan Transaksi</span>
-                            </button>
-                        </div>
-
+                    <div class="pos-actions">
+                        <button type="submit" class="btn btn-primary pos-save-btn">Simpan Transaksi</button>
                     </div>
                 </div>
             </div>
@@ -183,14 +166,14 @@
     </div>
 
     <!-- OPTIONS MODAL -->
-    <div id="options-modal" class="tr-options-modal" style="display:none; position:fixed; inset:0; background:rgba(20,20,20,0.4); align-items:center; justify-content:center; z-index:60;">
+    <div id="options-modal" style="display:none; position:fixed; inset:0; background:rgba(20,20,20,0.4); align-items:center; justify-content:center; z-index:60;">
         <div style="background:#fff; border-radius:14px; width:min(520px, 92vw); max-height:86vh; overflow:auto; padding:16px; box-shadow:0 14px 30px rgba(0,0,0,0.18);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <div>
                     <div id="options-title" style="font-weight:700; font-size:16px;">Pilih Opsi</div>
                     <div style="font-size:12px; color:var(--tr-muted-text);">Pilih sesuai kebutuhan</div>
                 </div>
-                <button type="button" id="options-close" class="tr-modal-x" style="border:none; background:transparent; font-size:18px; cursor:pointer; color:var(--tr-muted-text);">x</button>
+                <button type="button" id="options-close" style="border:none; background:transparent; font-size:18px; cursor:pointer; color:var(--tr-muted-text);">x</button>
             </div>
             <div id="options-body" style="display:flex; flex-direction:column; gap:12px;"></div>
             <div id="options-error" style="display:none; margin-top:10px; padding:8px 10px; border-radius:8px; background:var(--tr-secondary-beige); border:1px solid var(--tr-accent-brown); color:var(--tr-accent-brown); font-size:12px;"></div>
@@ -199,21 +182,21 @@
                 <div id="options-total" style="font-weight:700;">Rp 0</div>
             </div>
             <div style="display:flex; gap:8px; margin-top:12px;">
-                <button type="button" id="options-cancel" class="tr-btn tr-btn--secondary" style="flex:1;">Batal</button>
-                <button type="button" id="options-confirm" class="tr-btn tr-btn--primary" style="flex:1;">Tambah</button>
+                <button type="button" id="options-cancel" class="btn btn-secondary" style="flex:1;">Batal</button>
+                <button type="button" id="options-confirm" class="btn btn-primary" style="flex:1;">Tambah</button>
             </div>
         </div>
     </div>
 
     <!-- CUSTOMER MODAL -->
-    <div id="customer-modal" class="tr-modal pos-modal" style="display:none; position:fixed; inset:0; background:rgba(20,20,20,0.4); align-items:center; justify-content:center; z-index:70;">
-        <div class="tr-modal-dialog pos-modal-dialog" style="background:#fff; border-radius:14px; width:min(560px, 94vw); max-height:86vh; overflow:hidden; padding:16px; box-shadow:0 14px 30px rgba(0,0,0,0.18);">
-            <div class="tr-modal-head pos-modal-head" style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:10px;">
+    <div id="customer-modal" class="pos-modal" style="display:none; position:fixed; inset:0; background:rgba(20,20,20,0.4); align-items:center; justify-content:center; z-index:70;">
+        <div class="pos-modal-dialog" style="background:#fff; border-radius:14px; width:min(560px, 94vw); max-height:86vh; overflow:hidden; padding:16px; box-shadow:0 14px 30px rgba(0,0,0,0.18);">
+            <div class="pos-modal-head" style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:10px;">
                 <div>
                     <div class="pos-modal-title" style="font-weight:900; font-size:18px; line-height:1.2;">Pilih Customer</div>
                     <div class="pos-modal-sub" style="font-size:12px; color:var(--tr-muted-text); margin-top:3px;">Cari dan pilih customer</div>
                 </div>
-                <button type="button" id="customer-close" class="tr-modal-x pos-modal-x"
+                <button type="button" id="customer-close" class="pos-modal-x"
                     style="width:36px; height:36px; border-radius:12px; border:1px solid var(--tr-border); background:#fff; cursor:pointer;">X</button>
             </div>
 
@@ -230,7 +213,7 @@
                 <div id="customer-recent" style="display:flex; flex-direction:column; gap:6px;"></div>
             </div>
 
-            <div id="customer-list" class="tr-modal-list pos-modal-list" style="max-height:56vh; overflow:auto; display:flex; flex-direction:column; gap:8px;">
+            <div id="customer-list" class="pos-modal-list" style="max-height:56vh; overflow:auto; display:flex; flex-direction:column; gap:8px;">
                 <?php foreach (($customers ?? []) as $cust): ?>
                     <?php
                     $cid = (int) ($cust['id'] ?? 0);
@@ -257,7 +240,7 @@
                 <?php endforeach; ?>
             </div>
 
-            <div id="customer-empty" class="tr-modal-empty pos-modal-empty" style="display:none; margin-top:10px; font-size:12px; color:var(--tr-muted-text); text-align:center;">
+            <div id="customer-empty" class="pos-modal-empty" style="display:none; margin-top:10px; font-size:12px; color:var(--tr-muted-text); text-align:center;">
                 Tidak ada hasil.
             </div>
         </div>
@@ -375,17 +358,17 @@
                     totalAmount += item.qty * item.unitPrice;
 
                     const row = document.createElement('div');
-                    row.className = 'tr-cart-item pos-cart-item' + (idx % 2 === 0 ? ' is-even' : '');
+                    row.className = 'pos-cart-item' + (idx % 2 === 0 ? ' is-even' : '');
 
                     const left = document.createElement('div');
-                    left.className = 'tr-cart-left pos-cart-left';
+                    left.className = 'pos-cart-left';
 
                     const title = document.createElement('div');
-                    title.className = 'tr-cart-name pos-cart-name';
+                    title.className = 'pos-cart-name';
                     title.textContent = item.name;
 
                     const priceLine = document.createElement('div');
-                    priceLine.className = 'tr-cart-price pos-cart-price';
+                    priceLine.className = 'pos-cart-price';
                     priceLine.textContent = 'Rp ' + numberFormat(item.unitPrice);
 
                     left.appendChild(title);
@@ -400,17 +383,17 @@
 
                         Object.keys(groupMap).forEach(groupName => {
                             const line = document.createElement('div');
-                            line.className = 'tr-cart-meta pos-cart-meta';
+                            line.className = 'pos-cart-meta';
                             line.textContent = groupName.toUpperCase() + ': ' + groupMap[groupName].join(', ');
                             left.appendChild(line);
                         });
                     }
 
                     const noteWrap = document.createElement('div');
-                    noteWrap.className = 'tr-cart-note pos-cart-note';
+                    noteWrap.className = 'pos-cart-note';
 
                     const noteLabel = document.createElement('div');
-                    noteLabel.className = 'tr-cart-note-label pos-cart-note-label';
+                    noteLabel.className = 'pos-cart-note-label';
                     noteLabel.textContent = 'Catatan';
 
                     const noteInput = document.createElement('textarea');
@@ -428,27 +411,27 @@
                     left.appendChild(noteWrap);
 
                     const right = document.createElement('div');
-                    right.className = 'tr-cart-right pos-cart-right';
+                    right.className = 'pos-cart-right';
 
                     const minus = document.createElement('button');
                     minus.type = 'button';
-                    minus.className = 'tr-icon-btn pos-mini-btn';
+                    minus.className = 'pos-mini-btn';
                     minus.textContent = '-';
                     minus.onclick = () => changeQty(item.lineId, -1);
 
                     const qty = document.createElement('div');
-                    qty.className = 'tr-qty pos-qty';
+                    qty.className = 'pos-qty';
                     qty.textContent = item.qty;
 
                     const plus = document.createElement('button');
                     plus.type = 'button';
-                    plus.className = 'tr-icon-btn pos-mini-btn';
+                    plus.className = 'pos-mini-btn';
                     plus.textContent = '+';
                     plus.onclick = () => changeQty(item.lineId, 1);
 
                     const remove = document.createElement('button');
                     remove.type = 'button';
-                    remove.className = 'tr-icon-btn pos-mini-btn is-danger';
+                    remove.className = 'pos-mini-btn is-danger';
                     remove.textContent = '🗑';
                     remove.title = 'Hapus item';
                     remove.onclick = () => removeItem(item.lineId);
