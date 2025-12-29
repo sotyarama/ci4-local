@@ -2,8 +2,8 @@
 
 <?= $this->section('content') ?>
 
-<div class="pos-touch">
-    <div class="card pos-card">
+<div class="pos-touch tr-touch">
+    <div class="card pos-card tr-card">
         <div class="pos-header pos-header-sticky">
             <div>
                 <h2 class="pos-title"><?= esc($title); ?></h2>
