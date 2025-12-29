@@ -1,4 +1,4 @@
 <footer class="footer">
-    <span>POS Cafe System</span>
-    <span>CodeIgniter 4</span>
+    <span>Temu Rasa | POS Cafe System</span>
+    <span>by GSG 2025</span>
 </footer>
