@@ -28,6 +28,8 @@ If running under macOS or Linux, you can create a symbolic link to make running 
 > ln -s ./vendor/bin/phpunit ./phpunit
 ```
 
+This project uses PHPUnit 10.x (installed via Composer). Use `vendor/bin/phpunit` on Unix/macOS or `vendor\\bin\\phpunit` on Windows to run the test suite.
+
 You also need to install [XDebug](https://xdebug.org/docs/install) in order
 for code coverage to be calculated successfully. After installing `XDebug`, you must add `xdebug.mode=coverage` in the **php.ini** file to enable code coverage.
 

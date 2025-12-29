@@ -17,3 +17,5 @@ How to use locally:
 -   `php scripts/check_env_format.php`
 
 If CI fails the check on your PR, update any `.env` files in your branch to quote values that contain spaces (e.g., `email.fromName = "TEMU RASA CAFE"`).
+
+Note: `scripts/check_env_format.php` returns a non-zero exit code when issues are found, so it is suitable for use in CI pipelines.

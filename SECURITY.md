@@ -16,7 +16,14 @@ If you discover or suspect credentials were committed to this repository, follow
    - If secrets were present in commits, use `git-filter-repo` or BFG to purge them from history and force-push the cleaned repo. Notify collaborators to re-clone after purge.
 
 4. Add scanning & prevention
-   - This repo now includes a Gitleaks-based GitHub Action (`.github/workflows/secret-scan.yml`) to flag secret leaks on push/PRs. Keep this active.
+   - This repo includes a GitHub Action (`.github/workflows/secret-scan.yml`) that runs secret scanning on push/PRs. Keep this active.
+   - To scan locally, you can use a tool such as `gitleaks` or the same scanner used in CI. Example with Gitleaks:
+
+```bash
+gitleaks detect --source . --report-path gitleaks-report.json
+```
+
+   - Review and fix findings before pushing; remove any true positives and rotate secrets as needed.
 
 5. Logging & redaction
    - Avoid logging full request payloads in production. Redact sensitive keys in logs.

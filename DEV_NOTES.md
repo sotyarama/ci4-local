@@ -475,8 +475,6 @@ _(Dikerjakan setelah backend final & stabil)_
 
 # Testing Guideline
 
-# Testing Guideline
-
 Setiap fitur/modul baru minimal cek:
 
 -   [ ] Validasi form jalan (required, numeric, dsb.)

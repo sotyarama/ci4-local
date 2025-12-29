@@ -1,4 +1,6 @@
-# CodeIgniter 4 Application Starter
+# Temu Rasa POS — CodeIgniter 4 Application
+
+Project: Temu Rasa POS (Point-of-Sale + Inventory + Recipes)
 
 ## What is CodeIgniter?
 

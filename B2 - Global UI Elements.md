@@ -1,5 +1,6 @@
 # B2 – Global UI Elements
 
+
 ## Deskripsi
 
 Tahap **B2 – Global UI Elements** bertujuan untuk menstandarkan seluruh komponen UI yang digunakan lintas halaman agar tampilan aplikasi **Temu Rasa POS** konsisten, rapi, dan mudah dikembangkan.
@@ -124,5 +125,3 @@ css/
 ## Catatan
 
 -   B2 **tidak** mengubah logic atau behavior bisnis
--   Fokus murni pada konsistensi UI & UX
--   Semua komponen harus reusable dan documented
