@@ -85,3 +85,6 @@ user_guide_src/cilexer/dist/*
 user_guide_src/cilexer/pycilexer.egg-info/*
 _modules/
 .api/
+
+/test-results/
+/buildLogs/
