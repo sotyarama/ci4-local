@@ -27,11 +27,11 @@ $RECYCLE.BIN/
 .vagrant
 Vagrantfile
 
-# =====================================================
-# CodeIgniter 4 - Runtime Files (CRITICAL)
-# =====================================================
+# -------------------------
+# CI4 writable (FULLY IGNORED)
+# -------------------------
 /writable/*
-!/writable/.htaccess
+
 
 # =====================================================
 # Logs / Runtime Artifacts
