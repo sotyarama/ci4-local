@@ -88,3 +88,8 @@ _modules/
 
 /test-results/
 /buildLogs/
+
+# Local build / test artifacts (ignore)
+build/
+buildLogs/
+test-results/
