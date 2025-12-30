@@ -12,6 +12,23 @@
         </div>
     </div>
 
+    <?php
+        $exportBase = [
+            'date_from' => $dateFrom,
+            'date_to'   => $dateTo,
+        ];
+        $csvParams = array_merge($exportBase, ['export' => 'csv']);
+        $csvQuery = http_build_query(array_filter($csvParams, function($v) {
+            return $v !== null && $v !== '';
+        }));
+        $csvUrl = current_url() . ($csvQuery ? '?' . $csvQuery : '');
+        $pdfParams = array_merge($exportBase, ['export' => 'pdf']);
+        $pdfQuery = http_build_query(array_filter($pdfParams, function($v) {
+            return $v !== null && $v !== '';
+        }));
+        $pdfUrl = current_url() . ($pdfQuery ? '?' . $pdfQuery : '');
+    ?>
+
     <form method="get" action="<?= current_url(); ?>"
           style="margin-bottom:12px; display:flex; flex-wrap:wrap; gap:8px; align-items:flex-end;">
         <div style="display:flex; flex-direction:column; font-size:12px;">
@@ -35,9 +52,13 @@
                style="padding:7px 12px; border-radius:999px; border:1px solid var(--tr-muted-text); font-size:12px; background:var(--tr-bg); color:var(--tr-muted-text); text-decoration:none;">
                 Reset
             </a>
-            <a href="<?= current_url() . '?' . http_build_query(['date_from' => $dateFrom, 'date_to' => $dateTo, 'export' => 'csv']); ?>"
+            <a href="<?= $csvUrl; ?>"
                style="padding:7px 12px; border-radius:999px; border:1px solid var(--tr-primary); font-size:12px; background:var(--tr-bg); color:var(--tr-primary); text-decoration:none;">
                 Export CSV
+            </a>
+            <a href="<?= $pdfUrl; ?>"
+               style="padding:7px 12px; border-radius:999px; border:1px solid var(--tr-primary); font-size:12px; background:var(--tr-secondary-beige); color:var(--tr-primary); text-decoration:none;">
+                Export PDF
             </a>
         </div>
         <div style="display:flex; flex-direction:column; font-size:12px; min-width:160px;">

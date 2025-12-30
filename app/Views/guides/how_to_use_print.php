@@ -1,12 +1,5 @@
-<?= $this->extend('layouts/main') ?>
+<?= $this->extend('layouts/print') ?>
 <?= $this->section('content') ?>
-
-<?php
-$pdfQuery = http_build_query(['export' => 'pdf']);
-$pdfUrl = current_url() . ($pdfQuery ? '?' . $pdfQuery : '');
-$printQuery = http_build_query(['export' => 'print']);
-$printUrl = current_url() . ($printQuery ? '?' . $printQuery : '');
-?>
 
 <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
@@ -16,17 +9,7 @@ $printUrl = current_url() . ($printQuery ? '?' . $printQuery : '');
                 <?= esc($subtitle); ?>
             </p>
         </div>
-        <div style="display:flex; gap:6px; align-items:center;">
-            <span class="pill">Help</span>
-            <a href="<?= esc($printUrl); ?>"
-               style="font-size:11px; padding:6px 10px; border-radius:999px; border:1px solid var(--tr-muted-text); background:var(--tr-secondary-beige); color:var(--tr-text); text-decoration:none;">
-                Print / Save PDF
-            </a>
-            <a href="<?= esc($pdfUrl); ?>"
-               style="font-size:11px; padding:6px 10px; border-radius:999px; border:1px solid var(--tr-muted-text); background:var(--tr-secondary-beige); color:var(--tr-text); text-decoration:none;">
-                Export PDF
-            </a>
-        </div>
+        <span class="pill">Help</span>
     </div>
 
     <div style="font-size:13px; line-height:1.6; color:var(--tr-text);">

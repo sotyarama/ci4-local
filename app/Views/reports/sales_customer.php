@@ -11,20 +11,32 @@
             </p>
         </div>
         <?php
-            $csvParams = [
+            $exportBase = [
                 'date_from' => $dateFrom,
                 'date_to'   => $dateTo,
-                'export'    => 'csv',
+                'mode'      => $mode,
             ];
+            $csvParams = array_merge($exportBase, ['export' => 'csv']);
             $csvQuery = http_build_query(array_filter($csvParams, function($v) {
                 return $v !== null && $v !== '';
             }));
             $csvUrl = current_url() . ($csvQuery ? '?' . $csvQuery : '');
+            $pdfParams = array_merge($exportBase, ['export' => 'pdf']);
+            $pdfQuery = http_build_query(array_filter($pdfParams, function($v) {
+                return $v !== null && $v !== '';
+            }));
+            $pdfUrl = current_url() . ($pdfQuery ? '?' . $pdfQuery : '');
         ?>
-        <a href="<?= $csvUrl; ?>"
-           style="font-size:11px; padding:6px 10px; border-radius:999px; border:1px solid var(--tr-muted-text); background:var(--tr-border); color:var(--tr-text); text-decoration:none;">
-            Export CSV
-        </a>
+        <div style="display:flex; gap:6px;">
+            <a href="<?= $csvUrl; ?>"
+               style="font-size:11px; padding:6px 10px; border-radius:999px; border:1px solid var(--tr-muted-text); background:var(--tr-border); color:var(--tr-text); text-decoration:none;">
+                Export CSV
+            </a>
+            <a href="<?= $pdfUrl; ?>"
+               style="font-size:11px; padding:6px 10px; border-radius:999px; border:1px solid var(--tr-muted-text); background:var(--tr-secondary-beige); color:var(--tr-text); text-decoration:none;">
+                Export PDF
+            </a>
+        </div>
     </div>
 
     <form method="get" action="<?= current_url(); ?>"

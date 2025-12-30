@@ -4,6 +4,8 @@ namespace App\Controllers\Reports;
 
 use App\Controllers\BaseController;
 use App\Models\SaleModel;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class SalesSummary extends BaseController
 {
@@ -23,7 +25,9 @@ class SalesSummary extends BaseController
         $dateTo   = $this->request->getGet('date_to') ?: null;
         $perPage  = $this->sanitizePerPage($this->request->getGet('per_page'));
         $page     = $this->sanitizePage($this->request->getGet('page'));
-        $wantCsv  = ($this->request->getGet('export') === 'csv');
+        $export   = $this->request->getGet('export');
+        $wantCsv  = ($export === 'csv');
+        $wantPdf  = ($export === 'pdf');
 
         $db = \Config\Database::connect();
 
@@ -43,6 +47,11 @@ class SalesSummary extends BaseController
         if ($wantCsv) {
             $rows = (clone $baseBuilder)->get()->getResultArray();
             return $this->exportPerMenuCsv($rows, $dateFrom, $dateTo);
+        }
+        if ($wantPdf) {
+            $rows = (clone $baseBuilder)->get()->getResultArray();
+            $totals = $this->aggregateMenuTotals($dateFrom, $dateTo);
+            return $this->exportPerMenuPdf($rows, $dateFrom, $dateTo, $totals);
         }
 
         $totalRows = $this->countMenuRows($dateFrom, $dateTo);
@@ -87,7 +96,9 @@ class SalesSummary extends BaseController
         $dateTo   = $this->request->getGet('date_to') ?: null;
         $perPage  = $this->sanitizePerPage($this->request->getGet('per_page'));
         $page     = $this->sanitizePage($this->request->getGet('page'));
-        $wantCsv  = ($this->request->getGet('export') === 'csv');
+        $export   = $this->request->getGet('export');
+        $wantCsv  = ($export === 'csv');
+        $wantPdf  = ($export === 'pdf');
 
         $db = \Config\Database::connect();
 
@@ -109,6 +120,11 @@ class SalesSummary extends BaseController
         if ($wantCsv) {
             $rows = (clone $baseBuilder)->get()->getResultArray();
             return $this->exportPerCategoryCsv($rows, $dateFrom, $dateTo);
+        }
+        if ($wantPdf) {
+            $rows = (clone $baseBuilder)->get()->getResultArray();
+            $totals = $this->aggregateCategoryTotals($dateFrom, $dateTo);
+            return $this->exportPerCategoryPdf($rows, $dateFrom, $dateTo, $totals);
         }
 
         $totalRows  = $this->countCategoryRows($dateFrom, $dateTo);
@@ -192,7 +208,9 @@ class SalesSummary extends BaseController
         $dateTo   = $endObj->format('Y-m-d');
         $perPage  = $this->sanitizePerPage($this->request->getGet('per_page'));
         $page     = $this->sanitizePage($this->request->getGet('page'));
-        $wantCsv  = ($this->request->getGet('export') === 'csv');
+        $export   = $this->request->getGet('export');
+        $wantCsv  = ($export === 'csv');
+        $wantPdf  = ($export === 'pdf');
 
         $group    = strtolower((string) ($this->request->getGet('group') ?? 'day'));
         $allowedGroups = ['day', 'week', 'month', 'year'];
@@ -218,6 +236,11 @@ class SalesSummary extends BaseController
         if ($wantCsv) {
             $rows = (clone $baseBuilder)->get()->getResultArray();
             return $this->exportTimeCsv($rows, $dateFrom, $dateTo, $group, $allDay, $startTime, $endTime);
+        }
+        if ($wantPdf) {
+            $rows = (clone $baseBuilder)->get()->getResultArray();
+            $totals = $this->aggregateTimeTotals($fromDateTime, $toDateTime);
+            return $this->exportTimePdf($rows, $dateFrom, $dateTo, $group, $allDay, $startTime, $endTime, $totals);
         }
 
         $totalRows  = $this->countTimeRows($fromDateTime, $toDateTime, $periodKeyExpr);
@@ -268,7 +291,9 @@ class SalesSummary extends BaseController
         $dateTo   = $this->request->getGet('date_to') ?: null;
         $perPage  = $this->sanitizePerPage($this->request->getGet('per_page'));
         $page     = $this->sanitizePage($this->request->getGet('page'));
-        $wantCsv  = ($this->request->getGet('export') === 'csv');
+        $export   = $this->request->getGet('export');
+        $wantCsv  = ($export === 'csv');
+        $wantPdf  = ($export === 'pdf');
         $mode     = strtolower((string) ($this->request->getGet('mode') ?? 'full'));
         if (! in_array($mode, ['full', 'compact'], true)) {
             $mode = 'full';
@@ -303,6 +328,11 @@ class SalesSummary extends BaseController
         if ($wantCsv) {
             $rows = (clone $baseBuilder)->get()->getResultArray();
             return $this->exportPerCustomerCsv($rows, $dateFrom, $dateTo);
+        }
+        if ($wantPdf) {
+            $rows = (clone $baseBuilder)->get()->getResultArray();
+            $totals = $this->aggregateCustomerTotals($dateFrom, $dateTo);
+            return $this->exportPerCustomerPdf($rows, $dateFrom, $dateTo, $mode, $totals);
         }
 
         $totalRows  = $this->countCustomerRows($dateFrom, $dateTo);
@@ -601,6 +631,135 @@ class SalesSummary extends BaseController
             ->setHeader('Content-Type', 'text/csv')
             ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
             ->setBody($csv);
+    }
+
+    private function exportPerCategoryPdf(array $rows, ?string $dateFrom, ?string $dateTo, array $totals)
+    {
+        $period = $this->formatPeriodLabel($dateFrom, $dateTo);
+        $filename = 'sales_per_category_' . $period . '.pdf';
+
+        $data = [
+            'title'     => 'Penjualan per Kategori Menu',
+            'subtitle'  => 'Qty, omzet, HPP, dan margin per kategori menu',
+            'metaLines' => ['Periode: ' . $this->formatPeriodDisplay($dateFrom, $dateTo)],
+            'rows'      => $rows,
+            'totalQtyAll'   => (float) ($totals['total_qty'] ?? 0),
+            'totalSalesAll' => (float) ($totals['total_sales'] ?? 0),
+            'totalCostAll'  => (float) ($totals['total_cost'] ?? 0),
+        ];
+
+        return $this->renderPdf('reports/pdf/sales_category', $data, $filename);
+    }
+
+    private function exportPerMenuPdf(array $rows, ?string $dateFrom, ?string $dateTo, array $totals)
+    {
+        $period = $this->formatPeriodLabel($dateFrom, $dateTo);
+        $filename = 'sales_per_menu_' . $period . '.pdf';
+
+        $data = [
+            'title'     => 'Penjualan per Menu',
+            'subtitle'  => 'Qty, omzet, HPP, dan margin per menu untuk periode tertentu',
+            'metaLines' => ['Periode: ' . $this->formatPeriodDisplay($dateFrom, $dateTo)],
+            'rows'      => $rows,
+            'totalQtyAll'   => (float) ($totals['total_qty'] ?? 0),
+            'totalSalesAll' => (float) ($totals['total_sales'] ?? 0),
+            'totalCostAll'  => (float) ($totals['total_cost'] ?? 0),
+        ];
+
+        return $this->renderPdf('reports/pdf/sales_menu', $data, $filename);
+    }
+
+    private function exportTimePdf(
+        array $rows,
+        ?string $dateFrom,
+        ?string $dateTo,
+        string $group,
+        bool $allDay,
+        string $startTime,
+        string $endTime,
+        array $totals
+    ) {
+        $period = $this->formatPeriodLabel($dateFrom, $dateTo);
+        $filename = 'sales_by_time_' . $group . '_' . $period . '.pdf';
+
+        $metaLines = [
+            'Periode: ' . $this->formatPeriodDisplay($dateFrom, $dateTo),
+            'Group: ' . strtoupper($group),
+            'All day: ' . ($allDay ? 'Ya' : 'Tidak'),
+        ];
+
+        if (! $allDay) {
+            $metaLines[] = 'Jam: ' . $startTime . ' - ' . $endTime;
+        }
+
+        $data = [
+            'title'     => 'Laporan Penjualan by Time',
+            'subtitle'  => 'Ringkasan omzet, HPP, margin per periode (harian/mingguan/bulanan/tahunan)',
+            'metaLines' => $metaLines,
+            'rows'      => $rows,
+            'totalSalesAll' => (float) ($totals['total_sales'] ?? 0),
+            'totalCostAll'  => (float) ($totals['total_cost'] ?? 0),
+        ];
+
+        return $this->renderPdf('reports/pdf/sales_time', $data, $filename);
+    }
+
+    private function exportPerCustomerPdf(array $rows, ?string $dateFrom, ?string $dateTo, string $mode, array $totals)
+    {
+        $mode = $mode === 'compact' ? 'compact' : 'full';
+        $period = $this->formatPeriodLabel($dateFrom, $dateTo);
+        $filename = 'sales_per_customer_' . $period . '.pdf';
+        $modeLabel = $mode === 'compact' ? 'Ringkas' : 'Lengkap';
+
+        $data = [
+            'title'     => 'Penjualan per Customer',
+            'subtitle'  => 'Ringkasan order, omzet, HPP, dan margin per customer',
+            'metaLines' => [
+                'Periode: ' . $this->formatPeriodDisplay($dateFrom, $dateTo),
+                'Mode: ' . $modeLabel,
+            ],
+            'rows'      => $rows,
+            'mode'      => $mode,
+            'totalOrdersAll' => (int) ($totals['total_orders'] ?? 0),
+            'totalItemsAll'  => (float) ($totals['total_items'] ?? 0),
+            'totalSalesAll'  => (float) ($totals['total_sales'] ?? 0),
+            'totalCostAll'   => (float) ($totals['total_cost'] ?? 0),
+        ];
+
+        $orientation = $mode === 'compact' ? 'portrait' : 'landscape';
+
+        return $this->renderPdf('reports/pdf/sales_customer', $data, $filename, 'A4', $orientation);
+    }
+
+    private function renderPdf(string $view, array $data, string $filename, string $paper = 'A4', string $orientation = 'portrait')
+    {
+        $options = new Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+
+        $dompdf = new Dompdf($options);
+        $dompdf->setPaper($paper, $orientation);
+        $dompdf->loadHtml(view($view, $data));
+        $dompdf->render();
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/pdf')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->setBody($dompdf->output());
+    }
+
+    private function formatPeriodDisplay(?string $from, ?string $to): string
+    {
+        if ($from && $to) {
+            return $from . ' s/d ' . $to;
+        }
+        if ($from) {
+            return 'Dari ' . $from;
+        }
+        if ($to) {
+            return 'Sampai ' . $to;
+        }
+
+        return 'Semua tanggal';
     }
 
     private function formatPeriodLabel(?string $from, ?string $to): string
