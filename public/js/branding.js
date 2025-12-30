@@ -34,3 +34,97 @@
     });
   });
 })();
+
+// Branding slides (desktop only).
+(function () {
+  if (!window.matchMedia || !window.matchMedia('(min-width: 980px)').matches) {
+    return;
+  }
+
+  var container = document.querySelector('.tr-branding-container');
+  if (!container) return;
+
+  var children = Array.prototype.slice.call(container.children);
+  if (!children.length) return;
+
+  var slides = [];
+  var current = document.createElement('div');
+  current.className = 'tr-slide';
+  slides.push(current);
+
+  children.forEach(function (node) {
+    if (node.matches && node.matches('section.tr-section')) {
+      var mode = node.getAttribute('data-slide') || '';
+      if (mode !== 'continue' && current.childNodes.length) {
+        current = document.createElement('div');
+        current.className = 'tr-slide';
+        slides.push(current);
+      }
+    }
+
+    current.appendChild(node);
+  });
+
+  container.innerHTML = '';
+  container.classList.add('tr-slide-mode');
+
+  var nav = document.createElement('div');
+  nav.className = 'tr-slide-nav';
+
+  var btnPrev = document.createElement('button');
+  btnPrev.type = 'button';
+  btnPrev.className = 'tr-btn tr-btn-outline';
+  btnPrev.textContent = 'Prev';
+
+  var indicator = document.createElement('div');
+  indicator.className = 'tr-slide-indicator';
+
+  var btnNext = document.createElement('button');
+  btnNext.type = 'button';
+  btnNext.className = 'tr-btn tr-btn-outline';
+  btnNext.textContent = 'Next';
+
+  nav.appendChild(btnPrev);
+  nav.appendChild(indicator);
+  nav.appendChild(btnNext);
+
+  var navHost = document.getElementById('branding-slide-nav');
+  if (navHost) {
+    navHost.appendChild(nav);
+  } else {
+    container.appendChild(nav);
+  }
+  slides.forEach(function (slide) {
+    container.appendChild(slide);
+  });
+
+  var index = 0;
+
+  function setActive(next) {
+    if (next < 0 || next >= slides.length) return;
+    slides[index].classList.remove('is-active');
+    index = next;
+    slides[index].classList.add('is-active');
+    indicator.textContent = 'Slide ' + (index + 1) + ' / ' + slides.length;
+  }
+
+  slides[index].classList.add('is-active');
+  indicator.textContent = 'Slide 1 / ' + slides.length;
+
+  btnPrev.addEventListener('click', function () {
+    setActive(index - 1);
+  });
+
+  btnNext.addEventListener('click', function () {
+    setActive(index + 1);
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'ArrowRight' || event.key === 'PageDown') {
+      setActive(index + 1);
+    }
+    if (event.key === 'ArrowLeft' || event.key === 'PageUp') {
+      setActive(index - 1);
+    }
+  });
+})();

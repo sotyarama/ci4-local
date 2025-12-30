@@ -774,8 +774,7 @@ $dashOrders = [
                             <div class="tr-pos-search-row">
                                 <input
                                     class="tr-pos-input"
-                                    placeholder="Cari menu (contoh: kopi, mie, roti)"
-                                >
+                                    placeholder="Cari menu (contoh: kopi, mie, roti)">
                                 <button type="button" class="tr-btn tr-btn-primary">+ Custom</button>
                             </div>
                             <div class="tr-pos-categories">
