@@ -81,9 +81,20 @@ class Cache extends BaseConfig
      * @var array{storePath?: string, mode?: int}
      */
     public array $file = [
-        'storePath' => '/tmp/ci4-cache/',
+        'storePath' => '',
         'mode'      => 0640,
     ];
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->file['storePath'] = rtrim(
+            (string) env('cache.storePath', WRITEPATH . 'cache/'),
+            '/\\'
+        ) . DIRECTORY_SEPARATOR;
+    }
+
 
     /**
      * -------------------------------------------------------------------------

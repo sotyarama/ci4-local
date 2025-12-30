@@ -57,7 +57,18 @@ class Session extends BaseConfig
      *
      * IMPORTANT: You are REQUIRED to set a valid save path!
      */
-    public string $savePath = '/tmp/ci4-session';
+    public string $savePath = '';
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->savePath = rtrim(
+            (string) env('session.savePath', WRITEPATH . 'session/'),
+            '/\\'
+        ) . DIRECTORY_SEPARATOR;
+    }
+
 
     /**
      * --------------------------------------------------------------------------
