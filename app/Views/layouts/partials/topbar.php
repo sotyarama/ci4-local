@@ -74,6 +74,12 @@
     </div>
 
     <div class="topbar-right">
+        <a href="<?= site_url('branding'); ?>" class="theme-toggle-btn topbar-pill" style="text-decoration:none;">
+            Branding
+        </a>
+        <a href="<?= site_url('how-to-use'); ?>" class="theme-toggle-btn topbar-pill" style="text-decoration:none;">
+            How to Use
+        </a>
         <span class="topbar-pill" style="margin-right: 8px;">
             <?= esc(session('full_name') ?? session('username') ?? ''); ?>
         </span>

@@ -214,6 +214,12 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
         // ------------------------------
         $routes->get('brand-guide', 'BrandGuide::index');
 
+        // ------------------------------
+        // Guides
+        // ------------------------------
+        $routes->get('branding', 'Guides::branding');
+        $routes->get('how-to-use', 'Guides::howToUse');
+
 
         // ------------------------------
         // POS Touchscreen UI (Phase 2 stub)
