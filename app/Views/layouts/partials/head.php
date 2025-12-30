@@ -34,13 +34,7 @@
 
     <!-- Page-specific / feature-specific (keep after globals) -->
     <link rel="stylesheet" href="<?= base_url('css/pos-touch.css') . '?v=' . $assetVer; ?>">
-    <?php
-    $dashPath = trim((string) ($currentPath ?? ''), '/');
-    if ($dashPath === 'index.php') $dashPath = '';
-    ?>
-    <?php if ($dashPath === '' || str_starts_with($dashPath, 'dashboard')): ?>
-        <link rel="stylesheet" href="<?= base_url('css/dashboard.css') . '?v=' . $assetVer; ?>">
-    <?php endif; ?>
+    <link rel="stylesheet" href="<?= base_url('css/dashboard.css') . '?v=' . $assetVer; ?>">
 
     <!-- External libs -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
