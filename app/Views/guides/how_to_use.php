@@ -4,8 +4,6 @@
 <?php
 $pdfQuery = http_build_query(['export' => 'pdf']);
 $pdfUrl = current_url() . ($pdfQuery ? '?' . $pdfQuery : '');
-$printQuery = http_build_query(['export' => 'print']);
-$printUrl = current_url() . ($printQuery ? '?' . $printQuery : '');
 ?>
 
 <div class="card">
@@ -18,12 +16,8 @@ $printUrl = current_url() . ($printQuery ? '?' . $printQuery : '');
         </div>
         <div style="display:flex; gap:6px; align-items:center;">
             <span class="pill">Help</span>
-            <a href="<?= esc($printUrl); ?>"
-               style="font-size:11px; padding:6px 10px; border-radius:999px; border:1px solid var(--tr-muted-text); background:var(--tr-secondary-beige); color:var(--tr-text); text-decoration:none;">
-                Print / Save PDF
-            </a>
             <a href="<?= esc($pdfUrl); ?>"
-               style="font-size:11px; padding:6px 10px; border-radius:999px; border:1px solid var(--tr-muted-text); background:var(--tr-secondary-beige); color:var(--tr-text); text-decoration:none;">
+                style="font-size:11px; padding:6px 10px; border-radius:999px; border:1px solid var(--tr-muted-text); background:var(--tr-secondary-beige); color:var(--tr-text); text-decoration:none;">
                 Export PDF
             </a>
         </div>

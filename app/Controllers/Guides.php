@@ -15,20 +15,13 @@ class Guides extends BaseController
             'subtitle' => 'Panduan ringkas identitas visual dan komunikasi.',
         ];
 
-        if ($this->request->getGet('export') === 'print') {
-            $data['assetVer'] = time();
-            $data['extraStylesheets'] = [
-                base_url('css/branding.css') . '?v=' . $data['assetVer'],
-            ];
-            $data['logoSrc'] = base_url('images/temurasa_primary_fit.png');
-            $data['backUrl'] = site_url('branding');
-
-            return view('guides/branding_print', $data);
-        }
+        // Print export removed: UI no longer exposes print; PDF export remains.
 
         if ($this->request->getGet('export') === 'pdf') {
             $data['extraCss'] = $this->loadBrandingCss();
-            $data['logoSrc'] = $this->resolveBrandingLogoPath();
+            // Inline logo as data URI to avoid file/http loading delays during PDF render
+            $logoFile = FCPATH . 'images/temurasa_primary_fit.png';
+            $data['logoSrc'] = is_file($logoFile) ? $this->fileToDataUri($logoFile) : $this->resolveBrandingLogoPath();
             $filename = 'branding_guide_' . date('Ymd') . '.pdf';
 
             return $this->renderPdf('guides/pdf/branding', $data, $filename);
@@ -45,15 +38,7 @@ class Guides extends BaseController
             'subtitle' => 'Panduan singkat penggunaan aplikasi sehari-hari.',
         ];
 
-        if ($this->request->getGet('export') === 'print') {
-            $data['assetVer'] = time();
-            $data['forceLongPage'] = true;
-            $data['pageWidth'] = '210mm';
-            $data['pageHeight'] = '2000mm';
-            $data['pageMargin'] = '12mm';
-            $data['backUrl'] = site_url('how-to-use');
-            return view('guides/how_to_use_print', $data);
-        }
+        // Print export removed: UI no longer exposes print; PDF export remains.
 
         if ($this->request->getGet('export') === 'pdf') {
             $filename = 'how_to_use_' . date('Ymd') . '.pdf';
@@ -71,13 +56,37 @@ class Guides extends BaseController
 
         $dompdf = new Dompdf($options);
         $dompdf->setPaper($paper, $orientation);
-        $dompdf->loadHtml(view($view, $data));
-        $dompdf->render();
+        // Debugging: capture HTML and timings to help diagnose slow renders
+        try {
+            $start = microtime(true);
+            $html = view($view, $data);
 
-        return $this->response
-            ->setHeader('Content-Type', 'application/pdf')
-            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
-            ->setBody($dompdf->output());
+            // Save the HTML used for rendering for inspection
+            $htmlFile = WRITEPATH . 'logs/debug_pdf_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.html';
+            @file_put_contents($htmlFile, $html);
+            log_message('info', 'renderPdf: saved HTML to ' . $htmlFile . ' (len=' . strlen($html) . ')');
+
+            $dompdf->loadHtml($html);
+
+            $dompdf->render();
+
+            $pdfOutput = $dompdf->output();
+            $duration = microtime(true) - $start;
+
+            // Save the generated PDF for inspection
+            $pdfFile = WRITEPATH . 'logs/debug_pdf_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.pdf';
+            @file_put_contents($pdfFile, $pdfOutput);
+            log_message('info', sprintf('renderPdf: rendered %s in %.2f sec; pdf_len=%d saved=%s', $view, $duration, strlen($pdfOutput), $pdfFile));
+
+            return $this->response
+                ->setHeader('Content-Type', 'application/pdf')
+                ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+                ->setBody($pdfOutput);
+        } catch (\Throwable $e) {
+            // Log exception to help debugging
+            log_message('error', 'renderPdf: exception - ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     private function loadBrandingCss(): string
@@ -85,7 +94,40 @@ class Guides extends BaseController
         $cssPath = FCPATH . 'css/branding.css';
         if (is_file($cssPath)) {
             $contents = file_get_contents($cssPath);
-            return is_string($contents) ? $contents : '';
+            if (! is_string($contents)) {
+                return '';
+            }
+
+            // Remove @import rules and @font-face blocks to avoid remote fetching
+            $contents = preg_replace('/@import[^;]+;/i', '', $contents);
+            $contents = preg_replace('/@font-face\s*\{[^}]*\}/is', '', $contents);
+
+            // Rewrite local url(...) references to file:/// absolute paths so Dompdf
+            // loads them from disk instead of via HTTP (avoids long remote loads).
+            $contents = preg_replace_callback('/url\(([^)]+)\)/i', function ($m) {
+                $url = trim($m[1], "'\" \t\n\r");
+
+                // Leave data URIs and absolute remote URLs alone
+                if (preg_match('#^(data:|https?:|//)#i', $url)) {
+                    return "url($url)";
+                }
+
+                // Normalize path and attempt to resolve against FCPATH
+                $path = $url;
+                if (strpos($path, '/') === 0) {
+                    $path = ltrim($path, '/');
+                }
+
+                $full = realpath(FCPATH . $path);
+                if ($full !== false) {
+                    $normalized = str_replace('\\\\', '/', $full);
+                    return 'url("file:///' . $normalized . '")';
+                }
+
+                return "url($url)";
+            }, $contents);
+
+            return $contents;
         }
 
         return '';
@@ -102,5 +144,16 @@ class Guides extends BaseController
         }
 
         return base_url('images/temurasa_primary_fit.png');
+    }
+
+    private function fileToDataUri(string $filePath): string
+    {
+        $mime = mime_content_type($filePath) ?: 'application/octet-stream';
+        $data = file_get_contents($filePath);
+        if ($data === false) {
+            return '';
+        }
+
+        return 'data:' . $mime . ';base64,' . base64_encode($data);
     }
 }
