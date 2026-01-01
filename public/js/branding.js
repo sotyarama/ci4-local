@@ -128,3 +128,72 @@
     }
   });
 })();
+
+(function () {
+  var page = document.querySelector('.tr-branding-page');
+  var actions = document.querySelector('.tr-branding-actions-inner');
+  if (!page || !actions) return;
+
+  function syncWidth() {
+    var rect = page.getBoundingClientRect();
+    var parentRect = actions.parentElement
+      ? actions.parentElement.getBoundingClientRect()
+      : { left: 0 };
+    actions.style.width = rect.width + 'px';
+    actions.style.marginLeft = (rect.left - parentRect.left) + 'px';
+    actions.style.marginRight = '0';
+  }
+
+  if (window.ResizeObserver) {
+    var observer = new ResizeObserver(syncWidth);
+    observer.observe(page);
+  } else {
+    window.addEventListener('resize', syncWidth);
+  }
+
+  window.addEventListener('load', syncWidth);
+  syncWidth();
+})();
+
+(function () {
+  var box = document.querySelector('.tr-clearspace-box');
+  if (!box) return;
+
+  var inner = box.querySelector('.tr-clearspace-inner');
+  var svg = box.querySelector('.tr-clearspace-label svg');
+  if (!inner || !svg) return;
+
+  var circleSelectors = ['#path17', '#path15'];
+
+  function updateInset() {
+    var maxHeight = 0;
+    circleSelectors.forEach(function (selector) {
+      var node = svg.querySelector(selector);
+      if (!node || !node.getBoundingClientRect) return;
+      var rect = node.getBoundingClientRect();
+      if (rect.height > maxHeight) {
+        maxHeight = rect.height;
+      }
+    });
+
+    if (maxHeight > 0) {
+      var insetValue = maxHeight.toFixed(1) + 'px';
+      inner.style.inset = insetValue;
+      box.style.setProperty('--tr-clearspace-inset', insetValue);
+    }
+  }
+
+  function scheduleUpdate() {
+    window.requestAnimationFrame(updateInset);
+  }
+
+  if (window.ResizeObserver) {
+    var observer = new ResizeObserver(scheduleUpdate);
+    observer.observe(box);
+  } else {
+    window.addEventListener('resize', scheduleUpdate);
+  }
+
+  window.addEventListener('load', scheduleUpdate);
+  scheduleUpdate();
+})();
