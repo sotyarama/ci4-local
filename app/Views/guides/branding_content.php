@@ -69,18 +69,7 @@ $dashOrders = [
 
 <div class="tr-branding-page">
     <div class="tr-branding-container">
-        <?php if (! empty($showExport) && (! empty($pdfUrl) || ! empty($printUrl))): ?>
-            <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:12px;">
-                <?php if (! empty($printUrl)): ?>
-                    <a href="<?= esc($printUrl); ?>" class="tr-btn tr-btn-muted" style="text-decoration:none;">
-                        Print / Save PDF
-                    </a>
-                <?php endif; ?>
-                <?php if (! empty($pdfUrl)): ?>
-                    <a href="<?= esc($pdfUrl); ?>" class="tr-btn tr-btn-outline" style="text-decoration:none;">Export PDF</a>
-                <?php endif; ?>
-            </div>
-        <?php endif; ?>
+        <!-- PDF export intentionally disabled for Branding/How-To modules — web-only content. -->
         <div class="tr-branding-logo-wrap">
             <img src="<?= esc($logoSrc ?? base_url('images/temurasa_primary_fit.png')); ?>" alt="Temu Rasa Logo">
         </div>

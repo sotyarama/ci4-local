@@ -1,10 +1,7 @@
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
 
-<?php
-$pdfQuery = http_build_query(['export' => 'pdf']);
-$pdfUrl = current_url() . ($pdfQuery ? '?' . $pdfQuery : '');
-?>
+<!-- PDF export intentionally disabled for How-To module — web-only content. -->
 
 <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
@@ -16,10 +13,7 @@ $pdfUrl = current_url() . ($pdfQuery ? '?' . $pdfQuery : '');
         </div>
         <div style="display:flex; gap:6px; align-items:center;">
             <span class="pill">Help</span>
-            <a href="<?= esc($pdfUrl); ?>"
-                style="font-size:11px; padding:6px 10px; border-radius:999px; border:1px solid var(--tr-muted-text); background:var(--tr-secondary-beige); color:var(--tr-text); text-decoration:none;">
-                Export PDF
-            </a>
+            <!-- Export PDF intentionally removed for this page -->
         </div>
     </div>
 

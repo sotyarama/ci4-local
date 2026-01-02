@@ -3,19 +3,11 @@
 
 <link rel="stylesheet" href="<?= base_url('css/branding.css'); ?>">
 
-<?php
-$pdfQuery = http_build_query(['export' => 'pdf']);
-$pdfUrl = current_url() . ($pdfQuery ? '?' . $pdfQuery : '');
-?>
-
+<!-- PDF export intentionally disabled for Branding/How-To modules — web-only content. -->
 <div class="tr-branding-actions">
     <div class="tr-branding-actions-inner">
         <div id="branding-slide-nav" class="tr-slide-nav-host"></div>
-        <div class="tr-branding-actions-buttons">
-            <a href="<?= esc($pdfUrl); ?>" class="tr-btn tr-btn-outline" style="text-decoration:none;">
-                Export PDF
-            </a>
-        </div>
+        <!-- actions intentionally omitted: no PDF export -->
     </div>
 </div>
 
