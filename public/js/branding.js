@@ -58,10 +58,36 @@
     });
   }
 
+  // expose for other modules and manual re-run
+  window.TR_applyDynamicStyles = applyDynamicStyles;
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', applyDynamicStyles);
   } else {
     applyDynamicStyles();
+  }
+
+  // MutationObserver fallback: when new nodes are added or attributes change, re-apply styles.
+  try {
+    var _observer = new MutationObserver(function (mutations) {
+      var needs = false;
+      for (var i = 0; i < mutations.length; i++) {
+        var m = mutations[i];
+        if (m.type === 'childList' && (m.addedNodes && m.addedNodes.length)) {
+          needs = true; break;
+        }
+        if (m.type === 'attributes' && (m.attributeName === 'data-hex' || m.attributeName === 'data-height')) {
+          needs = true; break;
+        }
+      }
+      if (needs) {
+        // schedule to avoid thrashing
+        window.requestAnimationFrame(function () { applyDynamicStyles(); });
+      }
+    });
+    _observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-hex', 'data-height'] });
+  } catch (e) {
+    // MutationObserver not supported -> ignore
   }
 })();
 
@@ -127,6 +153,11 @@
   slides.forEach(function (slide) {
     container.appendChild(slide);
   });
+
+  // Re-run dynamic styles after slide construction in case nodes were moved
+  if (window.TR_applyDynamicStyles) {
+    try { window.TR_applyDynamicStyles(); } catch (e) {}
+  }
 
   var index = 0;
 
