@@ -55,6 +55,10 @@ $itemsPerTx = $todayTx > 0 ? number_format((float) ($todayItems / max(1, $todayT
             <span class="db-pill">Hari ini: <?= esc($today); ?></span>
             <span class="db-pill">7 hari: <?= esc($weekStart); ?> - <?= esc($today); ?></span>
         </div>
+
+        <div style="margin-left:12px;">
+            <?= $this->include('partials/date_range_picker', ['mode' => 'date']) ?>
+        </div>
     </div>
 
     <!-- KPI utama: sales/margin -->
@@ -157,7 +161,7 @@ $itemsPerTx = $todayTx > 0 ? number_format((float) ($todayItems / max(1, $todayT
         <div class="db-card-top">
             <div>
                 <div class="db-card-title">Top Menu 7 Hari</div>
-                <div class="db-card-subtitle">Periode <?= esc($weekStart); ?> - <?= esc($today); ?></div>
+                <div class="db-card-subtitle">Periode <?= esc($dateFrom ?? $weekStart); ?> - <?= esc($dateTo ?? $today); ?></div>
             </div>
             <a href="<?= site_url('reports/sales/menu'); ?>" class="db-link-pill">Laporan</a>
         </div>

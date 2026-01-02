@@ -605,6 +605,14 @@ class Sales extends BaseController
                 ->withInput();
         }
 
+        // Ensure created_at/updated_at are populated (Asia/Jakarta timezone).
+        if (class_exists('\\CodeIgniter\\I18n\\Time')) {
+            $now = \CodeIgniter\I18n\Time::now('Asia/Jakarta')->toDateTimeString();
+        } else {
+            // Fallback to server time; app is expected to use Asia/Jakarta.
+            $now = date('Y-m-d H:i:s');
+        }
+
         $headerData = [
             'sale_date'     => $this->request->getPost('sale_date'),
             'invoice_no'    => $this->request->getPost('invoice_no') ?: null,
@@ -618,6 +626,8 @@ class Sales extends BaseController
             'total_cost'    => 0,
             'notes'         => $this->request->getPost('notes') ?: null,
             'status'        => 'completed',
+            'created_at'    => $now,
+            'updated_at'    => $now,
         ];
 
         $db->table('sales')->insert($headerData);

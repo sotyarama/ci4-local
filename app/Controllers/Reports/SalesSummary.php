@@ -78,7 +78,7 @@ class SalesSummary extends BaseController
             'perPage'   => $perPage,
             'page'      => $page,
             'totalRows' => $totalRows,
-            'totalPages'=> $totalPages,
+            'totalPages' => $totalPages,
             'totalQtyAll'   => (float) ($totals['total_qty'] ?? 0),
             'totalSalesAll' => (float) ($totals['total_sales'] ?? 0),
             'totalCostAll'  => (float) ($totals['total_cost'] ?? 0),
@@ -150,7 +150,7 @@ class SalesSummary extends BaseController
             'perPage'   => $perPage,
             'page'      => $page,
             'totalRows' => $totalRows,
-            'totalPages'=> $totalPages,
+            'totalPages' => $totalPages,
             'totalQtyAll'   => (float) ($totals['total_qty'] ?? 0),
             'totalSalesAll' => (float) ($totals['total_sales'] ?? 0),
             'totalCostAll'  => (float) ($totals['total_cost'] ?? 0),
@@ -164,48 +164,21 @@ class SalesSummary extends BaseController
      */
     public function byTime()
     {
-        $startParam = $this->request->getGet('start') ?? $this->request->getGet('date_from');
-        $endParam   = $this->request->getGet('end') ?? $this->request->getGet('date_to');
-        $allDay     = $this->request->getGet('allday');
-        $allDay     = ($allDay === '0') ? false : true;
-        $startTime  = $this->sanitizeTime($this->request->getGet('start_time'), '00:00');
-        $endTime    = $this->sanitizeTime($this->request->getGet('end_time'), '23:59');
+        // Use date-range helper to parse and normalize request params
+        helper('tr_daterange');
+        $range = tr_parse_range_datetime($this->request, ['timezone' => 'Asia/Jakarta', 'maxDays' => 366]);
 
-        // Default: this month
-        $today      = new \DateTime('now', new \DateTimeZone('Asia/Jakarta'));
-        $defaultStart = (clone $today)->modify('first day of this month')->format('Y-m-d');
-        $defaultEnd   = $today->format('Y-m-d');
+        $startDate = $range['startDate'];
+        $endDate   = $range['endDate'];
+        $allDay    = $range['allDay'];
+        $startTime = $range['startTime'];
+        $endTime   = $range['endTime'];
+        $fromDateTime = $range['fromDateTime'];
+        $toDateTime   = $range['toDateTime'];
+        $rangeDays = $range['rangeDays'];
 
-        $startDate = $startParam ?: $defaultStart;
-        $endDate   = $endParam   ?: $defaultEnd;
-
-        // Validate range
-        $startObj = \DateTime::createFromFormat('Y-m-d', $startDate, new \DateTimeZone('Asia/Jakarta')) ?: new \DateTime($defaultStart, new \DateTimeZone('Asia/Jakarta'));
-        $endObj   = \DateTime::createFromFormat('Y-m-d', $endDate, new \DateTimeZone('Asia/Jakarta'))   ?: new \DateTime($defaultEnd, new \DateTimeZone('Asia/Jakarta'));
-
-        if ($startObj > $endObj) {
-            $tmp = $startObj;
-            $startObj = $endObj;
-            $endObj = $tmp;
-        }
-
-        // Clamp max range to 366 days for safety
-        $maxDays = 366;
-        $diffDays = (int) $startObj->diff($endObj)->format('%a');
-        if ($diffDays + 1 > $maxDays) {
-            $endObj = (clone $startObj)->modify('+' . ($maxDays - 1) . ' days');
-        }
-
-        if ($allDay) {
-            $fromDateTime = $startObj->format('Y-m-d') . ' 00:00:00';
-            $toDateTime   = $endObj->format('Y-m-d') . ' 23:59:59';
-        } else {
-            $fromDateTime = $startObj->format('Y-m-d') . ' ' . $startTime . ':00';
-            $toDateTime   = $endObj->format('Y-m-d') . ' ' . $endTime . ':59';
-        }
-
-        $dateFrom = $startObj->format('Y-m-d');
-        $dateTo   = $endObj->format('Y-m-d');
+        $dateFrom = $startDate;
+        $dateTo   = $endDate;
         $perPage  = $this->sanitizePerPage($this->request->getGet('per_page'));
         $page     = $this->sanitizePage($this->request->getGet('page'));
         $export   = $this->request->getGet('export');
@@ -268,11 +241,11 @@ class SalesSummary extends BaseController
             'allDay'    => $allDay,
             'startTime' => $startTime,
             'endTime'   => $endTime,
-            'rangeDays' => (int) ($startObj->diff($endObj)->format('%a')) + 1,
+            'rangeDays' => (int) $rangeDays,
             'perPage'   => $perPage,
             'page'      => $page,
             'totalRows' => $totalRows,
-            'totalPages'=> $totalPages,
+            'totalPages' => $totalPages,
             'totalSalesAll' => (float) ($totals['total_sales'] ?? 0),
             'totalCostAll'  => (float) ($totals['total_cost'] ?? 0),
             'group'     => $group,
@@ -358,7 +331,7 @@ class SalesSummary extends BaseController
             'perPage'   => $perPage,
             'page'      => $page,
             'totalRows' => $totalRows,
-            'totalPages'=> $totalPages,
+            'totalPages' => $totalPages,
             'mode'      => $mode,
             'totalOrdersAll' => (int) ($totals['total_orders'] ?? 0),
             'totalItemsAll'  => (float) ($totals['total_items'] ?? 0),

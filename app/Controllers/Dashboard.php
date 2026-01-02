@@ -28,7 +28,13 @@ class Dashboard extends BaseController
      */
     public function index(): string
     {
-        // 1) Tentukan timezone & tanggal acuan (hari ini)
+        // 1) Determine selected date range (date-only) using helper
+        helper('tr_daterange');
+        $range = tr_parse_range_dateonly($this->request);
+        $dateFrom = $range['startDate'];
+        $dateTo   = $range['endDate'];
+
+        // Also keep timezone & today for labels
         $tz = new DateTimeZone('Asia/Jakarta');
         $todayDate = new DateTime('now', $tz);
 
@@ -41,18 +47,19 @@ class Dashboard extends BaseController
         $lastMonthStart = (clone $todayDate)->modify('first day of last month')->format('Y-m-d');
         $lastMonthEnd   = (clone $todayDate)->modify('last day of last month')->format('Y-m-d');
 
-        // 2) Siapkan DB connection
+        // 3) Siapkan DB connection
         $db = \Config\Database::connect();
 
-        // 3) Agregasi sales untuk berbagai periode
-        $todayStats     = $this->aggregateSales($db, $today, $today);
-        $weekStats      = $this->aggregateSales($db, $weekStart, $today);
-        $monthStats     = $this->aggregateSales($db, $monthStart, $today);
-        $lastMonthStats = $this->aggregateSales($db, $lastMonthStart, $lastMonthEnd);
+        // 4) Agregasi sales: use selected date range (date-only) for dashboard KPIs
+        $todayStats     = $this->aggregateSales($db, $dateFrom, $dateTo);
+        $weekStats      = $this->aggregateSales($db, $dateFrom, $dateTo);
+        $monthStats     = $this->aggregateSales($db, $dateFrom, $dateTo);
+        $lastMonthStats = $this->aggregateSales($db, $dateFrom, $dateTo);
 
         // 4) Dataset tambahan untuk widget dashboard
-        $topMenus    = $this->getTopMenus($db, $weekStart, $today, 5);
-        $recentSales = $this->getRecentSales($db, 5);
+        // Top menus & recent sales follow the selected range
+        $topMenus    = $this->getTopMenus($db, $dateFrom, $dateTo, 5);
+        $recentSales = $this->getRecentSales($db, 5, $dateFrom, $dateTo);
         $lowStocks   = $this->getLowStocks($db, 6);
 
         // 5) Rekap pembelian & biaya (bulan berjalan)
@@ -74,6 +81,8 @@ class Dashboard extends BaseController
             // Labels & periode tampilan
             'today'            => $today,
             'weekStart'        => $weekStart,
+            'dateFrom'         => $dateFrom,
+            'dateTo'           => $dateTo,
             'monthLabel'       => $todayDate->format('Y-m'),
             'lastMonthLabel'   => (clone $todayDate)->modify('first day of last month')->format('Y-m'),
 
@@ -186,10 +195,19 @@ class Dashboard extends BaseController
     /**
      * Ambil transaksi penjualan terbaru (exclude void).
      */
-    private function getRecentSales($db, int $limit = 5): array
+    private function getRecentSales($db, int $limit = 5, ?string $dateFrom = null, ?string $dateTo = null): array
     {
-        return $db->table('sales')
-            ->where('status !=', 'void')
+        $builder = $db->table('sales')
+            ->where('status !=', 'void');
+
+        if ($dateFrom) {
+            $builder->where('sale_date >=', $dateFrom);
+        }
+        if ($dateTo) {
+            $builder->where('sale_date <=', $dateTo);
+        }
+
+        return $builder
             ->orderBy('sale_date', 'DESC')
             ->orderBy('id', 'DESC')
             ->limit($limit)
