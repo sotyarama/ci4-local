@@ -42,13 +42,19 @@
     document.querySelectorAll('.tr-color-card').forEach(function (card) {
       var hex = card.getAttribute('data-hex') || '';
       var sw = card.querySelector('.tr-color-swatch[data-hex]') || card.querySelector('.tr-color-swatch');
-      if (sw && hex) sw.style.backgroundColor = hex;
+      if (sw && hex) {
+        try { sw.style.backgroundImage = 'none'; } catch (e) {}
+        sw.style.backgroundColor = hex;
+      }
     });
 
     // individual color squares
     document.querySelectorAll('.tr-color-square[data-hex]').forEach(function (el) {
       var hex = el.getAttribute('data-hex');
-      if (hex) el.style.backgroundColor = hex;
+      if (hex) {
+        try { el.style.backgroundImage = 'none'; } catch (e) {}
+        el.style.backgroundColor = hex;
+      }
     });
 
     // dash bars: set CSS variable from data-height (percentage number)
@@ -66,6 +72,10 @@
   } else {
     applyDynamicStyles();
   }
+
+  // schedule a couple of delayed re-applies to handle DOM reflows/async moves
+  setTimeout(function () { try { applyDynamicStyles(); } catch (e) {} }, 250);
+  setTimeout(function () { try { applyDynamicStyles(); } catch (e) {} }, 1000);
 
   // MutationObserver fallback: when new nodes are added or attributes change, re-apply styles.
   try {
