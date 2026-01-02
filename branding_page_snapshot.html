@@ -1,0 +1,2926 @@
+<!DOCTYPE html><html lang="id"><head>
+<script id="debugbar_loader" data-time="1767354511.251526" src="http://localhost:8080/index.php?debugbar"></script><script id="debugbar_dynamic_script">
+    var ciSiteURL = "http://localhost:8080/index.php"
+    /*
+ * Functionality for the CodeIgniter Debug Toolbar.
+ */
+
+var ciDebugBar = {
+    toolbarContainer: null,
+    toolbar: null,
+    icon: null,
+
+    init: function () {
+        this.toolbarContainer = document.getElementById("toolbarContainer");
+        this.toolbar = document.getElementById("debug-bar");
+        this.icon = document.getElementById("debug-icon");
+
+        ciDebugBar.createListeners();
+        ciDebugBar.setToolbarState();
+        ciDebugBar.setToolbarPosition();
+        ciDebugBar.setToolbarTheme();
+        ciDebugBar.toggleViewsHints();
+        ciDebugBar.routerLink();
+        ciDebugBar.setHotReloadState();
+
+        document
+            .getElementById("debug-bar-link")
+            .addEventListener("click", ciDebugBar.toggleToolbar, true);
+        document
+            .getElementById("debug-icon-link")
+            .addEventListener("click", ciDebugBar.toggleToolbar, true);
+
+        historyLoad = this.toolbar.getElementsByClassName("ci-history-load");
+
+        if (historyLoad.length) {
+            // Allows highlighting the row of the current history request
+            var btn = this.toolbar.querySelector(
+                'button[data-time="' + localStorage.getItem("debugbar-time-new") + '"]'
+            );
+            ciDebugBar.addClass(btn.parentNode.parentNode, "current");
+
+
+            for (var i = 0; i < historyLoad.length; i++) {
+                historyLoad[i].addEventListener(
+                    "click",
+                    function () {
+                        loadDoc(this.getAttribute("data-time"));
+                    },
+                    true
+                );
+            }
+        }
+
+        // Display the active Tab on page load
+        var tab = ciDebugBar.readCookie("debug-bar-tab");
+        if (document.getElementById(tab)) {
+            var el = document.getElementById(tab);
+            ciDebugBar.switchClass(el, "debug-bar-ndisplay", "debug-bar-dblock");
+            ciDebugBar.addClass(el, "active");
+            tab = document.querySelector("[data-tab=" + tab + "]");
+            if (tab) {
+                ciDebugBar.addClass(tab.parentNode, "active");
+            }
+        }
+    },
+
+    createListeners: function () {
+        var buttons = [].slice.call(
+            this.toolbar.querySelectorAll(".ci-label a")
+        );
+
+        for (var i = 0; i < buttons.length; i++) {
+            buttons[i].addEventListener("click", ciDebugBar.showTab, true);
+        }
+
+        // Hook up generic toggle via data attributes `data-toggle="foo"`
+        var links = this.toolbar.querySelectorAll("[data-toggle]");
+        for (var i = 0; i < links.length; i++) {
+            let toggleData = links[i].getAttribute("data-toggle");
+            if (toggleData === "datatable") {
+
+                let datatable = links[i].getAttribute("data-table");
+                links[i].addEventListener("click", function() {
+                    ciDebugBar.toggleDataTable(datatable)
+                }, true);
+
+            } else if (toggleData === "childrows") {
+
+                let child = links[i].getAttribute("data-child");
+                links[i].addEventListener("click", function() {
+                    ciDebugBar.toggleChildRows(child)
+                }, true);
+
+            } else {
+                links[i].addEventListener("click", ciDebugBar.toggleRows, true);
+            }
+        }
+    },
+
+    showTab: function () {
+        // Get the target tab, if any
+        var tab = document.getElementById(this.getAttribute("data-tab"));
+
+        // If the label have not a tab stops here
+        if (! tab) {
+            return;
+        }
+
+        // Remove debug-bar-tab cookie
+        ciDebugBar.createCookie("debug-bar-tab", "", -1);
+
+        // Check our current state.
+        var state = tab.classList.contains("debug-bar-dblock");
+
+        // Hide all tabs
+        var tabs = document.querySelectorAll("#debug-bar .tab");
+
+        for (var i = 0; i < tabs.length; i++) {
+            ciDebugBar.switchClass(tabs[i], "debug-bar-dblock", "debug-bar-ndisplay");
+        }
+
+        // Mark all labels as inactive
+        var labels = document.querySelectorAll("#debug-bar .ci-label");
+
+        for (var i = 0; i < labels.length; i++) {
+            ciDebugBar.removeClass(labels[i], "active");
+        }
+
+        // Show/hide the selected tab
+        if (! state) {
+            ciDebugBar.switchClass(tab, "debug-bar-ndisplay", "debug-bar-dblock");
+            ciDebugBar.addClass(this.parentNode, "active");
+            // Create debug-bar-tab cookie to persistent state
+            ciDebugBar.createCookie(
+                "debug-bar-tab",
+                this.getAttribute("data-tab"),
+                365
+            );
+        }
+    },
+
+    addClass: function (el, className) {
+        if (el.classList) {
+            el.classList.add(className);
+        } else {
+            el.className += " " + className;
+        }
+    },
+
+    removeClass: function (el, className) {
+        if (el.classList) {
+            el.classList.remove(className);
+        } else {
+            el.className = el.className.replace(
+                new RegExp(
+                    "(^|\\b)" + className.split(" ").join("|") + "(\\b|$)",
+                    "gi"
+                ),
+                " "
+            );
+        }
+    },
+
+    switchClass  : function(el, classFrom, classTo) {
+        ciDebugBar.removeClass(el, classFrom);
+        ciDebugBar.addClass(el, classTo);
+    },
+
+    /**
+     * Toggle display of another object based on
+     * the data-toggle value of this object
+     *
+     * @param event
+     */
+    toggleRows: function (event) {
+        if (event.target) {
+            let row = event.target.closest("tr");
+            let target = document.getElementById(
+                row.getAttribute("data-toggle")
+            );
+
+            if (target.classList.contains("debug-bar-ndisplay")) {
+                ciDebugBar.switchClass(target, "debug-bar-ndisplay", "debug-bar-dtableRow");
+            } else {
+                ciDebugBar.switchClass(target, "debug-bar-dtableRow", "debug-bar-ndisplay");
+            }
+        }
+    },
+
+    /**
+     * Toggle display of a data table
+     *
+     * @param obj
+     */
+    toggleDataTable: function (obj) {
+        if (typeof obj == "string") {
+            obj = document.getElementById(obj + "_table");
+        }
+
+        if (obj) {
+            if (obj.classList.contains("debug-bar-ndisplay")) {
+                ciDebugBar.switchClass(obj, "debug-bar-ndisplay", "debug-bar-dblock");
+            } else {
+                ciDebugBar.switchClass(obj, "debug-bar-dblock", "debug-bar-ndisplay");
+            }
+        }
+    },
+
+    /**
+     * Toggle display of timeline child elements
+     *
+     * @param obj
+     */
+    toggleChildRows: function (obj) {
+        if (typeof obj == "string") {
+            par = document.getElementById(obj + "_parent");
+            obj = document.getElementById(obj + "_children");
+        }
+
+        if (par && obj) {
+
+            if (obj.classList.contains("debug-bar-ndisplay")) {
+                ciDebugBar.removeClass(obj, "debug-bar-ndisplay");
+            } else {
+                ciDebugBar.addClass(obj, "debug-bar-ndisplay");
+            }
+
+            par.classList.toggle("timeline-parent-open");
+        }
+    },
+
+    //--------------------------------------------------------------------
+
+    /**
+     *   Toggle tool bar from full to icon and icon to full
+     */
+    toggleToolbar: function () {
+        var open = ! ciDebugBar.toolbar.classList.contains("debug-bar-ndisplay");
+
+        if (open) {
+            ciDebugBar.switchClass(ciDebugBar.icon, "debug-bar-ndisplay", "debug-bar-dinlineBlock");
+            ciDebugBar.switchClass(ciDebugBar.toolbar, "debug-bar-dinlineBlock", "debug-bar-ndisplay");
+        } else {
+            ciDebugBar.switchClass(ciDebugBar.icon, "debug-bar-dinlineBlock", "debug-bar-ndisplay");
+            ciDebugBar.switchClass(ciDebugBar.toolbar, "debug-bar-ndisplay", "debug-bar-dinlineBlock");
+        }
+
+        // Remember it for other page loads on this site
+        ciDebugBar.createCookie("debug-bar-state", "", -1);
+        ciDebugBar.createCookie(
+            "debug-bar-state",
+            open == true ? "minimized" : "open",
+            365
+        );
+    },
+
+    /**
+     * Sets the initial state of the toolbar (open or minimized) when
+     * the page is first loaded to allow it to remember the state between refreshes.
+     */
+    setToolbarState: function () {
+        var open = ciDebugBar.readCookie("debug-bar-state");
+
+        if (open != "open") {
+            ciDebugBar.switchClass(ciDebugBar.icon, "debug-bar-ndisplay", "debug-bar-dinlineBlock");
+            ciDebugBar.switchClass(ciDebugBar.toolbar, "debug-bar-dinlineBlock", "debug-bar-ndisplay");
+        } else {
+            ciDebugBar.switchClass(ciDebugBar.icon, "debug-bar-dinlineBlock", "debug-bar-ndisplay");
+            ciDebugBar.switchClass(ciDebugBar.toolbar, "debug-bar-ndisplay", "debug-bar-dinlineBlock");
+        }
+    },
+
+    toggleViewsHints: function () {
+        // Avoid toggle hints on history requests that are not the initial
+        if (
+            localStorage.getItem("debugbar-time") !=
+            localStorage.getItem("debugbar-time-new")
+        ) {
+            var a = document.querySelector('a[data-tab="ci-views"]');
+            a.href = "#";
+            return;
+        }
+
+        var nodeList = []; // [ Element, NewElement( 1 )/OldElement( 0 ) ]
+        var sortedComments = [];
+        var comments = [];
+
+        var getComments = function () {
+            var nodes = [];
+            var result = [];
+            var xpathResults = document.evaluate(
+                "//comment()[starts-with(., ' DEBUG-VIEW')]",
+                document,
+                null,
+                XPathResult.ANY_TYPE,
+                null
+            );
+            var nextNode = xpathResults.iterateNext();
+            while (nextNode) {
+                nodes.push(nextNode);
+                nextNode = xpathResults.iterateNext();
+            }
+
+            // sort comment by opening and closing tags
+            for (var i = 0; i < nodes.length; ++i) {
+                // get file path + name to use as key
+                var path = nodes[i].nodeValue.substring(
+                    18,
+                    nodes[i].nodeValue.length - 1
+                );
+
+                if (nodes[i].nodeValue[12] === "S") {
+                    // simple check for start comment
+                    // create new entry
+                    result[path] = [nodes[i], null];
+                } else if (result[path]) {
+                    // add to existing entry
+                    result[path][1] = nodes[i];
+                }
+            }
+
+            return result;
+        };
+
+        // find node that has TargetNode as parentNode
+        var getParentNode = function (node, targetNode) {
+            if (node.parentNode === null) {
+                return null;
+            }
+
+            if (node.parentNode !== targetNode) {
+                return getParentNode(node.parentNode, targetNode);
+            }
+
+            return node;
+        };
+
+        // define invalid & outer ( also invalid ) elements
+        const INVALID_ELEMENTS = ["NOSCRIPT", "SCRIPT", "STYLE"];
+        const OUTER_ELEMENTS = ["HTML", "BODY", "HEAD"];
+
+        var getValidElementInner = function (node, reverse) {
+            // handle invalid tags
+            if (OUTER_ELEMENTS.indexOf(node.nodeName) !== -1) {
+                for (var i = 0; i < document.body.children.length; ++i) {
+                    var index = reverse
+                        ? document.body.children.length - (i + 1)
+                        : i;
+                    var element = document.body.children[index];
+
+                    // skip invalid tags
+                    if (INVALID_ELEMENTS.indexOf(element.nodeName) !== -1) {
+                        continue;
+                    }
+
+                    return [element, reverse];
+                }
+
+                return null;
+            }
+
+            // get to next valid element
+            while (
+                node !== null &&
+                INVALID_ELEMENTS.indexOf(node.nodeName) !== -1
+            ) {
+                node = reverse
+                    ? node.previousElementSibling
+                    : node.nextElementSibling;
+            }
+
+            // return non array if we couldnt find something
+            if (node === null) {
+                return null;
+            }
+
+            return [node, reverse];
+        };
+
+        // get next valid element ( to be safe to add divs )
+        // @return [ element, skip element ] or null if we couldnt find a valid place
+        var getValidElement = function (nodeElement) {
+            if (nodeElement) {
+                if (nodeElement.nextElementSibling !== null) {
+                    return (
+                        getValidElementInner(
+                            nodeElement.nextElementSibling,
+                            false
+                        ) ||
+                        getValidElementInner(
+                            nodeElement.previousElementSibling,
+                            true
+                        )
+                    );
+                }
+                if (nodeElement.previousElementSibling !== null) {
+                    return getValidElementInner(
+                        nodeElement.previousElementSibling,
+                        true
+                    );
+                }
+            }
+
+            // something went wrong! -> element is not in DOM
+            return null;
+        };
+
+        function showHints() {
+            // Had AJAX? Reset view blocks
+            sortedComments = getComments();
+
+            for (var key in sortedComments) {
+                var startElement = getValidElement(sortedComments[key][0]);
+                var endElement = getValidElement(sortedComments[key][1]);
+
+                // skip if we couldnt get a valid element
+                if (startElement === null || endElement === null) {
+                    continue;
+                }
+
+                // find element which has same parent as startelement
+                var jointParent = getParentNode(
+                    endElement[0],
+                    startElement[0].parentNode
+                );
+                if (jointParent === null) {
+                    // find element which has same parent as endelement
+                    jointParent = getParentNode(
+                        startElement[0],
+                        endElement[0].parentNode
+                    );
+                    if (jointParent === null) {
+                        // both tries failed
+                        continue;
+                    } else {
+                        startElement[0] = jointParent;
+                    }
+                } else {
+                    endElement[0] = jointParent;
+                }
+
+                var debugDiv = document.createElement("div"); // holder
+                var debugPath = document.createElement("div"); // path
+                var childArray = startElement[0].parentNode.childNodes; // target child array
+                var parent = startElement[0].parentNode;
+                var start, end;
+
+                // setup container
+                debugDiv.classList.add("debug-view");
+                debugDiv.classList.add("show-view");
+                debugPath.classList.add("debug-view-path");
+                debugPath.innerText = key;
+                debugDiv.appendChild(debugPath);
+
+                // calc distance between them
+                // start
+                for (var i = 0; i < childArray.length; ++i) {
+                    // check for comment ( start & end ) -> if its before valid start element
+                    if (
+                        childArray[i] === sortedComments[key][1] ||
+                        childArray[i] === sortedComments[key][0] ||
+                        childArray[i] === startElement[0]
+                    ) {
+                        start = i;
+                        if (childArray[i] === sortedComments[key][0]) {
+                            start++; // increase to skip the start comment
+                        }
+                        break;
+                    }
+                }
+                // adjust if we want to skip the start element
+                if (startElement[1]) {
+                    start++;
+                }
+
+                // end
+                for (var i = start; i < childArray.length; ++i) {
+                    if (childArray[i] === endElement[0]) {
+                        end = i;
+                        // dont break to check for end comment after end valid element
+                    } else if (childArray[i] === sortedComments[key][1]) {
+                        // if we found the end comment, we can break
+                        end = i;
+                        break;
+                    }
+                }
+
+                // move elements
+                var number = end - start;
+                if (endElement[1]) {
+                    number++;
+                }
+                for (var i = 0; i < number; ++i) {
+                    if (INVALID_ELEMENTS.indexOf(childArray[start]) !== -1) {
+                        // skip invalid childs that can cause problems if moved
+                        start++;
+                        continue;
+                    }
+                    debugDiv.appendChild(childArray[start]);
+                }
+
+                // add container to DOM
+                nodeList.push(parent.insertBefore(debugDiv, childArray[start]));
+            }
+
+            ciDebugBar.createCookie("debug-view", "show", 365);
+            ciDebugBar.addClass(btn, "active");
+        }
+
+        function hideHints() {
+            for (var i = 0; i < nodeList.length; ++i) {
+                var index;
+
+                // find index
+                for (
+                    var j = 0;
+                    j < nodeList[i].parentNode.childNodes.length;
+                    ++j
+                ) {
+                    if (nodeList[i].parentNode.childNodes[j] === nodeList[i]) {
+                        index = j;
+                        break;
+                    }
+                }
+
+                // move child back
+                while (nodeList[i].childNodes.length !== 1) {
+                    nodeList[i].parentNode.insertBefore(
+                        nodeList[i].childNodes[1],
+                        nodeList[i].parentNode.childNodes[index].nextSibling
+                    );
+                    index++;
+                }
+
+                nodeList[i].parentNode.removeChild(nodeList[i]);
+            }
+            nodeList.length = 0;
+
+            ciDebugBar.createCookie("debug-view", "", -1);
+            ciDebugBar.removeClass(btn, "active");
+        }
+
+        var btn = document.querySelector("[data-tab=ci-views]");
+
+        // If the Views Collector is inactive stops here
+        if (! btn) {
+            return;
+        }
+
+        btn.parentNode.onclick = function () {
+            if (ciDebugBar.readCookie("debug-view")) {
+                hideHints();
+            } else {
+                showHints();
+            }
+        };
+
+        // Determine Hints state on page load
+        if (ciDebugBar.readCookie("debug-view")) {
+            showHints();
+        }
+    },
+
+    setToolbarPosition: function () {
+        var btnPosition = this.toolbar.querySelector("#toolbar-position");
+
+        if (ciDebugBar.readCookie("debug-bar-position") === "top") {
+            ciDebugBar.addClass(ciDebugBar.icon, "fixed-top");
+            ciDebugBar.addClass(ciDebugBar.toolbar, "fixed-top");
+        }
+
+        btnPosition.addEventListener(
+            "click",
+            function () {
+                var position = ciDebugBar.readCookie("debug-bar-position");
+
+                ciDebugBar.createCookie("debug-bar-position", "", -1);
+
+                if (! position || position === "bottom") {
+                    ciDebugBar.createCookie("debug-bar-position", "top", 365);
+                    ciDebugBar.addClass(ciDebugBar.icon, "fixed-top");
+                    ciDebugBar.addClass(ciDebugBar.toolbar, "fixed-top");
+                } else {
+                    ciDebugBar.createCookie(
+                        "debug-bar-position",
+                        "bottom",
+                        365
+                    );
+                    ciDebugBar.removeClass(ciDebugBar.icon, "fixed-top");
+                    ciDebugBar.removeClass(ciDebugBar.toolbar, "fixed-top");
+                }
+            },
+            true
+        );
+    },
+
+    setToolbarTheme: function () {
+        var btnTheme = this.toolbar.querySelector("#toolbar-theme");
+        var isDarkMode = window.matchMedia(
+            "(prefers-color-scheme: dark)"
+        ).matches;
+        var isLightMode = window.matchMedia(
+            "(prefers-color-scheme: light)"
+        ).matches;
+
+        // If a cookie is set with a value, we force the color scheme
+        if (ciDebugBar.readCookie("debug-bar-theme") === "dark") {
+            ciDebugBar.removeClass(ciDebugBar.toolbarContainer, "light");
+            ciDebugBar.addClass(ciDebugBar.toolbarContainer, "dark");
+        } else if (ciDebugBar.readCookie("debug-bar-theme") === "light") {
+            ciDebugBar.removeClass(ciDebugBar.toolbarContainer, "dark");
+            ciDebugBar.addClass(ciDebugBar.toolbarContainer, "light");
+        }
+
+        btnTheme.addEventListener(
+            "click",
+            function () {
+                var theme = ciDebugBar.readCookie("debug-bar-theme");
+
+                if (
+                    ! theme &&
+                    window.matchMedia("(prefers-color-scheme: dark)").matches
+                ) {
+                    // If there is no cookie, and "prefers-color-scheme" is set to "dark"
+                    // It means that the user wants to switch to light mode
+                    ciDebugBar.createCookie("debug-bar-theme", "light", 365);
+                    ciDebugBar.removeClass(ciDebugBar.toolbarContainer, "dark");
+                    ciDebugBar.addClass(ciDebugBar.toolbarContainer, "light");
+                } else {
+                    if (theme === "dark") {
+                        ciDebugBar.createCookie(
+                            "debug-bar-theme",
+                            "light",
+                            365
+                        );
+                        ciDebugBar.removeClass(
+                            ciDebugBar.toolbarContainer,
+                            "dark"
+                        );
+                        ciDebugBar.addClass(
+                            ciDebugBar.toolbarContainer,
+                            "light"
+                        );
+                    } else {
+                        // In any other cases: if there is no cookie, or the cookie is set to
+                        // "light", or the "prefers-color-scheme" is "light"...
+                        ciDebugBar.createCookie("debug-bar-theme", "dark", 365);
+                        ciDebugBar.removeClass(
+                            ciDebugBar.toolbarContainer,
+                            "light"
+                        );
+                        ciDebugBar.addClass(
+                            ciDebugBar.toolbarContainer,
+                            "dark"
+                        );
+                    }
+                }
+            },
+            true
+        );
+    },
+
+    setHotReloadState: function () {
+        var btn = document.getElementById("debug-hot-reload").parentNode;
+        var btnImg = btn.getElementsByTagName("img")[0];
+        var eventSource;
+
+        // If the Hot Reload Collector is inactive stops here
+        if (! btn) {
+            return;
+        }
+
+        btn.onclick = function () {
+            if (ciDebugBar.readCookie("debug-hot-reload")) {
+                ciDebugBar.createCookie("debug-hot-reload", "", -1);
+                ciDebugBar.removeClass(btn, "active");
+                ciDebugBar.removeClass(btnImg, "rotate");
+
+                // Close the EventSource connection if it exists
+                if (typeof eventSource !== "undefined") {
+                    eventSource.close();
+                    eventSource = void 0; // Undefine the variable
+                }
+            } else {
+                ciDebugBar.createCookie("debug-hot-reload", "show", 365);
+                ciDebugBar.addClass(btn, "active");
+                ciDebugBar.addClass(btnImg, "rotate");
+
+                eventSource = ciDebugBar.hotReloadConnect();
+            }
+        };
+
+        // Determine Hot Reload state on page load
+        if (ciDebugBar.readCookie("debug-hot-reload")) {
+            ciDebugBar.addClass(btn, "active");
+            ciDebugBar.addClass(btnImg, "rotate");
+            eventSource = ciDebugBar.hotReloadConnect();
+        }
+    },
+
+    hotReloadConnect: function () {
+        const eventSource = new EventSource(ciSiteURL + "/__hot-reload");
+
+        eventSource.addEventListener("reload", function (e) {
+            console.log("reload", e);
+            window.location.reload();
+        });
+
+        eventSource.onerror = (err) => {
+            console.error("EventSource failed:", err);
+        };
+
+        return eventSource;
+    },
+
+    /**
+     * Helper to create a cookie.
+     *
+     * @param name
+     * @param value
+     * @param days
+     */
+    createCookie: function (name, value, days) {
+        if (days) {
+            var date = new Date();
+
+            date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+
+            var expires = "; expires=" + date.toGMTString();
+        } else {
+            var expires = "";
+        }
+
+        document.cookie =
+            name + "=" + value + expires + "; path=/; samesite=Lax";
+    },
+
+    readCookie: function (name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(";");
+
+        for (var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == " ") {
+                c = c.substring(1, c.length);
+            }
+            if (c.indexOf(nameEQ) == 0) {
+                return c.substring(nameEQ.length, c.length);
+            }
+        }
+        return null;
+    },
+
+    trimSlash: function (text) {
+        return text.replace(/^\/|\/$/g, "");
+    },
+
+    routerLink: function () {
+        var row, _location;
+        var rowGet = this.toolbar.querySelectorAll(
+            'td[data-debugbar-route="GET"]'
+        );
+        var patt = /\((?:[^)(]+|\((?:[^)(]+|\([^)(]*\))*\))*\)/;
+
+        for (var i = 0; i < rowGet.length; i++) {
+            row = rowGet[i];
+            if (!/\/\(.+?\)/.test(rowGet[i].innerText)) {
+                ciDebugBar.addClass(row, "debug-bar-pointer");
+                row.setAttribute(
+                    "title",
+                    location.origin + "/" + ciDebugBar.trimSlash(row.innerText)
+                );
+                row.addEventListener("click", function (ev) {
+                    _location =
+                        location.origin +
+                        "/" +
+                        ciDebugBar.trimSlash(ev.target.innerText);
+                    var redirectWindow = window.open(_location, "_blank");
+                    redirectWindow.location;
+                });
+            } else {
+                row.innerHTML =
+                    "<div>" +
+                    row.innerText +
+                    "</div>" +
+                    '<form data-debugbar-route-tpl="' +
+                    ciDebugBar.trimSlash(row.innerText.replace(patt, "?")) +
+                    '">' +
+                    row.innerText.replace(
+                        patt,
+                        '<input type="text" placeholder="$1">'
+                    ) +
+                    '<input type="submit" value="Go" class="debug-bar-mleft4">' +
+                    "</form>";
+            }
+        }
+
+        rowGet = this.toolbar.querySelectorAll(
+            'td[data-debugbar-route="GET"] form'
+        );
+        for (var i = 0; i < rowGet.length; i++) {
+            row = rowGet[i];
+
+            row.addEventListener("submit", function (event) {
+                event.preventDefault();
+                var inputArray = [],
+                    t = 0;
+                var input = event.target.querySelectorAll("input[type=text]");
+                var tpl = event.target.getAttribute("data-debugbar-route-tpl");
+
+                for (var n = 0; n < input.length; n++) {
+                    if (input[n].value.length > 0) {
+                        inputArray.push(input[n].value);
+                    }
+                }
+
+                if (inputArray.length > 0) {
+                    _location =
+                        location.origin +
+                        "/" +
+                        tpl.replace(/\?/g, function () {
+                            return inputArray[t++];
+                        });
+
+                    var redirectWindow = window.open(_location, "_blank");
+                    redirectWindow.location;
+                }
+            });
+        }
+    },
+};
+</script><style id="debugbar_dynamic_style">
+    /** * This file is part of the CodeIgniter 4 framework. * * (c) CodeIgniter Foundation <admin@codeigniter.com> * * For the full copyright and license information, please view the LICENSE * file that was distributed with this source code. */ #debug-icon { bottom: 0; position: fixed; right: 0; z-index: 10000; height: 36px; width: 36px; margin: 0; padding: 0; clear: both; text-align: center; cursor: pointer; } #debug-icon a svg { margin: 8px; max-width: 20px; max-height: 20px; } #debug-icon.fixed-top { bottom: auto; top: 0; } #debug-icon .debug-bar-ndisplay { display: none; } .debug-bar-vars { cursor: pointer; } #debug-bar { bottom: 0; left: 0; position: fixed; right: 0; z-index: 10000; height: 36px; line-height: 36px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; font-size: 16px; font-weight: 400; } #debug-bar h1 { display: flex; font-weight: normal; margin: 0 0 0 auto; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; } #debug-bar h1 svg { width: 16px; margin-right: 5px; } #debug-bar h2 { font-weight: bold; font-size: 16px; margin: 0; padding: 5px 0 10px 0; } #debug-bar h2 span { font-size: 13px; } #debug-bar h3 { font-size: 12px; font-weight: 200; margin: 0 0 0 10px; padding: 0; text-transform: uppercase; } #debug-bar p { font-size: 12px; margin: 0 0 0 15px; padding: 0; } #debug-bar a { text-decoration: none; } #debug-bar a:hover { text-decoration: underline; } #debug-bar button { border: 1px solid; border-radius: 4px; -moz-border-radius: 4px; -webkit-border-radius: 4px; cursor: pointer; line-height: 15px; } #debug-bar button:hover { text-decoration: underline; } #debug-bar table { border-collapse: collapse; font-size: 14px; line-height: normal; margin: 5px 10px 15px 10px; width: calc(100% - 10px); } #debug-bar table strong { font-weight: 500; } #debug-bar table th { display: table-cell; font-weight: 600; padding-bottom: 0.7em; text-align: left; } #debug-bar table tr { border: none; } #debug-bar table td { border: none; display: table-cell; margin: 0; text-align: left; } #debug-bar table td:first-child { max-width: 20%; } #debug-bar table td:first-child.narrow { width: 7em; } #debug-bar td[data-debugbar-route] form { display: none; } #debug-bar td[data-debugbar-route]:hover form { display: block; } #debug-bar td[data-debugbar-route]:hover > div { display: none; } #debug-bar td[data-debugbar-route] input[type=text] { padding: 2px; } #debug-bar .toolbar { display: flex; overflow: hidden; overflow-y: auto; padding: 0 12px 0 12px; white-space: nowrap; z-index: 10000; } #debug-bar .toolbar .rotate { animation: toolbar-rotate 9s linear infinite; } @keyframes toolbar-rotate { to { transform: rotate(360deg); } } #debug-bar.fixed-top { bottom: auto; top: 0; } #debug-bar.fixed-top .tab { bottom: auto; top: 36px; } #debug-bar #toolbar-position, #debug-bar #toolbar-theme { padding: 0 6px; display: inline-flex; vertical-align: top; cursor: pointer; } #debug-bar #toolbar-position:hover, #debug-bar #toolbar-theme:hover { text-decoration: none; } #debug-bar #debug-bar-link { display: flex; padding: 6px; cursor: pointer; } #debug-bar .ci-label { display: inline-flex; font-size: 14px; } #debug-bar .ci-label:hover { cursor: pointer; } #debug-bar .ci-label a { color: inherit; display: flex; letter-spacing: normal; padding: 0 10px; text-decoration: none; align-items: center; } #debug-bar .ci-label img { margin: 6px 3px 6px 0; width: 16px !important; } #debug-bar .ci-label .badge { border-radius: 12px; -moz-border-radius: 12px; -webkit-border-radius: 12px; display: inline-block; font-size: 75%; font-weight: bold; line-height: 12px; margin-left: 5px; padding: 2px 5px; text-align: center; vertical-align: baseline; white-space: nowrap; } #debug-bar .tab { height: fit-content; text-align: left; bottom: 35px; display: none; left: 0; max-height: 62%; overflow: hidden; overflow-y: auto; padding: 1em 2em; position: fixed; right: 0; z-index: 9999; } #debug-bar .timeline { position: static; display: table; margin-left: 0; width: 100%; } #debug-bar .timeline th { border-left: 1px solid; font-size: 12px; font-weight: 200; padding: 5px 5px 10px 5px; position: relative; text-align: left; } #debug-bar .timeline th:first-child { border-left: 0; } #debug-bar .timeline td { border-left: 1px solid; padding: 5px; position: relative; } #debug-bar .timeline td:first-child { border-left: 0; max-width: none; } #debug-bar .timeline td.child-container { padding: 0px; } #debug-bar .timeline td.child-container .timeline { margin: 0px; } #debug-bar .timeline td.child-container .timeline td:first-child:not(.child-container) { padding-left: calc(5px + 10px * var(--level)); } #debug-bar .timeline .timer { border-radius: 4px; -moz-border-radius: 4px; -webkit-border-radius: 4px; display: inline-block; padding: 5px; position: absolute; top: 30%; } #debug-bar .timeline .timeline-parent { cursor: pointer; } #debug-bar .timeline .timeline-parent td:first-child nav { background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMCAxNTAiPjxwYXRoIGQ9Ik02IDdoMThsLTkgMTV6bTAgMzBoMThsLTkgMTV6bTAgNDVoMThsLTktMTV6bTAgMzBoMThsLTktMTV6bTAgMTJsMTggMThtLTE4IDBsMTgtMTgiIGZpbGw9IiM1NTUiLz48cGF0aCBkPSJNNiAxMjZsMTggMThtLTE4IDBsMTgtMTgiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlPSIjNTU1Ii8+PC9zdmc+") no-repeat scroll 0 0/15px 75px transparent; background-position: 0 25%; display: inline-block; height: 15px; width: 15px; margin-right: 3px; vertical-align: middle; } #debug-bar .timeline .timeline-parent-open { background-color: #DFDFDF; } #debug-bar .timeline .timeline-parent-open td:first-child nav { background-position: 0 75%; } #debug-bar .timeline .child-row:hover { background: transparent; } #debug-bar .route-params, #debug-bar .route-params-item { vertical-align: top; } #debug-bar .route-params td:first-child, #debug-bar .route-params-item td:first-child { font-style: italic; padding-left: 1em; text-align: right; } #debug-bar > .debug-bar-dblock { display: block; } .debug-view.show-view { border: 1px solid; margin: 4px; } .debug-view-path { font-family: monospace; font-size: 12px; letter-spacing: normal; min-height: 16px; padding: 2px; text-align: left; } .show-view .debug-view-path { display: block !important; } @media screen and (max-width: 1024px) { #debug-bar .ci-label img { margin: unset; } .hide-sm { display: none !important; } } @media screen and (max-width: 768px) { #debug-bar table { display: block; overflow-x: auto; font-size: 12px; margin: 5px 5px 10px 5px; } #debug-bar table td, #debug-bar table th { padding: 4px 6px; } #debug-bar .timeline { display: block; white-space: nowrap; font-size: 12px; } #debug-bar .toolbar { overflow-x: auto; } } #debug-icon { background-color: #FFFFFF; box-shadow: 0 0 4px #DFDFDF; -moz-box-shadow: 0 0 4px #DFDFDF; -webkit-box-shadow: 0 0 4px #DFDFDF; } #debug-icon a:active, #debug-icon a:link, #debug-icon a:visited { color: #DD8615; } #debug-bar { background-color: #FFFFFF; color: #434343; } #debug-bar h1, #debug-bar h2, #debug-bar h3, #debug-bar p, #debug-bar a, #debug-bar button, #debug-bar table, #debug-bar thead, #debug-bar tr, #debug-bar td, #debug-bar button, #debug-bar .toolbar { background-color: transparent; color: #434343; } #debug-bar button { background-color: #FFFFFF; } #debug-bar table strong { color: #DD8615; } #debug-bar table tbody tr:hover { background-color: #DFDFDF; } #debug-bar table tbody tr.current { background-color: #FDC894; } #debug-bar table tbody tr.current:hover td { background-color: #DD4814; color: #FFFFFF; } #debug-bar .toolbar { background-color: #FFFFFF; box-shadow: 0 0 4px #DFDFDF; -moz-box-shadow: 0 0 4px #DFDFDF; -webkit-box-shadow: 0 0 4px #DFDFDF; } #debug-bar .toolbar img { filter: brightness(0) invert(0.4); } #debug-bar.fixed-top .toolbar { box-shadow: 0 0 4px #DFDFDF; -moz-box-shadow: 0 0 4px #DFDFDF; -webkit-box-shadow: 0 0 4px #DFDFDF; } #debug-bar.fixed-top .tab { box-shadow: 0 1px 4px #DFDFDF; -moz-box-shadow: 0 1px 4px #DFDFDF; -webkit-box-shadow: 0 1px 4px #DFDFDF; } #debug-bar .muted { color: #434343; } #debug-bar .muted td { color: #DFDFDF; } #debug-bar .muted:hover td { color: #434343; } #debug-bar #toolbar-position, #debug-bar #toolbar-theme { filter: brightness(0) invert(0.6); } #debug-bar .ci-label.active { background-color: #DFDFDF; } #debug-bar .ci-label:hover { background-color: #DFDFDF; } #debug-bar .ci-label .badge { background-color: #DD4814; color: #FFFFFF; } #debug-bar .tab { background-color: #FFFFFF; box-shadow: 0 -1px 4px #DFDFDF; -moz-box-shadow: 0 -1px 4px #DFDFDF; -webkit-box-shadow: 0 -1px 4px #DFDFDF; } #debug-bar .timeline th, #debug-bar .timeline td { border-color: #DFDFDF; } #debug-bar .timeline .timer { background-color: #DD8615; } .debug-view.show-view { border-color: #DD8615; } .debug-view-path { background-color: #FDC894; color: #434343; } @media (prefers-color-scheme: dark) { #debug-icon { background-color: #252525; box-shadow: 0 0 4px #DFDFDF; -moz-box-shadow: 0 0 4px #DFDFDF; -webkit-box-shadow: 0 0 4px #DFDFDF; } #debug-icon a:active, #debug-icon a:link, #debug-icon a:visited { color: #DD8615; } #debug-bar { background-color: #252525; color: #DFDFDF; } #debug-bar h1, #debug-bar h2, #debug-bar h3, #debug-bar p, #debug-bar a, #debug-bar button, #debug-bar table, #debug-bar thead, #debug-bar tr, #debug-bar td, #debug-bar button, #debug-bar .toolbar { background-color: transparent; color: #DFDFDF; } #debug-bar button { background-color: #252525; } #debug-bar table strong { color: #DD8615; } #debug-bar table tbody tr:hover { background-color: #434343; } #debug-bar table tbody tr.current { background-color: #FDC894; } #debug-bar table tbody tr.current td { color: #252525; } #debug-bar table tbody tr.current:hover td { background-color: #DD4814; color: #FFFFFF; } #debug-bar .toolbar { background-color: #434343; box-shadow: 0 0 4px #434343; -moz-box-shadow: 0 0 4px #434343; -webkit-box-shadow: 0 0 4px #434343; } #debug-bar .toolbar img { filter: brightness(0) invert(1); } #debug-bar.fixed-top .toolbar { box-shadow: 0 0 4px #434343; -moz-box-shadow: 0 0 4px #434343; -webkit-box-shadow: 0 0 4px #434343; } #debug-bar.fixed-top .tab { box-shadow: 0 1px 4px #434343; -moz-box-shadow: 0 1px 4px #434343; -webkit-box-shadow: 0 1px 4px #434343; } #debug-bar .muted { color: #DFDFDF; } #debug-bar .muted td { color: #434343; } #debug-bar .muted:hover td { color: #DFDFDF; } #debug-bar #toolbar-position, #debug-bar #toolbar-theme { filter: brightness(0) invert(0.6); } #debug-bar .ci-label.active { background-color: #252525; } #debug-bar .ci-label:hover { background-color: #252525; } #debug-bar .ci-label .badge { background-color: #DD4814; color: #FFFFFF; } #debug-bar .tab { background-color: #252525; box-shadow: 0 -1px 4px #434343; -moz-box-shadow: 0 -1px 4px #434343; -webkit-box-shadow: 0 -1px 4px #434343; } #debug-bar .timeline th, #debug-bar .timeline td { border-color: #434343; } #debug-bar .timeline .timer { background-color: #DD8615; } .debug-view.show-view { border-color: #DD8615; } .debug-view-path { background-color: #FDC894; color: #434343; } } #toolbarContainer.dark #debug-icon { background-color: #252525; box-shadow: 0 0 4px #DFDFDF; -moz-box-shadow: 0 0 4px #DFDFDF; -webkit-box-shadow: 0 0 4px #DFDFDF; } #toolbarContainer.dark #debug-icon a:active, #toolbarContainer.dark #debug-icon a:link, #toolbarContainer.dark #debug-icon a:visited { color: #DD8615; } #toolbarContainer.dark #debug-bar { background-color: #252525; color: #DFDFDF; } #toolbarContainer.dark #debug-bar h1, #toolbarContainer.dark #debug-bar h2, #toolbarContainer.dark #debug-bar h3, #toolbarContainer.dark #debug-bar p, #toolbarContainer.dark #debug-bar a, #toolbarContainer.dark #debug-bar button, #toolbarContainer.dark #debug-bar table, #toolbarContainer.dark #debug-bar thead, #toolbarContainer.dark #debug-bar tr, #toolbarContainer.dark #debug-bar td, #toolbarContainer.dark #debug-bar button, #toolbarContainer.dark #debug-bar .toolbar { background-color: transparent; color: #DFDFDF; } #toolbarContainer.dark #debug-bar button { background-color: #252525; } #toolbarContainer.dark #debug-bar table strong { color: #DD8615; } #toolbarContainer.dark #debug-bar table tbody tr:hover { background-color: #434343; } #toolbarContainer.dark #debug-bar table tbody tr.current { background-color: #FDC894; } #toolbarContainer.dark #debug-bar table tbody tr.current td { color: #252525; } #toolbarContainer.dark #debug-bar table tbody tr.current:hover td { background-color: #DD4814; color: #FFFFFF; } #toolbarContainer.dark #debug-bar .toolbar { background-color: #434343; box-shadow: 0 0 4px #434343; -moz-box-shadow: 0 0 4px #434343; -webkit-box-shadow: 0 0 4px #434343; } #toolbarContainer.dark #debug-bar .toolbar img { filter: brightness(0) invert(1); } #toolbarContainer.dark #debug-bar.fixed-top .toolbar { box-shadow: 0 0 4px #434343; -moz-box-shadow: 0 0 4px #434343; -webkit-box-shadow: 0 0 4px #434343; } #toolbarContainer.dark #debug-bar.fixed-top .tab { box-shadow: 0 1px 4px #434343; -moz-box-shadow: 0 1px 4px #434343; -webkit-box-shadow: 0 1px 4px #434343; } #toolbarContainer.dark #debug-bar .muted { color: #DFDFDF; } #toolbarContainer.dark #debug-bar .muted td { color: #434343; } #toolbarContainer.dark #debug-bar .muted:hover td { color: #DFDFDF; } #toolbarContainer.dark #debug-bar #toolbar-position, #toolbarContainer.dark #debug-bar #toolbar-theme { filter: brightness(0) invert(0.6); } #toolbarContainer.dark #debug-bar .ci-label.active { background-color: #252525; } #toolbarContainer.dark #debug-bar .ci-label:hover { background-color: #252525; } #toolbarContainer.dark #debug-bar .ci-label .badge { background-color: #DD4814; color: #FFFFFF; } #toolbarContainer.dark #debug-bar .tab { background-color: #252525; box-shadow: 0 -1px 4px #434343; -moz-box-shadow: 0 -1px 4px #434343; -webkit-box-shadow: 0 -1px 4px #434343; } #toolbarContainer.dark #debug-bar .timeline th, #toolbarContainer.dark #debug-bar .timeline td { border-color: #434343; } #toolbarContainer.dark #debug-bar .timeline .timer { background-color: #DD8615; } #toolbarContainer.dark .debug-view.show-view { border-color: #DD8615; } #toolbarContainer.dark .debug-view-path { background-color: #FDC894; color: #434343; } #toolbarContainer.dark td[data-debugbar-route] input[type=text] { background: #000; color: #fff; } #toolbarContainer.light #debug-icon { background-color: #FFFFFF; box-shadow: 0 0 4px #DFDFDF; -moz-box-shadow: 0 0 4px #DFDFDF; -webkit-box-shadow: 0 0 4px #DFDFDF; } #toolbarContainer.light #debug-icon a:active, #toolbarContainer.light #debug-icon a:link, #toolbarContainer.light #debug-icon a:visited { color: #DD8615; } #toolbarContainer.light #debug-bar { background-color: #FFFFFF; color: #434343; } #toolbarContainer.light #debug-bar h1, #toolbarContainer.light #debug-bar h2, #toolbarContainer.light #debug-bar h3, #toolbarContainer.light #debug-bar p, #toolbarContainer.light #debug-bar a, #toolbarContainer.light #debug-bar button, #toolbarContainer.light #debug-bar table, #toolbarContainer.light #debug-bar thead, #toolbarContainer.light #debug-bar tr, #toolbarContainer.light #debug-bar td, #toolbarContainer.light #debug-bar button, #toolbarContainer.light #debug-bar .toolbar { background-color: transparent; color: #434343; } #toolbarContainer.light #debug-bar button { background-color: #FFFFFF; } #toolbarContainer.light #debug-bar table strong { color: #DD8615; } #toolbarContainer.light #debug-bar table tbody tr:hover { background-color: #DFDFDF; } #toolbarContainer.light #debug-bar table tbody tr.current { background-color: #FDC894; } #toolbarContainer.light #debug-bar table tbody tr.current:hover td { background-color: #DD4814; color: #FFFFFF; } #toolbarContainer.light #debug-bar .toolbar { background-color: #FFFFFF; box-shadow: 0 0 4px #DFDFDF; -moz-box-shadow: 0 0 4px #DFDFDF; -webkit-box-shadow: 0 0 4px #DFDFDF; } #toolbarContainer.light #debug-bar .toolbar img { filter: brightness(0) invert(0.4); } #toolbarContainer.light #debug-bar.fixed-top .toolbar { box-shadow: 0 0 4px #DFDFDF; -moz-box-shadow: 0 0 4px #DFDFDF; -webkit-box-shadow: 0 0 4px #DFDFDF; } #toolbarContainer.light #debug-bar.fixed-top .tab { box-shadow: 0 1px 4px #DFDFDF; -moz-box-shadow: 0 1px 4px #DFDFDF; -webkit-box-shadow: 0 1px 4px #DFDFDF; } #toolbarContainer.light #debug-bar .muted { color: #434343; } #toolbarContainer.light #debug-bar .muted td { color: #DFDFDF; } #toolbarContainer.light #debug-bar .muted:hover td { color: #434343; } #toolbarContainer.light #debug-bar #toolbar-position, #toolbarContainer.light #debug-bar #toolbar-theme { filter: brightness(0) invert(0.6); } #toolbarContainer.light #debug-bar .ci-label.active { background-color: #DFDFDF; } #toolbarContainer.light #debug-bar .ci-label:hover { background-color: #DFDFDF; } #toolbarContainer.light #debug-bar .ci-label .badge { background-color: #DD4814; color: #FFFFFF; } #toolbarContainer.light #debug-bar .tab { background-color: #FFFFFF; box-shadow: 0 -1px 4px #DFDFDF; -moz-box-shadow: 0 -1px 4px #DFDFDF; -webkit-box-shadow: 0 -1px 4px #DFDFDF; } #toolbarContainer.light #debug-bar .timeline th, #toolbarContainer.light #debug-bar .timeline td { border-color: #DFDFDF; } #toolbarContainer.light #debug-bar .timeline .timer { background-color: #DD8615; } #toolbarContainer.light .debug-view.show-view { border-color: #DD8615; } #toolbarContainer.light .debug-view-path { background-color: #FDC894; color: #434343; } .debug-bar-width30 { width: 30%; } .debug-bar-width10 { width: 10%; } .debug-bar-width70p { width: 70px; } .debug-bar-width190p { width: 190px; } .debug-bar-width20e { width: 20em; } .debug-bar-width6r { width: 6rem; } .debug-bar-ndisplay { display: none; } .debug-bar-alignRight { text-align: right; } .debug-bar-alignLeft { text-align: left; } .debug-bar-noverflow { overflow: hidden; } .debug-bar-dtableRow { display: table-row; } .debug-bar-dinlineBlock { display: inline-block; } .debug-bar-pointer { cursor: pointer; } .debug-bar-mleft4 { margin-left: 4px; } .debug-bar-level-0 { --level: 0; } .debug-bar-level-1 { --level: 1; } .debug-bar-level-2 { --level: 2; } .debug-bar-level-3 { --level: 3; } .debug-bar-level-4 { --level: 4; } .debug-bar-level-5 { --level: 5; } .debug-bar-level-6 { --level: 6; } 
+.debug-bar-timeline-0 { left: 12.21429734003%; width: 40.915352957589%; }
+.debug-bar-timeline-1 { left: 35.949661618187%; width: 17.170451936268%; }
+.debug-bar-timeline-2 { left: 53.13237508138%; width: 5.8905283610026%; }
+.debug-bar-timeline-3 { left: 59.036300295875%; width: 3.2533918108259%; }
+.debug-bar-timeline-4 { left: 62.762896219889%; width: 5.0056548345657%; }
+.debug-bar-timeline-5 { left: 67.77150290353%; width: 20.301001412528%; }
+.debug-bar-timeline-6 { left: 67.772411164783%; width: 3.6904925391788%; }
+.debug-bar-timeline-7 { left: 85.420154389881%; width: 2.6285080682664%; }
+.debug-bar-timeline-8 { left: 87.158112298875%; width: 0.84014165969122%; }
+.debug-bar-timeline-9 { left: 88.097254435221%; width: 0.0095367431640625%; }
+.debug-bar-timeline-10 { left: 88.162876310803%; width: 1.0658445812407%; }
+</style><style class="kint-rich-style">.kint-rich{--spacing: 4px;--nav-size: 15px;--backdrop-color: rgba(255, 255, 255, 0.9);--main-background: #e0eaef;--secondary-background: #c1d4df;--text-color: #1d1e1e;--variable-name-color: #1d1e1e;--variable-type-color: #0092db;--variable-type-color-hover: #5cb730;--border-color: #b6cedb;--border-color-hover: #0092db;--border: 1px solid var(--border-color);--foldout-max-size: calc(100vh - 100px);--foldout-zindex: 999999;--caret-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 150'><g stroke-width='2' fill='%23FFF'><path d='M1 1h28v28H1zm5 14h18m-9 9V6M1 61h28v28H1zm5 14h18' stroke='%23379'/><path d='M1 31h28v28H1zm5 14h18m-9 9V36M1 91h28v28H1zm5 14h18' stroke='%235A3'/><path d='M1 121h28v28H1zm5 5l18 18m-18 0l18-18' stroke='%23CCC'/></g></svg>");--ap-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><g stroke='%23000' fill='transparent'><path d='M2 8h3m3 3v3M8 2v3m3 3h3M3 8' stroke-width='2' stroke-linecap='round'/><circle stroke-width='1.5' r='4.5' cx='8' cy='8'/></g></svg>");--folder-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M2 2h4l2 2h6v9H2V2h2' stroke-width='2' stroke='%23000' fill='transparent' stroke-linejoin='round'/></svg>");--search-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><g stroke='%23000' fill='transparent'><path d='M2 14l3-3' stroke-linecap='round' stroke-width='3'/><circle stroke-width='2' r='5' cx='9' cy='7'/></g></svg>");font-size:13px;overflow-x:auto;white-space:nowrap;background:var(--backdrop-color);direction:ltr;contain:content}.kint-rich.kint-folder{position:fixed;bottom:0;left:0;right:0;z-index:var(--foldout-zindex);width:100%;margin:0;display:block}.kint-rich.kint-folder dd.kint-foldout{max-height:var(--foldout-max-size);padding-right:calc(var(--spacing)*2);overflow-y:scroll;display:none}.kint-rich.kint-folder dd.kint-foldout.kint-show{display:block}.kint-rich::selection{background:var(--border-color-hover);color:var(--text-color)}.kint-rich .kint-focused{box-shadow:0 0 3px 3px var(--variable-type-color-hover)}.kint-rich .kint-focused.kint-weak-focus{box-shadow:0 0 3px 1px color-mix(in srgb, var(--variable-type-color-hover) 50%, transparent)}.kint-rich,.kint-rich::before,.kint-rich::after,.kint-rich *,.kint-rich *::before,.kint-rich *::after{box-sizing:border-box;border-radius:0;color:var(--text-color);float:none !important;font-family:Consolas,Menlo,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,monospace,serif;line-height:15px;margin:0;padding:0;text-align:left}.kint-rich{margin:calc(var(--spacing)*2) 0}.kint-rich dt,.kint-rich dl{width:auto}.kint-rich dt,.kint-rich div.access-path{background:var(--main-background);border:var(--border);color:var(--text-color);display:block;font-weight:bold;list-style:none outside none;overflow:auto;padding:var(--spacing)}.kint-rich dt:hover,.kint-rich div.access-path:hover{border-color:var(--border-color-hover)}.kint-rich>dl dl{padding:0 0 0 calc(var(--spacing)*3)}.kint-rich dt.kint-parent>nav,.kint-rich>footer>nav{background:var(--caret-image) no-repeat scroll 0 0/var(--nav-size) 75px rgba(0,0,0,0);cursor:pointer;display:inline-block;height:var(--nav-size);width:var(--nav-size);margin-right:3px;vertical-align:middle}.kint-rich dt.kint-parent:hover>nav,.kint-rich>footer>nav:hover{background-position:0 25%}.kint-rich dt.kint-parent.kint-show>nav,.kint-rich>footer.kint-show>nav{background-position:0 50%}.kint-rich dt.kint-parent.kint-show:hover>nav,.kint-rich>footer.kint-show>nav:hover{background-position:0 75%}.kint-rich dt.kint-parent.kint-locked>nav{background-position:0 100%}.kint-rich dt.kint-parent+dd{display:none;border-left:1px dashed var(--border-color);contain:strict}.kint-rich dt.kint-parent.kint-show+dd{display:block;contain:content}.kint-rich var,.kint-rich var a{color:var(--variable-type-color);font-style:normal}.kint-rich dt:hover var,.kint-rich dt:hover var a{color:var(--variable-type-color-hover)}.kint-rich dfn{font-style:normal;font-family:monospace;color:var(--variable-name-color)}.kint-rich pre{color:var(--text-color);margin:0 0 0 calc(var(--spacing)*3);padding:5px;overflow-y:hidden;border-top:0;border:var(--border);background:var(--main-background);display:block;word-break:normal}.kint-rich .kint-access-path-trigger,.kint-rich .kint-folder-trigger,.kint-rich .kint-search-trigger{background:color-mix(in srgb, var(--text-color) 80%, transparent);border-radius:3px;padding:2px;height:var(--nav-size);width:var(--nav-size);font-size:var(--nav-size);margin-left:5px;font-weight:bold;text-align:center;line-height:1;float:right !important;cursor:pointer;position:relative;overflow:hidden}.kint-rich .kint-access-path-trigger::before,.kint-rich .kint-folder-trigger::before,.kint-rich .kint-search-trigger::before{display:block;content:"";width:100%;height:100%;background:var(--main-background);mask:center/contain no-repeat alpha}.kint-rich .kint-access-path-trigger:hover,.kint-rich .kint-folder-trigger:hover,.kint-rich .kint-search-trigger:hover{background:var(--main-background)}.kint-rich .kint-access-path-trigger:hover::before,.kint-rich .kint-folder-trigger:hover::before,.kint-rich .kint-search-trigger:hover::before{background:var(--text-color)}.kint-rich .kint-access-path-trigger::before{mask-image:var(--ap-image)}.kint-rich .kint-folder-trigger::before{mask-image:var(--folder-image)}.kint-rich .kint-search-trigger::before{mask-image:var(--search-image)}.kint-rich input.kint-search{display:none;border:var(--border);border-top-width:0;border-bottom-width:0;padding:var(--spacing);float:right !important;margin:calc(var(--spacing)*-1) 0;color:var(--variable-name-color);background:var(--secondary-background);height:calc(var(--nav-size) + var(--spacing)*2);width:calc(var(--nav-size)*10);position:relative;z-index:100}.kint-rich input.kint-search.kint-show{display:block}.kint-rich .kint-search-root ul.kint-tabs>li:not(.kint-search-match){background:var(--secondary-background);filter:saturate(0);opacity:.5}.kint-rich .kint-search-root dl:not(.kint-search-match){opacity:.5}.kint-rich .kint-search-root dl:not(.kint-search-match)>dt{background:var(--main-background);filter:saturate(0)}.kint-rich .kint-search-root dl:not(.kint-search-match) dl,.kint-rich .kint-search-root dl:not(.kint-search-match) ul.kint-tabs>li:not(.kint-search-match){opacity:1}.kint-rich div.access-path{background:var(--secondary-background);display:none;margin-top:5px;padding:4px;white-space:pre}.kint-rich div.access-path.kint-show{display:block}.kint-rich footer{padding:0 3px 3px;font-size:9px;background:rgba(0,0,0,0)}.kint-rich footer>.kint-folder-trigger{background:rgba(0,0,0,0)}.kint-rich footer>.kint-folder-trigger::before{background:var(--text-color)}.kint-rich footer nav{height:10px;width:10px;background-size:10px 50px}.kint-rich footer>ol{display:none;margin-left:32px}.kint-rich footer.kint-show>ol{display:block}.kint-rich a{color:var(--text-color);text-shadow:none;text-decoration:underline}.kint-rich a:hover{color:var(--variable-name-color);border-bottom:1px dotted var(--variable-name-color)}.kint-rich ul{list-style:none;padding-left:calc(var(--spacing)*3)}.kint-rich ul:not(.kint-tabs) li{border-left:1px dashed var(--border-color)}.kint-rich ul:not(.kint-tabs) li>dl{border-left:none}.kint-rich ul.kint-tabs{margin:0 0 0 calc(var(--spacing)*3);padding-left:0;background:var(--main-background);border:var(--border);border-top:0}.kint-rich ul.kint-tabs>li{background:var(--secondary-background);border:var(--border);cursor:pointer;display:inline-block;height:calc(var(--spacing)*6);margin:calc(var(--spacing)/2);padding:0 calc(2px + var(--spacing)*2.5);vertical-align:top}.kint-rich ul.kint-tabs>li:hover,.kint-rich ul.kint-tabs>li.kint-active-tab:hover{border-color:var(--border-color-hover);color:var(--variable-type-color-hover)}.kint-rich ul.kint-tabs>li.kint-active-tab{background:var(--main-background);border-top:0;margin-top:-1px;height:27px;line-height:24px}.kint-rich ul.kint-tabs>li:not(.kint-active-tab){line-height:calc(var(--spacing)*5)}.kint-rich ul.kint-tabs li+li{margin-left:0}.kint-rich ul.kint-tab-contents>li{display:none;contain:strict}.kint-rich ul.kint-tab-contents>li.kint-show{display:block;contain:content}.kint-rich dt:hover+dd>ul>li.kint-active-tab{border-color:var(--border-color-hover);color:var(--variable-type-color-hover)}.kint-rich dt>.kint-color-preview{width:var(--nav-size);height:var(--nav-size);display:inline-block;vertical-align:middle;margin-left:10px;border:var(--border);background-color:#ccc;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2 2"><path fill="%23FFF" d="M0 0h1v2h1V1H0z"/></svg>');background-size:min(20px,100%)}.kint-rich dt>.kint-color-preview:hover{border-color:var(--border-color-hover)}.kint-rich dt>.kint-color-preview>div{width:100%;height:100%}.kint-rich table{border-collapse:collapse;empty-cells:show;border-spacing:0}.kint-rich table *{font-size:12px}.kint-rich table dt{background:none;padding:calc(var(--spacing)/2)}.kint-rich table dt .kint-parent{min-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.kint-rich table td,.kint-rich table th{border:var(--border);padding:calc(var(--spacing)/2);vertical-align:center}.kint-rich table th{cursor:alias}.kint-rich table td:first-child,.kint-rich table th{font-weight:bold;background:var(--secondary-background);color:var(--variable-name-color)}.kint-rich table td{background:var(--main-background);white-space:pre}.kint-rich table td>dl{padding:0}.kint-rich table pre{border-top:0;border-right:0}.kint-rich table thead th:first-child{background:none;border:0}.kint-rich table tr:hover>td{box-shadow:0 0 1px 0 var(--border-color-hover) inset}.kint-rich table tr:hover var{color:var(--variable-type-color-hover)}.kint-rich table ul.kint-tabs li.kint-active-tab{height:20px;line-height:17px}.kint-rich pre.kint-source{margin-left:-1px}.kint-rich pre.kint-source[data-kint-filename]:before{display:block;content:attr(data-kint-filename);margin-bottom:var(--spacing);padding-bottom:var(--spacing);border-bottom:1px solid var(--secondary-background)}.kint-rich pre.kint-source>div:before{display:inline-block;content:counter(kint-l);counter-increment:kint-l;border-right:1px solid var(--border-color-hover);padding-right:calc(var(--spacing)*2);margin-right:calc(var(--spacing)*2)}.kint-rich pre.kint-source>div.kint-highlight{background:var(--secondary-background)}.kint-rich .kint-microtime-js .kint-microtime-lap{text-shadow:-1px 0 var(--border-color-hover),0 1px var(--border-color-hover),1px 0 var(--border-color-hover),0 -1px var(--border-color-hover);color:var(--main-background);font-weight:bold}input.kint-note-input{width:100%}.kint-rich{--main-background: #f8f8f8;--secondary-background: #f8f8f8;--variable-type-color: #06f;--variable-type-color-hover: #f00;--border-color: #d7d7d7;--border-color-hover: #aaa;--alternative-background: #fff;--highlight-color: #cfc;--caret-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 150'><path d='M6 7h18l-9 15zm0 30h18l-9 15zm0 45h18l-9-15zm0 30h18l-9-15zm0 12l18 18m-18 0l18-18' fill='%23555'/><path d='M6 126l18 18m-18 0l18-18' stroke-width='2' stroke='%23555'/></svg>")}.kint-rich .kint-focused{box-shadow:0 0 3px 2px var(--variable-type-color-hover)}.kint-rich dt{font-weight:normal}.kint-rich dt.kint-parent{margin-top:4px}.kint-rich dl dl{margin-top:4px;padding-left:25px;border-left:none}.kint-rich>dl>dt{background:var(--secondary-background)}.kint-rich ul{margin:0;padding-left:0}.kint-rich ul:not(.kint-tabs)>li{border-left:0}.kint-rich ul.kint-tabs{background:var(--secondary-background);border:var(--border);border-width:0 1px 1px 1px;padding:4px 0 0 12px;margin-left:-1px;margin-top:-1px}.kint-rich ul.kint-tabs li,.kint-rich ul.kint-tabs li+li{margin:0 0 0 4px}.kint-rich ul.kint-tabs li{border-bottom-width:0;height:calc(var(--spacing)*6 + 1px)}.kint-rich ul.kint-tabs li:first-child{margin-left:0}.kint-rich ul.kint-tabs li.kint-active-tab{border-top:var(--border);background:var(--alternative-background);font-weight:bold;padding-top:0;border-bottom:1px solid var(--alternative-background) !important;margin-bottom:-1px}.kint-rich ul.kint-tabs li.kint-active-tab:hover{border-bottom:1px solid var(--alternative-background)}.kint-rich ul>li>pre{border:var(--border)}.kint-rich dt:hover+dd>ul{border-color:var(--border-color-hover)}.kint-rich pre{background:var(--alternative-background);margin-top:4px;margin-left:25px}.kint-rich .kint-source{margin-left:-1px}.kint-rich .kint-source .kint-highlight{background:var(--highlight-color)}.kint-rich .kint-parent.kint-show>.kint-search{border-bottom-width:1px}.kint-rich table td{background:var(--alternative-background)}.kint-rich table td>dl{padding:0;margin:0}.kint-rich table td>dl>dt.kint-parent{margin:0}.kint-rich table td:first-child,.kint-rich table td,.kint-rich table th{padding:2px 4px}.kint-rich table dd,.kint-rich table dt{background:var(--alternative-background)}.kint-rich table tr:hover>td{box-shadow:none;background:var(--highlight-color)}
+</style>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login</title>
+
+        <link rel="stylesheet" href="http://localhost:8080/css/theme-temurasa.css?v=1767354511">
+    <link rel="stylesheet" href="http://localhost:8080/css/ui-baseline.css?v=1767354511">
+    <link rel="stylesheet" href="http://localhost:8080/css/auth.css?v=1767354511">
+</head>
+
+<body class="tr-auth">
+    
+<div class="tr-auth-wrap">
+    <div class="tr-auth-card tr-auth-split">
+
+        <!-- LEFT: BRAND -->
+        <div class="tr-auth-left">
+            <img class="tr-auth-logo" src="http://localhost:8080/images/temurasa_primary_fit.png" alt="Temu Rasa">
+            <h1 class="tr-auth-title">Temu Rasa Cafe</h1>
+            <p class="tr-auth-subtitle">
+                Silakan masuk ke sistem POS            </p>
+        </div>
+
+        <!-- RIGHT: FORM -->
+        <div class="tr-auth-right">
+
+                            <div class="tr-auth-alert">
+                    Silakan login terlebih dahulu.                </div>
+            
+            <form class="tr-auth-form" action="http://localhost:8080/index.php/login/attempt" method="post">
+                <input type="hidden" name="csrf_test_name" value="4c1e72bf2ed02497f8c8bf4c059c1243">
+                <div class="tr-auth-field">
+                    <label for="username">Username</label>
+                    <input class="tr-auth-input" type="text" id="username" name="username" value="" autocomplete="username" required="">
+                </div>
+
+                <div class="tr-auth-field">
+                    <label for="password">Password</label>
+                    <input class="tr-auth-input" type="password" id="password" name="password" autocomplete="current-password" required="">
+                </div>
+
+                <div class="tr-auth-actions">
+                    <button type="submit" class="btn btn-primary">Masuk</button>
+                </div>
+            </form>
+
+            <div class="tr-auth-hint">
+                (Untuk user baru silahkan set password melalui "Lupa password")<br>
+                <a href="http://localhost:8080/index.php/auth/forgot">Lupa password?</a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+<div id="toolbarContainer">
+<div id="debug-icon" class="debug-bar-dinlineBlock">
+    <a id="debug-icon-link">
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.0" viewBox="0 0 155 200"><defs></defs><path fill="#dd4814" d="M73.7 3.7c2.2 7.9-.7 18.5-7.8 29-1.8 2.6-10.7 12.2-19.7 21.3-23.9 24-33.6 37.1-40.3 54.4-7.9 20.6-7.8 40.8.5 58.2C12.8 180 27.6 193 42.5 198l6 2-3-2.2c-21-15.2-22.9-38.7-4.8-58.8 2.5-2.7 4.8-5 5.1-5 .4 0 .7 2.7.7 6.1 0 5.7.2 6.2 3.7 9.5 3 2.7 4.6 3.4 7.8 3.4 5.6 0 9.9-2.4 11.6-6.5 2.9-6.9 1.6-12-5-20.5-10.5-13.4-11.7-23.3-4.3-34.7l3.1-4.8.7 4.7c1.3 8.2 5.8 12.9 25 25.8 20.9 14.1 30.6 26.1 32.8 40.5 1.1 7.2-.1 16.1-3.1 21.8-2.7 5.3-11.2 14.3-16.5 17.4-2.4 1.4-4.3 2.6-4.3 2.8 0 .2 2.4-.4 5.3-1.4 24.1-8.3 42.7-27.1 48.2-48.6 1.9-7.6 1.9-20.2-.1-28.5-3.5-15.2-14.6-30.5-29.9-41.2l-7-4.9-.6 3.3c-.8 4.8-2.6 7.6-5.9 9.3-4.5 2.3-10.3 1.9-13.8-1-6.7-5.7-7.8-14.6-3.7-30.5 3-11.6 3.2-20.6.5-29.1C88.3 18 80.6 6.3 74.8 2.2 73.1.9 73 1 73.7 3.7z"></path></svg>
+    </a>
+</div>
+<div id="debug-bar" class="debug-bar-ndisplay">
+    <div class="toolbar">
+        <span id="toolbar-position">↕</span>
+        <span id="toolbar-theme">🔅</span>
+        <span id="hot-reload-btn" class="ci-label">
+            <a id="debug-hot-reload" title="Toggle Hot Reload">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAABNklEQVR4nN2US04CQRCGv/DaiBxEvYWuBRPDKSCIXsCdcg0ULqTI8xIGN7JwTCU/ScV5tTO64Us6maSq/7+nuqvgkLgHopTl+QAWwBToAg3+wMTzM7YBrihp4jkCToEB8OJyRkCFAB5yDDxVoAd8OpNMOkrcAeMAgz3nzsQ0EqkDayXZqXy5Qugrdy2tGNdKeNWv40xCqGpvJK0YEwXt8ooylMZzUnCh4EkJgzNpmFaMrYLNEgbH0thmGVhSUVrSeE8KLv+7RBMFb0oY3EnDeihGN+WZhmJ7ZlnPtKHB5RvtNwy0d5XWaGgqRmp7a/9QLjRevoDLvOSRM+nnlKumk++0xwZlLhVnEulOhnohTS37vnU1t5M/ho7rPR03/LKW1bxNQep6ETZb5mpGW2/Ak2KpF3oYfAPX9Xpc671kqwAAAABJRU5ErkJggg==">
+            </a>
+        </span>
+        <span class="ci-label">
+            <a data-tab="ci-timeline">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAD7SURBVEhLY6ArSEtLK09NTbWHcvGC9PR0BaDaQiAdUl9fzwQVxg+AFvwHamqHcnGCpKQkeaDa9yD1UD09UCn8AKaBWJySkmIApFehi0ONwwRQBceBLurAh4FqFoHUAtkrgPgREN+ByYEw1DhMANVEMIhAYQ5U1wtU/wmILwLZRlAp/IBYC8gGw88CaFj3A/FnIL4ETDXGUCnyANSC/UC6HIpnQMXAqQXIvo0khxNDjcMEQEmU9AzDuNI7Lgw1DhOAJIEuhQcRKMcC+e+QNHdDpcgD6BaAANSSQqBcENFlDi6AzQKqgkFlwWhxjVI8o2OgmkFaXI8CTMDAAAAxd1O4FzLMaAAAAABJRU5ErkJggg==">
+                <span class="hide-sm">93.6 ms &nbsp; 5.445 MB</span>
+            </a>
+        </span>
+
+                                                                                                <span class="ci-label">
+                    <a data-tab="ci-views">
+                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADeSURBVEhL7ZSxDcIwEEWNYA0YgGmgyAaJLTcUaaBzQQEVjMEabBQxAdw53zTHiThEovGTfnE/9rsoRUxhKLOmaa6Uh7X2+UvguLCzVxN1XW9x4EYHzik033Hp3X0LO+DaQG8MDQcuq6qao4qkHuMgQggLvkPLjqh00ZgFDBacMJYFkuwFlH1mshdkZ5JPJERA9JpI6xNCBESvibQ+IURA9JpI6xNCBESvibQ+IURA9DTsuHTOrVFFxixgB/eUFlU8uKJ0eDBFOu/9EvoeKnlJS2/08Tc8NOwQ8sIfMeYFjqKDjdU2sp4AAAAASUVORK5CYII=">
+                        <span class="hide-sm">
+                            Views                                                            <span class="badge">2</span>
+                                                    </span>
+                    </a>
+                </span>
+                                                <span class="ci-label">
+                    <a data-tab="ci-files">
+                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGBSURBVEhL7ZQ9S8NQGIVTBQUncfMfCO4uLgoKbuKQOWg+OkXERRE1IAXrIHbVDrqIDuLiJgj+gro7S3dnpfq88b1FMTE3VZx64HBzzvvZWxKnj15QCcPwCD5HUfSWR+JtzgmtsUcQBEva5IIm9SwSu+95CAWbUuy67qBa32ByZEDpIaZYZSZMjjQuPcQUq8yEyYEb8FSerYeQVGbAFzJkX1PyQWLhgCz0BxTCekC1Wp0hsa6yokzhed4oje6Iz6rlJEkyIKfUEFtITVtQdAibn5rMyaYsMS+a5wTv8qeXMhcU16QZbKgl3hbs+L4/pnpdc87MElZgq10p5DxGdq8I7xrvUWUKvG3NbSK7ubngYzdJwSsF7TiOh9VOgfcEz1UayNe3JUPM1RWC5GXYgTfc75B4NBmXJnAtTfpABX0iPvEd9ezALwkplCFXcr9styiNOKc1RRZpaPM9tcqBwlWzGY1qPL9wjqRBgF5BH6j8HWh2S7MHlX8PrmbK+k/8PzjOOzx1D3i1pKTTAAAAAElFTkSuQmCC">
+                        <span class="hide-sm">
+                            Files                                                            <span class="badge">152</span>
+                                                    </span>
+                    </a>
+                </span>
+                                                <span class="ci-label">
+                    <a data-tab="ci-routes">
+                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAFDSURBVEhL7ZRNSsNQFIUjVXSiOFEcuQIHDpzpxC0IGYeE/BEInbWlCHEDLsSiuANdhKDjgm6ggtSJ+l25ldrmmTwIgtgDh/t37r1J+16cX0dRFMtpmu5pWAkrvYjjOB7AETzStBFW+inxu3KUJMmhludQpoflS1zXban4LYqiO224h6VLTHr8Z+z8EpIHFF9gG78nDVmW7UgTHKjsCyY98QP+pcq+g8Ku2s8G8X3f3/I8b038WZTp+bO38zxfFd+I6YY6sNUvFlSDk9CRhiAI1jX1I9Cfw7GG1UB8LAuwbU0ZwQnbRDeEN5qqBxZMLtE1ti9LtbREnMIuOXnyIf5rGIb7Wq8HmlZgwYBH7ORTcKH5E4mpjeGt9fBZcHE2GCQ3Vt7oTNPNg+FXLHnSsHkw/FR+Gg2bB8Ptzrst/v6C/wrH+QB+duli6MYJdQAAAABJRU5ErkJggg==">
+                        <span class="hide-sm">
+                            Routes                                                            <span class="badge">65</span>
+                                                    </span>
+                    </a>
+                </span>
+                                                <span class="ci-label">
+                    <a data-tab="ci-events">
+                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEASURBVEhL7ZXNDcIwDIVTsRBH1uDQDdquUA6IM1xgCA6MwJUN2hk6AQzAz0vl0ETUxC5VT3zSU5w81/mRMGZysixbFEVR0jSKNt8geQU9aRpFmp/keX6AbjZ5oB74vsaN5lSzA4tLSjpBFxsjeSuRy4d2mDdQTWU7YLbXTNN05mKyovj5KL6B7q3hoy3KwdZxBlT+Ipz+jPHrBqOIynZgcZonoukb/0ckiTHqNvDXtXEAaygRbaB9FvUTjRUHsIYS0QaSp+Dw6wT4hiTmYHOcYZsdLQ2CbXa4ftuuYR4x9vYZgdb4vsFYUdmABMYeukK9/SUme3KMFQ77+Yfzh8eYF8+orDuDWU5LAAAAAElFTkSuQmCC">
+                        <span class="hide-sm">
+                            Events                                                            <span class="badge">1</span>
+                                                    </span>
+                    </a>
+                </span>
+                                                <span class="ci-label">
+                    <a data-tab="ci-history">
+                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAJySURBVEhL3ZU7aJNhGIVTpV6i4qCIgkIHxcXLErS4FBwUFNwiCKGhuTYJGaIgnRoo4qRu6iCiiIuIXXTTIkIpuqoFwaGgonUQlC5KafU5ycmNP0lTdPLA4fu+8573/a4/f6hXpFKpwUwmc9fDfweKbk+n07fgEv33TLSbtt/hvwNFT1PsG/zdTE0Gp+GFfD6/2fbVIxqNrqPIRbjg4t/hY8aztcngfDabHXbKyiiXy2vcrcPH8oDCry2FKDrA+Ar6L01E/ypyXzXaARjDGGcoeNxSDZXE0dHRA5VRE5LJ5CFy5jzJuOX2wHRHRnjbklZ6isQ3tIctBaAd4vlK3jLtkOVWqABBXd47jGHLmjTmSScttQV5J+SjfcUweFQEbsjAas5aqoCLXutJl7vtQsAzpRowYqkBinyCC8Vicb2lOih8zoldd0F8RD7qTFiqAnGrAy8stUAvi/hbqDM+YzkAFrLPdR5ZqoLXsd+Bh5YCIH7JniVdquUWxOPxDfboHhrI5XJ7HHhiqQXox+APe/Qk64+gGYVCYZs8cMpSFQj9JOoFzVqqo7k4HIvFYpscCoAjOmLffUsNUGRaQUwDlmofUa34ecsdgXdcXo4wbakBgiUFafXJV8A4DJ/2UrxUKm3E95H8RbjLcgOJRGILhnmCP+FBy5XvwN2uIPcy1AJvWgqC4xm2aU4Xb3lF4I+Tpyf8hRe5w3J7YLymSeA8Z3nSclv4WLRyFdfOjzrUFX0klJUEtZtntCNc+F69cz/FiDzEPtjzmcUMOr83kDQEX6pAJxJfpL3OX22n01YN7SZCoQnaSdoZ+Jz+PZihH3wt/xlCoT9M6nEtmRSPCQAAAABJRU5ErkJggg==">
+                        <span class="hide-sm">
+                            History                                                            <span class="badge">20</span>
+                                                    </span>
+                    </a>
+                </span>
+                    
+        <span class="ci-label">
+            <a data-tab="ci-vars">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACLSURBVEhLYxgFJIHU1NSraWlp/6H4T0pKSjRUijoAyXAwBlrYDpViAFpmARQrJwZDtWACoCROC4D8CnR5XBiqBRMADfyNprgRKkUdAApzoCUdUNwE5MtApYYIALp6NBWBMVQLJgAaOJqK8AOgq+mSio6DggjEBtLUT0UwQ5HZIADkj6aiUTAggIEBANAEDa/lkCRlAAAAAElFTkSuQmCC">
+                <span class="hide-sm">Vars</span>
+            </a>
+        </span>
+
+        <h1>
+            <span class="ci-label">
+                <a data-tab="ci-config">
+                    <svg xmlns="http://www.w3.org/2000/svg" version="1.0" viewBox="0 0 155 200"><defs></defs><path fill="#dd4814" d="M73.7 3.7c2.2 7.9-.7 18.5-7.8 29-1.8 2.6-10.7 12.2-19.7 21.3-23.9 24-33.6 37.1-40.3 54.4-7.9 20.6-7.8 40.8.5 58.2C12.8 180 27.6 193 42.5 198l6 2-3-2.2c-21-15.2-22.9-38.7-4.8-58.8 2.5-2.7 4.8-5 5.1-5 .4 0 .7 2.7.7 6.1 0 5.7.2 6.2 3.7 9.5 3 2.7 4.6 3.4 7.8 3.4 5.6 0 9.9-2.4 11.6-6.5 2.9-6.9 1.6-12-5-20.5-10.5-13.4-11.7-23.3-4.3-34.7l3.1-4.8.7 4.7c1.3 8.2 5.8 12.9 25 25.8 20.9 14.1 30.6 26.1 32.8 40.5 1.1 7.2-.1 16.1-3.1 21.8-2.7 5.3-11.2 14.3-16.5 17.4-2.4 1.4-4.3 2.6-4.3 2.8 0 .2 2.4-.4 5.3-1.4 24.1-8.3 42.7-27.1 48.2-48.6 1.9-7.6 1.9-20.2-.1-28.5-3.5-15.2-14.6-30.5-29.9-41.2l-7-4.9-.6 3.3c-.8 4.8-2.6 7.6-5.9 9.3-4.5 2.3-10.3 1.9-13.8-1-6.7-5.7-7.8-14.6-3.7-30.5 3-11.6 3.2-20.6.5-29.1C88.3 18 80.6 6.3 74.8 2.2 73.1.9 73 1 73.7 3.7z"></path></svg>
+                    4.6.3                </a>
+            </span>
+        </h1>
+
+        <!-- Open/Close Toggle -->
+        <a id="debug-bar-link" role="button" title="Open/Close">
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEPSURBVEhL7ZVLDoJAEEThRuoGDwSEG+jCuFU34s3AK3APP1VDDSGMqI1xx0s6M/2rnlHEaMZElmWrPM+vsDvsYbQ7+us0TReSC2EBrEHxCevRYuppYLXkQpC8sVCuGfTvqSE3hFdFwUGuGfRvqSE35NUAfKZrbQNQm2jrMA+gOK+M+FmhDsRL5voHMA8gFGecq0JOXLWlQg7E7AMIxZnjOiZOEJ82gFCcedUE4gS56QP8yf8ywItz7e+RituKlkkDBoIOH4Nd4HZD4NsGYJ/Abn1xEVOcuZ8f0zc/tHiYmzTAwscBvDIK/veyQ9K/rnewjdF26q0kF1IUxZIFPAVW98x/a+qp8L2M/+HMhETRE6S8TxpZ7KGXAAAAAElFTkSuQmCC">
+        </a>
+    </div>
+
+    <!-- Timeline -->
+    <div id="ci-timeline" class="tab">
+        <table class="timeline">
+            <thead>
+            <tr>
+                <th class="debug-bar-width30">NAME</th>
+                <th class="debug-bar-width10">COMPONENT</th>
+                <th class="debug-bar-width10">DURATION</th>
+                                    <th>0 ms</th>
+                                    <th>15 ms</th>
+                                    <th>30 ms</th>
+                                    <th>45 ms</th>
+                                    <th>60 ms</th>
+                                    <th>75 ms</th>
+                                    <th>90 ms</th>
+                            </tr>
+            </thead>
+            <tbody>
+            <tr class="timeline-parent" id="timeline-0_parent" data-toggle="childrows" data-child="timeline-0"><td class=" debug-bar-level-0"><nav></nav>Bootstrap</td><td class="">Timer</td><td class="debug-bar-alignRight">42.96 ms</td><td class="debug-bar-noverflow" colspan="7"><span class="timer debug-bar-timeline-0" title="40.92%"></span></td></tr><tr class="child-row  debug-bar-ndisplay" id="timeline-0_children"><td colspan="10" class="child-container"><table class="timeline"><tbody><tr><td class="debug-bar-width30 debug-bar-level-1">Event: pre_system</td><td class="debug-bar-width10">Events</td><td class="debug-bar-width10 debug-bar-alignRight">18.03 ms</td><td class="debug-bar-noverflow" colspan="7"><span class="timer debug-bar-timeline-1" title="17.17%"></span></td></tr></tbody></table></td></tr><tr><td class=" debug-bar-level-0">Required Before Filters</td><td class="">Timer</td><td class="debug-bar-alignRight">6.19 ms</td><td class="debug-bar-noverflow" colspan="7"><span class="timer debug-bar-timeline-2" title="5.89%"></span></td></tr><tr><td class=" debug-bar-level-0">Routing</td><td class="">Timer</td><td class="debug-bar-alignRight">3.42 ms</td><td class="debug-bar-noverflow" colspan="7"><span class="timer debug-bar-timeline-3" title="3.25%"></span></td></tr><tr><td class=" debug-bar-level-0">Before Filters</td><td class="">Timer</td><td class="debug-bar-alignRight">5.26 ms</td><td class="debug-bar-noverflow" colspan="7"><span class="timer debug-bar-timeline-4" title="5.01%"></span></td></tr><tr class="timeline-parent timeline-parent-open" id="timeline-5_parent" data-toggle="childrows" data-child="timeline-5"><td class=" debug-bar-level-0"><nav></nav>Controller</td><td class="">Timer</td><td class="debug-bar-alignRight">21.32 ms</td><td class="debug-bar-noverflow" colspan="7"><span class="timer debug-bar-timeline-5" title="20.30%"></span></td></tr><tr class="child-row " id="timeline-5_children"><td colspan="10" class="child-container"><table class="timeline"><tbody><tr><td class="debug-bar-width30 debug-bar-level-1">Controller Constructor</td><td class="debug-bar-width10">Timer</td><td class="debug-bar-width10 debug-bar-alignRight">3.88 ms</td><td class="debug-bar-noverflow" colspan="7"><span class="timer debug-bar-timeline-6" title="3.69%"></span></td></tr><tr class="timeline-parent" id="timeline-7_parent" data-toggle="childrows" data-child="timeline-7"><td class="debug-bar-width30 debug-bar-level-1"><nav></nav>View: auth/login.php</td><td class="debug-bar-width10">Views</td><td class="debug-bar-width10 debug-bar-alignRight">2.76 ms</td><td class="debug-bar-noverflow" colspan="7"><span class="timer debug-bar-timeline-7" title="2.63%"></span></td></tr><tr class="child-row  debug-bar-ndisplay" id="timeline-7_children"><td colspan="10" class="child-container"><table class="timeline"><tbody><tr><td class="debug-bar-width30 debug-bar-level-2">View: layouts/auth.php</td><td class="debug-bar-width10">Views</td><td class="debug-bar-width10 debug-bar-alignRight">0.88 ms</td><td class="debug-bar-noverflow" colspan="7"><span class="timer debug-bar-timeline-8" title="0.84%"></span></td></tr></tbody></table></td></tr></tbody></table></td></tr><tr><td class=" debug-bar-level-0">After Filters</td><td class="">Timer</td><td class="debug-bar-alignRight">0.01 ms</td><td class="debug-bar-noverflow" colspan="7"><span class="timer debug-bar-timeline-9" title="0.01%"></span></td></tr><tr><td class=" debug-bar-level-0">Required After Filters</td><td class="">Timer</td><td class="debug-bar-alignRight">1.12 ms</td><td class="debug-bar-noverflow" colspan="7"><span class="timer debug-bar-timeline-10" title="1.07%"></span></td></tr>            </tbody>
+        </table>
+    </div>
+
+    <!-- Collector-provided Tabs -->
+                                                                                                                                <div id="ci-files" class="tab">
+                    <h2>Files <span>( 152 )</span></h2>
+
+                    <table>
+    <tbody>
+    
+        <tr>
+            <td>Common.php</td>
+            <td>APPPATH\Common.php</td>
+        </tr>
+    
+        <tr>
+            <td>App.php</td>
+            <td>APPPATH\Config\App.php</td>
+        </tr>
+    
+        <tr>
+            <td>Autoload.php</td>
+            <td>APPPATH\Config\Autoload.php</td>
+        </tr>
+    
+        <tr>
+            <td>development.php</td>
+            <td>APPPATH\Config\Boot\development.php</td>
+        </tr>
+    
+        <tr>
+            <td>Cache.php</td>
+            <td>APPPATH\Config\Cache.php</td>
+        </tr>
+    
+        <tr>
+            <td>Constants.php</td>
+            <td>APPPATH\Config\Constants.php</td>
+        </tr>
+    
+        <tr>
+            <td>ContentSecurityPolicy.php</td>
+            <td>APPPATH\Config\ContentSecurityPolicy.php</td>
+        </tr>
+    
+        <tr>
+            <td>Cookie.php</td>
+            <td>APPPATH\Config\Cookie.php</td>
+        </tr>
+    
+        <tr>
+            <td>Database.php</td>
+            <td>APPPATH\Config\Database.php</td>
+        </tr>
+    
+        <tr>
+            <td>DocTypes.php</td>
+            <td>APPPATH\Config\DocTypes.php</td>
+        </tr>
+    
+        <tr>
+            <td>Events.php</td>
+            <td>APPPATH\Config\Events.php</td>
+        </tr>
+    
+        <tr>
+            <td>Exceptions.php</td>
+            <td>APPPATH\Config\Exceptions.php</td>
+        </tr>
+    
+        <tr>
+            <td>Feature.php</td>
+            <td>APPPATH\Config\Feature.php</td>
+        </tr>
+    
+        <tr>
+            <td>Filters.php</td>
+            <td>APPPATH\Config\Filters.php</td>
+        </tr>
+    
+        <tr>
+            <td>Kint.php</td>
+            <td>APPPATH\Config\Kint.php</td>
+        </tr>
+    
+        <tr>
+            <td>Logger.php</td>
+            <td>APPPATH\Config\Logger.php</td>
+        </tr>
+    
+        <tr>
+            <td>Modules.php</td>
+            <td>APPPATH\Config\Modules.php</td>
+        </tr>
+    
+        <tr>
+            <td>Optimize.php</td>
+            <td>APPPATH\Config\Optimize.php</td>
+        </tr>
+    
+        <tr>
+            <td>Paths.php</td>
+            <td>APPPATH\Config\Paths.php</td>
+        </tr>
+    
+        <tr>
+            <td>Routes.php</td>
+            <td>APPPATH\Config\Routes.php</td>
+        </tr>
+    
+        <tr>
+            <td>Routing.php</td>
+            <td>APPPATH\Config\Routing.php</td>
+        </tr>
+    
+        <tr>
+            <td>Security.php</td>
+            <td>APPPATH\Config\Security.php</td>
+        </tr>
+    
+        <tr>
+            <td>Services.php</td>
+            <td>APPPATH\Config\Services.php</td>
+        </tr>
+    
+        <tr>
+            <td>Session.php</td>
+            <td>APPPATH\Config\Session.php</td>
+        </tr>
+    
+        <tr>
+            <td>Toolbar.php</td>
+            <td>APPPATH\Config\Toolbar.php</td>
+        </tr>
+    
+        <tr>
+            <td>UserAgents.php</td>
+            <td>APPPATH\Config\UserAgents.php</td>
+        </tr>
+    
+        <tr>
+            <td>View.php</td>
+            <td>APPPATH\Config\View.php</td>
+        </tr>
+    
+        <tr>
+            <td>Login.php</td>
+            <td>APPPATH\Controllers\Auth\Login.php</td>
+        </tr>
+    
+        <tr>
+            <td>BaseController.php</td>
+            <td>APPPATH\Controllers\BaseController.php</td>
+        </tr>
+    
+        <tr>
+            <td>login.php</td>
+            <td>APPPATH\Views\auth\login.php</td>
+        </tr>
+    
+        <tr>
+            <td>auth.php</td>
+            <td>APPPATH\Views\layouts\auth.php</td>
+        </tr>
+    
+        <tr>
+            <td>index.php</td>
+            <td>FCPATH\index.php</td>
+        </tr>
+    
+        <tr>
+            <td>autoload.php</td>
+            <td>VENDORPATH\autoload.php</td>
+        </tr>
+    
+        <tr>
+            <td>ClassLoader.php</td>
+            <td>VENDORPATH\composer\ClassLoader.php</td>
+        </tr>
+    
+        <tr>
+            <td>InstalledVersions.php</td>
+            <td>VENDORPATH\composer\InstalledVersions.php</td>
+        </tr>
+    
+        <tr>
+            <td>autoload_real.php</td>
+            <td>VENDORPATH\composer\autoload_real.php</td>
+        </tr>
+    
+        <tr>
+            <td>autoload_static.php</td>
+            <td>VENDORPATH\composer\autoload_static.php</td>
+        </tr>
+    
+        <tr>
+            <td>installed.php</td>
+            <td>VENDORPATH\composer\installed.php</td>
+        </tr>
+    
+        <tr>
+            <td>platform_check.php</td>
+            <td>VENDORPATH\composer\platform_check.php</td>
+        </tr>
+    
+        <tr>
+            <td>Escaper.php</td>
+            <td>VENDORPATH\laminas\laminas-escaper\src\Escaper.php</td>
+        </tr>
+    
+        <tr>
+            <td>EscaperInterface.php</td>
+            <td>VENDORPATH\laminas\laminas-escaper\src\EscaperInterface.php</td>
+        </tr>
+    
+        <tr>
+            <td>deep_copy.php</td>
+            <td>VENDORPATH\myclabs\deep-copy\src\DeepCopy\deep_copy.php</td>
+        </tr>
+    
+        <tr>
+            <td>Functions.php</td>
+            <td>VENDORPATH\phpunit\phpunit\src\Framework\Assert\Functions.php</td>
+        </tr>
+    
+        <tr>
+            <td>LogLevel.php</td>
+            <td>VENDORPATH\psr\log\src\LogLevel.php</td>
+        </tr>
+    
+        <tr>
+            <td>LoggerAwareTrait.php</td>
+            <td>VENDORPATH\psr\log\src\LoggerAwareTrait.php</td>
+        </tr>
+    
+        <tr>
+            <td>LoggerInterface.php</td>
+            <td>VENDORPATH\psr\log\src\LoggerInterface.php</td>
+        </tr>
+    
+        <tr>
+            <td>function.php</td>
+            <td>VENDORPATH\symfony\deprecation-contracts\function.php</td>
+        </tr>
+    
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">ResponseTrait.php</td>
+            <td>SYSTEMPATH\API\ResponseTrait.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Autoloader.php</td>
+            <td>SYSTEMPATH\Autoloader\Autoloader.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">FileLocator.php</td>
+            <td>SYSTEMPATH\Autoloader\FileLocator.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">FileLocatorInterface.php</td>
+            <td>SYSTEMPATH\Autoloader\FileLocatorInterface.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Boot.php</td>
+            <td>SYSTEMPATH\Boot.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">CacheFactory.php</td>
+            <td>SYSTEMPATH\Cache\CacheFactory.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">CacheInterface.php</td>
+            <td>SYSTEMPATH\Cache\CacheInterface.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">BaseHandler.php</td>
+            <td>SYSTEMPATH\Cache\Handlers\BaseHandler.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">FileHandler.php</td>
+            <td>SYSTEMPATH\Cache\Handlers\FileHandler.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">ResponseCache.php</td>
+            <td>SYSTEMPATH\Cache\ResponseCache.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">CodeIgniter.php</td>
+            <td>SYSTEMPATH\CodeIgniter.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Common.php</td>
+            <td>SYSTEMPATH\Common.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">AutoloadConfig.php</td>
+            <td>SYSTEMPATH\Config\AutoloadConfig.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">BaseConfig.php</td>
+            <td>SYSTEMPATH\Config\BaseConfig.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">BaseService.php</td>
+            <td>SYSTEMPATH\Config\BaseService.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">DotEnv.php</td>
+            <td>SYSTEMPATH\Config\DotEnv.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Factories.php</td>
+            <td>SYSTEMPATH\Config\Factories.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Factory.php</td>
+            <td>SYSTEMPATH\Config\Factory.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Filters.php</td>
+            <td>SYSTEMPATH\Config\Filters.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Routing.php</td>
+            <td>SYSTEMPATH\Config\Routing.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Services.php</td>
+            <td>SYSTEMPATH\Config\Services.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">View.php</td>
+            <td>SYSTEMPATH\Config\View.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Controller.php</td>
+            <td>SYSTEMPATH\Controller.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">CloneableCookieInterface.php</td>
+            <td>SYSTEMPATH\Cookie\CloneableCookieInterface.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Cookie.php</td>
+            <td>SYSTEMPATH\Cookie\Cookie.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">CookieInterface.php</td>
+            <td>SYSTEMPATH\Cookie\CookieInterface.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">CookieStore.php</td>
+            <td>SYSTEMPATH\Cookie\CookieStore.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Config.php</td>
+            <td>SYSTEMPATH\Database\Config.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Exceptions.php</td>
+            <td>SYSTEMPATH\Debug\Exceptions.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Timer.php</td>
+            <td>SYSTEMPATH\Debug\Timer.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Toolbar.php</td>
+            <td>SYSTEMPATH\Debug\Toolbar.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">BaseCollector.php</td>
+            <td>SYSTEMPATH\Debug\Toolbar\Collectors\BaseCollector.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Database.php</td>
+            <td>SYSTEMPATH\Debug\Toolbar\Collectors\Database.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Events.php</td>
+            <td>SYSTEMPATH\Debug\Toolbar\Collectors\Events.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Files.php</td>
+            <td>SYSTEMPATH\Debug\Toolbar\Collectors\Files.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Logs.php</td>
+            <td>SYSTEMPATH\Debug\Toolbar\Collectors\Logs.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Routes.php</td>
+            <td>SYSTEMPATH\Debug\Toolbar\Collectors\Routes.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Timers.php</td>
+            <td>SYSTEMPATH\Debug\Toolbar\Collectors\Timers.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Views.php</td>
+            <td>SYSTEMPATH\Debug\Toolbar\Collectors\Views.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Events.php</td>
+            <td>SYSTEMPATH\Events\Events.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">CSRF.php</td>
+            <td>SYSTEMPATH\Filters\CSRF.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">DebugToolbar.php</td>
+            <td>SYSTEMPATH\Filters\DebugToolbar.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">FilterInterface.php</td>
+            <td>SYSTEMPATH\Filters\FilterInterface.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Filters.php</td>
+            <td>SYSTEMPATH\Filters\Filters.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">ForceHTTPS.php</td>
+            <td>SYSTEMPATH\Filters\ForceHTTPS.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">PerformanceMetrics.php</td>
+            <td>SYSTEMPATH\Filters\PerformanceMetrics.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">ContentSecurityPolicy.php</td>
+            <td>SYSTEMPATH\HTTP\ContentSecurityPolicy.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Header.php</td>
+            <td>SYSTEMPATH\HTTP\Header.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">IncomingRequest.php</td>
+            <td>SYSTEMPATH\HTTP\IncomingRequest.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Message.php</td>
+            <td>SYSTEMPATH\HTTP\Message.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">MessageInterface.php</td>
+            <td>SYSTEMPATH\HTTP\MessageInterface.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">MessageTrait.php</td>
+            <td>SYSTEMPATH\HTTP\MessageTrait.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Method.php</td>
+            <td>SYSTEMPATH\HTTP\Method.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">OutgoingRequest.php</td>
+            <td>SYSTEMPATH\HTTP\OutgoingRequest.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">OutgoingRequestInterface.php</td>
+            <td>SYSTEMPATH\HTTP\OutgoingRequestInterface.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Request.php</td>
+            <td>SYSTEMPATH\HTTP\Request.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">RequestInterface.php</td>
+            <td>SYSTEMPATH\HTTP\RequestInterface.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">RequestTrait.php</td>
+            <td>SYSTEMPATH\HTTP\RequestTrait.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Response.php</td>
+            <td>SYSTEMPATH\HTTP\Response.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">ResponseInterface.php</td>
+            <td>SYSTEMPATH\HTTP\ResponseInterface.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">ResponseTrait.php</td>
+            <td>SYSTEMPATH\HTTP\ResponseTrait.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">SiteURI.php</td>
+            <td>SYSTEMPATH\HTTP\SiteURI.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">SiteURIFactory.php</td>
+            <td>SYSTEMPATH\HTTP\SiteURIFactory.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">URI.php</td>
+            <td>SYSTEMPATH\HTTP\URI.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">UserAgent.php</td>
+            <td>SYSTEMPATH\HTTP\UserAgent.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">ArrayHelper.php</td>
+            <td>SYSTEMPATH\Helpers\Array\ArrayHelper.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">array_helper.php</td>
+            <td>SYSTEMPATH\Helpers\array_helper.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">filesystem_helper.php</td>
+            <td>SYSTEMPATH\Helpers\filesystem_helper.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">kint_helper.php</td>
+            <td>SYSTEMPATH\Helpers\kint_helper.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">url_helper.php</td>
+            <td>SYSTEMPATH\Helpers\url_helper.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Time.php</td>
+            <td>SYSTEMPATH\I18n\Time.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">TimeTrait.php</td>
+            <td>SYSTEMPATH\I18n\TimeTrait.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">BaseHandler.php</td>
+            <td>SYSTEMPATH\Log\Handlers\BaseHandler.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">FileHandler.php</td>
+            <td>SYSTEMPATH\Log\Handlers\FileHandler.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">HandlerInterface.php</td>
+            <td>SYSTEMPATH\Log\Handlers\HandlerInterface.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Logger.php</td>
+            <td>SYSTEMPATH\Log\Logger.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Modules.php</td>
+            <td>SYSTEMPATH\Modules\Modules.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">RouteCollection.php</td>
+            <td>SYSTEMPATH\Router\RouteCollection.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">RouteCollectionInterface.php</td>
+            <td>SYSTEMPATH\Router\RouteCollectionInterface.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Router.php</td>
+            <td>SYSTEMPATH\Router\Router.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">RouterInterface.php</td>
+            <td>SYSTEMPATH\Router\RouterInterface.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Security.php</td>
+            <td>SYSTEMPATH\Security\Security.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">SecurityInterface.php</td>
+            <td>SYSTEMPATH\Security\SecurityInterface.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">BaseHandler.php</td>
+            <td>SYSTEMPATH\Session\Handlers\BaseHandler.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">FileHandler.php</td>
+            <td>SYSTEMPATH\Session\Handlers\FileHandler.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Session.php</td>
+            <td>SYSTEMPATH\Session\Session.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">SessionInterface.php</td>
+            <td>SYSTEMPATH\Session\SessionInterface.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Superglobals.php</td>
+            <td>SYSTEMPATH\Superglobals.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">FacadeInterface.php</td>
+            <td>SYSTEMPATH\ThirdParty\Kint\FacadeInterface.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Kint.php</td>
+            <td>SYSTEMPATH\ThirdParty\Kint\Kint.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">AbstractRenderer.php</td>
+            <td>SYSTEMPATH\ThirdParty\Kint\Renderer\AbstractRenderer.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">AssetRendererTrait.php</td>
+            <td>SYSTEMPATH\ThirdParty\Kint\Renderer\AssetRendererTrait.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">CliRenderer.php</td>
+            <td>SYSTEMPATH\ThirdParty\Kint\Renderer\CliRenderer.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">ConstructableRendererInterface.php</td>
+            <td>SYSTEMPATH\ThirdParty\Kint\Renderer\ConstructableRendererInterface.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">RendererInterface.php</td>
+            <td>SYSTEMPATH\ThirdParty\Kint\Renderer\RendererInterface.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">RichRenderer.php</td>
+            <td>SYSTEMPATH\ThirdParty\Kint\Renderer\RichRenderer.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">TextRenderer.php</td>
+            <td>SYSTEMPATH\ThirdParty\Kint\Renderer\TextRenderer.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">Utils.php</td>
+            <td>SYSTEMPATH\ThirdParty\Kint\Utils.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">init.php</td>
+            <td>SYSTEMPATH\ThirdParty\Kint\init.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">init_helpers.php</td>
+            <td>SYSTEMPATH\ThirdParty\Kint\init_helpers.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">FormatRules.php</td>
+            <td>SYSTEMPATH\Validation\FormatRules.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">RendererInterface.php</td>
+            <td>SYSTEMPATH\View\RendererInterface.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">View.php</td>
+            <td>SYSTEMPATH\View\View.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">ViewDecoratorTrait.php</td>
+            <td>SYSTEMPATH\View\ViewDecoratorTrait.php</td>
+        </tr>
+    
+        <tr class="muted">
+            <td class="debug-bar-width20e">rewrite.php</td>
+            <td>SYSTEMPATH\rewrite.php</td>
+        </tr>
+    
+    </tbody>
+</table>
+                </div>
+                                                            <div id="ci-routes" class="tab">
+                    <h2>Routes <span></span></h2>
+
+                    <h3>Matched Route</h3>
+
+<table>
+    <tbody>
+    
+        <tr>
+            <td>Directory:</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Controller:</td>
+            <td>\App\Controllers\Auth\Login</td>
+        </tr>
+        <tr>
+            <td>Method:</td>
+            <td>index</td>
+        </tr>
+        <tr>
+            <td>Params:</td>
+            <td>0 / 0</td>
+        </tr>
+        
+    
+    </tbody>
+</table>
+
+
+<h3>Defined Routes</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Method</th>
+            <th>Route</th>
+            <th>Handler</th>
+        </tr>
+    </thead>
+    <tbody>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/login">login</td>
+            <td>\App\Controllers\Auth\Login::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/logout">logout</td>
+            <td>\App\Controllers\Auth\Logout::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/auth/forgot">auth/forgot</td>
+            <td>\App\Controllers\Auth\ForgotPassword::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/auth/reset">auth/reset</td>
+            <td>\App\Controllers\Auth\ResetPassword::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/">/</td>
+            <td>\App\Controllers\Dashboard::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/dashboard">dashboard</td>
+            <td>\App\Controllers\Dashboard::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/master/products">master/products</td>
+            <td>\App\Controllers\Master\Products::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/master/products/create">master/products/create</td>
+            <td>\App\Controllers\Master\Products::create</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET"><div>master/products/edit/([0-9]+)</div><form data-debugbar-route-tpl="master/products/edit/?">master/products/edit/<input type="text" placeholder="$1"><input type="submit" value="Go" class="debug-bar-mleft4"></form></td>
+            <td>\App\Controllers\Master\Products::edit/$1</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/master/menu-options">master/menu-options</td>
+            <td>\App\Controllers\Master\MenuOptions::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/master/categories">master/categories</td>
+            <td>\App\Controllers\Master\MenuCategories::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/master/categories/create">master/categories/create</td>
+            <td>\App\Controllers\Master\MenuCategories::create</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET"><div>master/categories/edit/([0-9]+)</div><form data-debugbar-route-tpl="master/categories/edit/?">master/categories/edit/<input type="text" placeholder="$1"><input type="submit" value="Go" class="debug-bar-mleft4"></form></td>
+            <td>\App\Controllers\Master\MenuCategories::edit/$1</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/master/raw-materials">master/raw-materials</td>
+            <td>\App\Controllers\Master\RawMaterials::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/master/raw-materials/create">master/raw-materials/create</td>
+            <td>\App\Controllers\Master\RawMaterials::create</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET"><div>master/raw-materials/edit/([0-9]+)</div><form data-debugbar-route-tpl="master/raw-materials/edit/?">master/raw-materials/edit/<input type="text" placeholder="$1"><input type="submit" value="Go" class="debug-bar-mleft4"></form></td>
+            <td>\App\Controllers\Master\RawMaterials::edit/$1</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/master/customers">master/customers</td>
+            <td>\App\Controllers\Master\Customers::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/master/customers/create">master/customers/create</td>
+            <td>\App\Controllers\Master\Customers::create</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET"><div>master/customers/edit/([0-9]+)</div><form data-debugbar-route-tpl="master/customers/edit/?">master/customers/edit/<input type="text" placeholder="$1"><input type="submit" value="Go" class="debug-bar-mleft4"></form></td>
+            <td>\App\Controllers\Master\Customers::edit/$1</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/master/suppliers">master/suppliers</td>
+            <td>\App\Controllers\Master\Suppliers::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/master/suppliers/create">master/suppliers/create</td>
+            <td>\App\Controllers\Master\Suppliers::create</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET"><div>master/suppliers/edit/([0-9]+)</div><form data-debugbar-route-tpl="master/suppliers/edit/?">master/suppliers/edit/<input type="text" placeholder="$1"><input type="submit" value="Go" class="debug-bar-mleft4"></form></td>
+            <td>\App\Controllers\Master\Suppliers::edit/$1</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/master/units">master/units</td>
+            <td>\App\Controllers\Master\Units::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/master/units/create">master/units/create</td>
+            <td>\App\Controllers\Master\Units::create</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET"><div>master/units/edit/([0-9]+)</div><form data-debugbar-route-tpl="master/units/edit/?">master/units/edit/<input type="text" placeholder="$1"><input type="submit" value="Go" class="debug-bar-mleft4"></form></td>
+            <td>\App\Controllers\Master\Units::edit/$1</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/master/recipes">master/recipes</td>
+            <td>\App\Controllers\Master\Recipes::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/master/recipes/create">master/recipes/create</td>
+            <td>\App\Controllers\Master\Recipes::create</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET"><div>master/recipes/edit/([0-9]+)</div><form data-debugbar-route-tpl="master/recipes/edit/?">master/recipes/edit/<input type="text" placeholder="$1"><input type="submit" value="Go" class="debug-bar-mleft4"></form></td>
+            <td>\App\Controllers\Master\Recipes::edit/$1</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/purchases">purchases</td>
+            <td>\App\Controllers\Transactions\Purchases::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/purchases/create">purchases/create</td>
+            <td>\App\Controllers\Transactions\Purchases::create</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET"><div>purchases/detail/([0-9]+)</div><form data-debugbar-route-tpl="purchases/detail/?">purchases/detail/<input type="text" placeholder="$1"><input type="submit" value="Go" class="debug-bar-mleft4"></form></td>
+            <td>\App\Controllers\Transactions\Purchases::detail/$1</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/transactions/sales">transactions/sales</td>
+            <td>\App\Controllers\Transactions\Sales::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/transactions/sales/create">transactions/sales/create</td>
+            <td>\App\Controllers\Transactions\Sales::create</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET"><div>transactions/sales/detail/([0-9]+)</div><form data-debugbar-route-tpl="transactions/sales/detail/?">transactions/sales/detail/<input type="text" placeholder="$1"><input type="submit" value="Go" class="debug-bar-mleft4"></form></td>
+            <td>\App\Controllers\Transactions\Sales::detail/$1</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET"><div>transactions/sales/kitchen-ticket/([0-9]+)</div><form data-debugbar-route-tpl="transactions/sales/kitchen-ticket/?">transactions/sales/kitchen-ticket/<input type="text" placeholder="$1"><input type="submit" value="Go" class="debug-bar-mleft4"></form></td>
+            <td>\App\Controllers\Transactions\Sales::kitchenTicket/$1</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/transactions/kitchen">transactions/kitchen</td>
+            <td>\App\Controllers\Transactions\Sales::kitchenQueue</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/inventory/stock-movements">inventory/stock-movements</td>
+            <td>\App\Controllers\Inventory\StockMovements::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/inventory/stock-card">inventory/stock-card</td>
+            <td>\App\Controllers\Inventory\StockMovements::card</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/inventory/stock-adjustments">inventory/stock-adjustments</td>
+            <td>\App\Controllers\Inventory\StockAdjustments::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/inventory/stock-opname">inventory/stock-opname</td>
+            <td>\App\Controllers\Inventory\StockOpname::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/reports/sales/menu">reports/sales/menu</td>
+            <td>\App\Controllers\Reports\SalesSummary::perMenu</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/reports/sales/category">reports/sales/category</td>
+            <td>\App\Controllers\Reports\SalesSummary::perCategory</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/reports/sales/time">reports/sales/time</td>
+            <td>\App\Controllers\Reports\SalesSummary::byTime</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/reports/sales/customer">reports/sales/customer</td>
+            <td>\App\Controllers\Reports\SalesSummary::perCustomer</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET"><div>reports/sales/customer/([0-9]+)</div><form data-debugbar-route-tpl="reports/sales/customer/?">reports/sales/customer/<input type="text" placeholder="$1"><input type="submit" value="Go" class="debug-bar-mleft4"></form></td>
+            <td>\App\Controllers\Reports\SalesSummary::customerDetail/$1</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/reports/purchases/supplier">reports/purchases/supplier</td>
+            <td>\App\Controllers\Reports\PurchaseSummary::perSupplier</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/reports/purchases/material">reports/purchases/material</td>
+            <td>\App\Controllers\Reports\PurchaseSummary::perMaterial</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/reports/stock/variance">reports/stock/variance</td>
+            <td>\App\Controllers\Reports\StockSummary::variance</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/overheads">overheads</td>
+            <td>\App\Controllers\Overheads::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/overheads/create">overheads/create</td>
+            <td>\App\Controllers\Overheads::create</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/overhead-categories">overhead-categories</td>
+            <td>\App\Controllers\OverheadCategories::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/overhead-categories/create">overhead-categories/create</td>
+            <td>\App\Controllers\OverheadCategories::create</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET"><div>overhead-categories/edit/([0-9]+)</div><form data-debugbar-route-tpl="overhead-categories/edit/?">overhead-categories/edit/<input type="text" placeholder="$1"><input type="submit" value="Go" class="debug-bar-mleft4"></form></td>
+            <td>\App\Controllers\OverheadCategories::edit/$1</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/overheads/payroll">overheads/payroll</td>
+            <td>\App\Controllers\OverheadsPayroll::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/overheads/payroll/create">overheads/payroll/create</td>
+            <td>\App\Controllers\OverheadsPayroll::create</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET"><div>overheads/payroll/edit/([0-9]+)</div><form data-debugbar-route-tpl="overheads/payroll/edit/?">overheads/payroll/edit/<input type="text" placeholder="$1"><input type="submit" value="Go" class="debug-bar-mleft4"></form></td>
+            <td>\App\Controllers\OverheadsPayroll::edit/$1</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/users">users</td>
+            <td>\App\Controllers\Users::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/users/create">users/create</td>
+            <td>\App\Controllers\Users::create</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET"><div>users/edit/([0-9]+)</div><form data-debugbar-route-tpl="users/edit/?">users/edit/<input type="text" placeholder="$1"><input type="submit" value="Go" class="debug-bar-mleft4"></form></td>
+            <td>\App\Controllers\Users::edit/$1</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/audit-logs">audit-logs</td>
+            <td>\App\Controllers\AuditLogs::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/brand-guide">brand-guide</td>
+            <td>\App\Controllers\BrandGuide::index</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/branding">branding</td>
+            <td>\App\Controllers\Guides::branding</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/how-to-use">how-to-use</td>
+            <td>\App\Controllers\Guides::howToUse</td>
+        </tr>
+    
+        <tr>
+            <td>GET</td>
+            <td data-debugbar-route="GET" class="debug-bar-pointer" title="http://localhost:8080/pos/touch">pos/touch</td>
+            <td>\App\Controllers\Pos\Touchscreen::index</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">login/attempt</td>
+            <td>\App\Controllers\Auth\Login::attempt</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">auth/forgot</td>
+            <td>\App\Controllers\Auth\ForgotPassword::send</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">auth/reset</td>
+            <td>\App\Controllers\Auth\ResetPassword::update</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/products/store</td>
+            <td>\App\Controllers\Master\Products::store</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/products/update/([0-9]+)</td>
+            <td>\App\Controllers\Master\Products::update/$1</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/products/delete/([0-9]+)</td>
+            <td>\App\Controllers\Master\Products::delete/$1</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/menu-options/save</td>
+            <td>\App\Controllers\Master\MenuOptions::save</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/categories/store</td>
+            <td>\App\Controllers\Master\MenuCategories::store</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/categories/update/([0-9]+)</td>
+            <td>\App\Controllers\Master\MenuCategories::update/$1</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/categories/delete/([0-9]+)</td>
+            <td>\App\Controllers\Master\MenuCategories::delete/$1</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/raw-materials/store</td>
+            <td>\App\Controllers\Master\RawMaterials::store</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/raw-materials/update/([0-9]+)</td>
+            <td>\App\Controllers\Master\RawMaterials::update/$1</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/raw-materials/delete/([0-9]+)</td>
+            <td>\App\Controllers\Master\RawMaterials::delete/$1</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/customers/store</td>
+            <td>\App\Controllers\Master\Customers::store</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/customers/update/([0-9]+)</td>
+            <td>\App\Controllers\Master\Customers::update/$1</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/customers/delete/([0-9]+)</td>
+            <td>\App\Controllers\Master\Customers::delete/$1</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/suppliers/store</td>
+            <td>\App\Controllers\Master\Suppliers::store</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/suppliers/update/([0-9]+)</td>
+            <td>\App\Controllers\Master\Suppliers::update/$1</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/suppliers/delete/([0-9]+)</td>
+            <td>\App\Controllers\Master\Suppliers::delete/$1</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/units/store</td>
+            <td>\App\Controllers\Master\Units::store</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/units/update/([0-9]+)</td>
+            <td>\App\Controllers\Master\Units::update/$1</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/units/delete/([0-9]+)</td>
+            <td>\App\Controllers\Master\Units::delete/$1</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/recipes/store</td>
+            <td>\App\Controllers\Master\Recipes::store</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">master/recipes/update/([0-9]+)</td>
+            <td>\App\Controllers\Master\Recipes::update/$1</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">purchases/store</td>
+            <td>\App\Controllers\Transactions\Purchases::store</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">transactions/sales/store</td>
+            <td>\App\Controllers\Transactions\Sales::store</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">transactions/sales/void/([0-9]+)</td>
+            <td>\App\Controllers\Transactions\Sales::void/$1</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">transactions/kitchen/done/([0-9]+)</td>
+            <td>\App\Controllers\Transactions\Sales::kitchenDone/$1</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">overheads/store</td>
+            <td>\App\Controllers\Overheads::store</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">overhead-categories/store</td>
+            <td>\App\Controllers\OverheadCategories::store</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">overhead-categories/update/([0-9]+)</td>
+            <td>\App\Controllers\OverheadCategories::update/$1</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">overhead-categories/toggle</td>
+            <td>\App\Controllers\OverheadCategories::toggle</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">overheads/payroll/store</td>
+            <td>\App\Controllers\OverheadsPayroll::store</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">overheads/payroll/update/([0-9]+)</td>
+            <td>\App\Controllers\OverheadsPayroll::update/$1</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">overheads/payroll/delete/([0-9]+)</td>
+            <td>\App\Controllers\OverheadsPayroll::delete/$1</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">users/store</td>
+            <td>\App\Controllers\Users::store</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">users/update/([0-9]+)</td>
+            <td>\App\Controllers\Users::update/$1</td>
+        </tr>
+    
+        <tr>
+            <td>POST</td>
+            <td data-debugbar-route="POST">users/delete/([0-9]+)</td>
+            <td>\App\Controllers\Users::delete/$1</td>
+        </tr>
+    
+    </tbody>
+</table>
+                </div>
+                                                            <div id="ci-events" class="tab">
+                    <h2>Events <span></span></h2>
+
+                    <table>
+    <thead>
+        <tr>
+            <th class="debug-bar-width6r">Time</th>
+            <th>Event Name</th>
+            <th>Times Called</th>
+        </tr>
+    </thead>
+    <tbody>
+    
+        <tr>
+            <td class="narrow">18.03 ms</td>
+            <td>pre_system</td>
+            <td>1</td>
+        </tr>
+    
+    </tbody>
+</table>
+                </div>
+                                                            <div id="ci-history" class="tab">
+                    <h2>History <span></span></h2>
+
+                    <table>
+    <thead>
+    <tr>
+        <th>Action</th>
+        <th>Datetime</th>
+        <th>Status</th>
+        <th>Method</th>
+        <th>URL</th>
+        <th>Content-Type</th>
+        <th>Is AJAX?</th>
+    </tr>
+    </thead>
+    <tbody>
+    
+        <tr data-active="1" class="current">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767354511.251526">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 11:48:31.251526</td>
+            <td>200</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/login</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+        <tr data-active="">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767354511.011706">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 11:48:31.011706</td>
+            <td>302</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/branding</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+        <tr data-active="">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767354495.172217">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 11:48:15.172217</td>
+            <td>200</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/login</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+        <tr data-active="">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767354494.936197">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 11:48:14.936197</td>
+            <td>302</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/branding</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+        <tr data-active="">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767354473.347899">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 11:47:53.347899</td>
+            <td>200</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/login</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+        <tr data-active="">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767354473.085806">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 11:47:53.085806</td>
+            <td>302</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/branding</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+        <tr data-active="">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767354447.279406">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 11:47:27.279406</td>
+            <td>200</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/login</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+        <tr data-active="">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767354447.034955">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 11:47:27.034955</td>
+            <td>302</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/branding</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+        <tr data-active="">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767354434.818836">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 11:47:14.818836</td>
+            <td>200</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/login</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+        <tr data-active="">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767354434.595793">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 11:47:14.595793</td>
+            <td>302</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/branding</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+        <tr data-active="">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767354418.744956">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 11:46:58.744956</td>
+            <td>200</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/login</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+        <tr data-active="">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767354418.498410">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 11:46:58.498410</td>
+            <td>302</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/branding</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+        <tr data-active="">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767354315.919307">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 11:45:15.919307</td>
+            <td>200</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/login</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+        <tr data-active="">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767354315.665756">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 11:45:15.665756</td>
+            <td>302</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/branding</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+        <tr data-active="">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767351979.942191">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 11:06:19.942191</td>
+            <td>200</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/branding</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+        <tr data-active="">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767349172.280942">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 10:19:32.280942</td>
+            <td>200</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/branding</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+        <tr data-active="">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767349170.114899">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 10:19:30.114899</td>
+            <td>200</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/branding</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+        <tr data-active="">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767349004.734611">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 10:16:44.734611</td>
+            <td>200</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/branding</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+        <tr data-active="">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767347883.873704">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 09:58:03.873704</td>
+            <td>200</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/branding</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+        <tr data-active="">
+            <td class="debug-bar-width70p">
+                <button class="ci-history-load" data-time="1767346652.966233">Load</button>
+            </td>
+            <td class="debug-bar-width190p">2026-01-02 09:37:32.966233</td>
+            <td>200</td>
+            <td>GET</td>
+            <td>http://localhost:8080/index.php/branding</td>
+            <td>text/html; charset=UTF-8</td>
+            <td>No</td>
+        </tr>
+    
+    </tbody>
+</table>
+                </div>
+                        
+    <!-- In & Out -->
+    <div id="ci-vars" class="tab">
+
+        <!-- VarData from Collectors -->
+                    
+                <a class="debug-bar-vars" data-toggle="datatable" data-table="view-data">
+                    <h2>View Data</h2>
+                </a>
+
+                
+                    <table id="view-data_table">
+                        <tbody>
+                                                    <tr>
+                                <td>title</td>
+                                <td>Login</td>
+                            </tr>
+                                                    <tr>
+                                <td>subtitle</td>
+                                <td>Silakan masuk ke sistem POS</td>
+                            </tr>
+                                                </tbody>
+                    </table>
+
+                                    
+        <!-- Session -->
+        <a class="debug-bar-vars" data-toggle="datatable" data-table="session">
+            <h2>Session User Data</h2>
+        </a>
+
+                                    <table id="session_table">
+                    <tbody>
+                                            <tr>
+                            <td>__ci_last_regenerate</td>
+                            <td><pre>1767354510</pre></td>
+                        </tr>
+                                            <tr>
+                            <td>error</td>
+                            <td>Silakan login terlebih dahulu.</td>
+                        </tr>
+                                            <tr>
+                            <td>__ci_vars</td>
+                            <td><pre>Array
+(
+    [error] =&gt; old
+)
+</pre></td>
+                        </tr>
+                                            <tr>
+                            <td>_ci_previous_url</td>
+                            <td>http://localhost:8080/index.php/login</td>
+                        </tr>
+                                        </tbody>
+                </table>
+                    
+        <h2>Request <span>( HTTP/1.1 )</span></h2>
+
+        
+        
+                    <a class="debug-bar-vars" data-toggle="datatable" data-table="request_headers">
+                <h3>Headers</h3>
+            </a>
+
+            <table id="request_headers_table">
+                <tbody>
+                                    <tr>
+                        <td>Host</td>
+                        <td>localhost:8080</td>
+                    </tr>
+                                    <tr>
+                        <td>Connection</td>
+                        <td>keep-alive</td>
+                    </tr>
+                                    <tr>
+                        <td>Upgrade-Insecure-Requests</td>
+                        <td>1</td>
+                    </tr>
+                                    <tr>
+                        <td>User-Agent</td>
+                        <td>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/143.0.7499.4 Safari/537.36</td>
+                    </tr>
+                                    <tr>
+                        <td>Accept</td>
+                        <td>text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7</td>
+                    </tr>
+                                    <tr>
+                        <td>Sec-Fetch-Site</td>
+                        <td>none</td>
+                    </tr>
+                                    <tr>
+                        <td>Sec-Fetch-Mode</td>
+                        <td>navigate</td>
+                    </tr>
+                                    <tr>
+                        <td>Sec-Fetch-User</td>
+                        <td>?1</td>
+                    </tr>
+                                    <tr>
+                        <td>Sec-Fetch-Dest</td>
+                        <td>document</td>
+                    </tr>
+                                    <tr>
+                        <td>Sec-Ch-Ua</td>
+                        <td>"HeadlessChrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"</td>
+                    </tr>
+                                    <tr>
+                        <td>Sec-Ch-Ua-Mobile</td>
+                        <td>?0</td>
+                    </tr>
+                                    <tr>
+                        <td>Sec-Ch-Ua-Platform</td>
+                        <td>"Windows"</td>
+                    </tr>
+                                    <tr>
+                        <td>Accept-Encoding</td>
+                        <td>gzip, deflate, br, zstd</td>
+                    </tr>
+                                    <tr>
+                        <td>Cookie</td>
+                        <td>ci_session=48dc803236b6e8b717024d08cc7aaf61</td>
+                    </tr>
+                                </tbody>
+            </table>
+        
+                    <a class="debug-bar-vars" data-toggle="datatable" data-table="cookie">
+                <h3>Cookies</h3>
+            </a>
+
+            <table id="cookie_table">
+                <tbody>
+                                    <tr>
+                        <td>ci_session</td>
+                        <td>48dc803236b6e8b717024d08cc7aaf61</td>
+                    </tr>
+                                </tbody>
+            </table>
+        
+        <h2>Response
+            <span>( 200 - OK )</span>
+        </h2>
+
+                    <a class="debug-bar-vars" data-toggle="datatable" data-table="response_headers">
+                <h3>Headers</h3>
+            </a>
+
+            <table id="response_headers_table">
+                <tbody>
+                                    <tr>
+                        <td>Content-Type</td>
+                        <td>text/html; charset=UTF-8</td>
+                    </tr>
+                                </tbody>
+            </table>
+            </div>
+
+    <!-- Config Values -->
+    <div id="ci-config" class="tab">
+        <h2>System Configuration</h2>
+
+        <p class="debug-bar-alignRight">
+    <a href="https://codeigniter.com/user_guide/" target="_blank">Read the CodeIgniter docs...</a>
+</p>
+
+<table>
+    <tbody>
+        <tr>
+            <td>CodeIgniter Version:</td>
+            <td>4.6.3</td>
+        </tr>
+        <tr>
+            <td>PHP Version:</td>
+            <td>8.3.28</td>
+        </tr>
+        <tr>
+            <td>PHP SAPI:</td>
+            <td>cli-server</td>
+        </tr>
+        <tr>
+            <td>Environment:</td>
+            <td>development</td>
+        </tr>
+        <tr>
+            <td>Base URL:</td>
+            <td>
+                                    http://localhost:8080/
+                            </td>
+        </tr>
+        <tr>
+            <td>Timezone:</td>
+            <td>UTC</td>
+        </tr>
+        <tr>
+            <td>Locale:</td>
+            <td>en</td>
+        </tr>
+        <tr>
+            <td>Content Security Policy Enabled:</td>
+            <td> No </td>
+        </tr>
+    </tbody>
+</table>
+    </div>
+</div></div></body></html>
