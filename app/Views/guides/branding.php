@@ -15,6 +15,6 @@
     'showExport' => false,
 ]) ?>
 
-<script src="<?= base_url('js/branding.js?v=1cc2d2e'); ?>"></script>
+<script src="<?= base_url('js/branding.js'); ?>"></script>
 
 <?= $this->endSection() ?>
