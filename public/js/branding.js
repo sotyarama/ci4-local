@@ -35,6 +35,36 @@
   });
 })();
 
+// Apply dynamic styles from data attributes (colors, etc.)
+(function () {
+  function applyDynamicStyles() {
+    // color cards: card data-hex for the swatch
+    document.querySelectorAll('.tr-color-card').forEach(function (card) {
+      var hex = card.getAttribute('data-hex') || '';
+      var sw = card.querySelector('.tr-color-swatch[data-hex]') || card.querySelector('.tr-color-swatch');
+      if (sw && hex) sw.style.backgroundColor = hex;
+    });
+
+    // individual color squares
+    document.querySelectorAll('.tr-color-square[data-hex]').forEach(function (el) {
+      var hex = el.getAttribute('data-hex');
+      if (hex) el.style.backgroundColor = hex;
+    });
+
+    // dash bars: set CSS variable from data-height (percentage number)
+    document.querySelectorAll('.tr-dash-bar[data-height]').forEach(function (el) {
+      var h = el.getAttribute('data-height');
+      if (h) el.style.setProperty('--bar-height', h + '%');
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyDynamicStyles);
+  } else {
+    applyDynamicStyles();
+  }
+})();
+
 // Branding slides (desktop only).
 (function () {
   if (!window.matchMedia || !window.matchMedia('(min-width: 980px)').matches) {

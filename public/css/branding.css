@@ -1119,6 +1119,49 @@
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
+/* Utilities for compact pattern cards used in branding_content.php */
+.tr-pattern-card--compact {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px;
+}
+
+.tr-pattern-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.tr-pattern-demo {
+    margin: 4px 0 0;
+    height: 80px;
+}
+
+.tr-no-margin {
+    margin: 0 !important;
+}
+
+.tr-center-80 {
+    width: 80%;
+    margin: 0 auto;
+    display: block;
+}
+
+/* Compact list utility used in views */
+.tr-list-compact {
+    margin: 0;
+    padding-left: 18px;
+    display: grid;
+    gap: 4px;
+}
+
+.tr-mt-8 {
+    margin-top: 8px;
+}
+
 .tr-pattern {
     width: 100%;
     height: 80px;

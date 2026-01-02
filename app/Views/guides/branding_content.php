@@ -162,7 +162,7 @@ $dashOrders = [
             <div class="tr-color-grid">
                 <?php foreach ($colors as $color): ?>
                     <button type="button" class="tr-color-card" data-hex="<?= esc($color['hex']); ?>">
-                        <span class="tr-color-swatch" style="background-color: <?= esc($color['hex']); ?>;"></span>
+                        <span class="tr-color-swatch" data-hex="<?= esc($color['hex']); ?>"></span>
                         <span class="tr-color-name"><?= esc($color['name']); ?></span>
                         <span class="tr-color-hex"><?= esc($color['hex']); ?></span>
                     </button>
@@ -190,7 +190,7 @@ $dashOrders = [
                         <div class="tr-grid tr-color-samples tr-color-samples-row4 tr-color-samples-compact">
                             <?php foreach ($recommendedBackgrounds as $bg): ?>
                                 <div class="tr-color-sample">
-                                    <div class="tr-color-square" style="background-color: <?= esc($bg['hex']); ?>;"></div>
+                                    <div class="tr-color-square" data-hex="<?= esc($bg['hex']); ?>"></div>
                                     <span class="tr-color-label"><?= esc($bg['name']); ?></span>
                                     <span class="tr-color-hex"><?= esc($bg['hex']); ?></span>
                                 </div>
@@ -205,7 +205,7 @@ $dashOrders = [
                         <div class="tr-grid tr-color-samples tr-color-samples-row4 tr-color-samples-compact">
                             <?php foreach ($avoidBackgrounds as $bg): ?>
                                 <div class="tr-color-sample tr-color-sample-muted">
-                                    <div class="tr-color-square" style="background-color: <?= esc($bg['hex']); ?>;"></div>
+                                    <div class="tr-color-square" data-hex="<?= esc($bg['hex']); ?>"></div>
                                     <span class="tr-color-label"><?= esc($bg['name']); ?></span>
                                     <span class="tr-color-hex"><?= esc($bg['hex']); ?></span>
                                 </div>
@@ -591,7 +591,7 @@ $dashOrders = [
                                             1
                                         );
                                         ?>
-                                        <div style="width:80%; margin:0 auto;">
+                                        <div class="tr-center-80">
                                             <?= $clearspaceSvg ?>
                                         </div>
                                     </div>
@@ -632,45 +632,45 @@ $dashOrders = [
                 <div>
                     <h3 class="tr-subtitle">Gaya Pattern yang Direkomendasikan</h3>
                     <div class="tr-grid tr-grid-3 tr-pattern-grid">
-                        <div class="tr-pattern-card" style="text-align:left; display:flex; flex-direction:column; gap:6px; padding:10px;">
-                            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                        <div class="tr-pattern-card tr-pattern-card--compact">
+                            <div class="tr-pattern-card-head">
                                 <span class="tr-typography-label">Primary Pattern</span>
                                 <span class="tr-essence-pill">Subtle</span>
                             </div>
-                            <h4 class="tr-subtitle" style="margin:0;">Wave Line</h4>
-                            <div class="tr-pattern tr-pattern-wave" style="margin:4px 0 0; height:80px;"></div>
-                            <p class="tr-text-xs" style="margin:0;">
+                            <h4 class="tr-subtitle tr-no-margin">Wave Line</h4>
+                            <div class="tr-pattern tr-pattern-wave tr-pattern-demo"></div>
+                            <p class="tr-text-xs tr-no-margin">
                                 Turunan langsung dari lengkung logo. Cocok untuk divider, header, dan frame.
                             </p>
-                            <p class="tr-text-xs tr-muted" style="margin:0;">
+                            <p class="tr-text-xs tr-muted tr-no-margin">
                                 <em>Typical usage:</em> header menu, divider section, frame Instagram.
                             </p>
                         </div>
-                        <div class="tr-pattern-card" style="text-align:left; display:flex; flex-direction:column; gap:6px; padding:10px;">
-                            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                        <div class="tr-pattern-card tr-pattern-card--compact">
+                            <div class="tr-pattern-card-head">
                                 <span class="tr-typography-label">Supporting Pattern</span>
                                 <span class="tr-essence-pill">Modular</span>
                             </div>
-                            <h4 class="tr-subtitle" style="margin:0;">Soft Dots</h4>
-                            <div class="tr-pattern tr-pattern-dots" style="margin:4px 0 0; height:80px;"></div>
-                            <p class="tr-text-xs" style="margin:0;">
+                            <h4 class="tr-subtitle tr-no-margin">Soft Dots</h4>
+                            <div class="tr-pattern tr-pattern-dots tr-pattern-demo"></div>
+                            <p class="tr-text-xs tr-no-margin">
                                 Interpretasi lembut dari dua lingkaran. Cocok untuk area kecil dan aksen.
                             </p>
-                            <p class="tr-text-xs tr-muted" style="margin:0;">
+                            <p class="tr-text-xs tr-muted tr-no-margin">
                                 <em>Typical usage:</em> stiker kecil, cup, interior detail, watermark.
                             </p>
                         </div>
-                        <div class="tr-pattern-card" style="text-align:left; display:flex; flex-direction:column; gap:6px; padding:10px;">
-                            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                        <div class="tr-pattern-card tr-pattern-card--compact">
+                            <div class="tr-pattern-card-head">
                                 <span class="tr-typography-label">Background Accent</span>
                                 <span class="tr-essence-pill">Field</span>
                             </div>
-                            <h4 class="tr-subtitle" style="margin:0;">Diagonal Soft Texture</h4>
-                            <div class="tr-pattern tr-pattern-diagonal" style="margin:4px 0 0; height:80px;"></div>
-                            <p class="tr-text-xs" style="margin:0;">
+                            <h4 class="tr-subtitle tr-no-margin">Diagonal Soft Texture</h4>
+                            <div class="tr-pattern tr-pattern-diagonal tr-pattern-demo"></div>
+                            <p class="tr-text-xs tr-no-margin">
                                 Memberi nuansa hangat dan estetik sebagai background yang tidak mengganggu.
                             </p>
-                            <p class="tr-text-xs tr-muted" style="margin:0;">
+                            <p class="tr-text-xs tr-muted tr-no-margin">
                                 <em>Typical usage:</em> background menu, poster, kartu promo, cover PDF.
                             </p>
                         </div>
@@ -678,14 +678,14 @@ $dashOrders = [
                 </div>
                 <div>
                     <h3 class="tr-subtitle">Rekomendasi Penggunaan Pattern</h3>
-                    <ul class="tr-text-sm" style="margin:0; padding-left:18px; display:grid; gap:4px;">
+                    <ul class="tr-text-sm tr-list-compact">
                         <li>Pattern dipakai secara halus agar tidak mengalahkan logo dan konten utama.</li>
                         <li>Gunakan warna Sage Light atau Warm Beige untuk menjaga kesan lembut.</li>
                         <li>Pattern sebaiknya digunakan sebagai aksen, bukan elemen dominan.</li>
                         <li>Hindari pattern dengan kontras terlalu tinggi atau warna terlalu gelap.</li>
                         <li>Ideal untuk background menu, frame Instagram, stiker, atau dekor sudut interior.</li>
                     </ul>
-                    <p class="tr-text-xs tr-muted tr-italic" style="margin:8px 0 0;">
+                    <p class="tr-text-xs tr-muted tr-italic tr-mt-8">
                         <strong>Consistency note:</strong> Konsistensi penggunaan pattern lebih penting daripada variasi.
                         Disarankan memilih 1-2 pattern utama dan menggunakannya secara berulang agar identitas Temu Rasa mudah dikenali.
                     </p>
@@ -695,7 +695,7 @@ $dashOrders = [
                     <div class="tr-grid tr-grid-2">
                         <div class="tr-panel tr-panel-soft">
                             <h4 class="tr-subtitle">Do</h4>
-                            <ul class="tr-text-xs" style="margin:0; padding-left:18px; display:grid; gap:4px;">
+                            <ul class="tr-text-xs tr-list-compact">
                                 <li>Gunakan pattern tipis / subtle untuk menjaga estetika.</li>
                                 <li>Pastikan pattern tidak mengganggu teks utama.</li>
                                 <li>Gunakan untuk memperkuat suasana hangat dan natural.</li>
@@ -704,7 +704,7 @@ $dashOrders = [
                         </div>
                         <div class="tr-panel tr-panel-warn">
                             <h4 class="tr-subtitle">Don't</h4>
-                            <ul class="tr-text-xs" style="margin:0; padding-left:18px; display:grid; gap:4px;">
+                            <ul class="tr-text-xs tr-list-compact">
                                 <li>Jangan memakai pattern tebal / terlalu ramai.</li>
                                 <li>Jangan menggunakan warna neon atau warna jenuh tinggi.</li>
                                 <li>Jangan menempatkan pattern terlalu dekat dengan logo utama.</li>
@@ -1396,7 +1396,7 @@ $dashOrders = [
                             <div class="tr-dash-bars">
                                 <?php foreach ($dashBars as $index => $height): ?>
                                     <div class="tr-dash-bar-item">
-                                        <div class="tr-dash-bar" style="--bar-height: <?= (int) $height; ?>%;"></div>
+                                        <div class="tr-dash-bar" data-height="<?= (int) $height; ?>"></div>
                                         <span class="tr-dash-bar-label"><?= (int) ($index + 12); ?>.00</span>
                                     </div>
                                 <?php endforeach; ?>
