@@ -1,270 +1,297 @@
 // Copy HEX on click (optional, harmless).
 (function () {
-  var cards = document.querySelectorAll('.tr-color-card');
-  if (!cards.length) return;
+    var cards = document.querySelectorAll('.tr-color-card');
+    if (!cards.length) return;
 
-  var hint = document.getElementById('hexHint');
-  var val = document.getElementById('hexValue');
-  var timer = null;
+    var hint = document.getElementById('hexHint');
+    var val = document.getElementById('hexValue');
+    var timer = null;
 
-  function showHint(hex) {
-    if (!hint || !val) return;
-    val.textContent = hex;
-    hint.style.display = 'block';
-    clearTimeout(timer);
-    timer = setTimeout(function () { hint.style.display = 'none'; }, 1200);
-  }
+    function showHint(hex) {
+        if (!hint || !val) return;
+        val.textContent = hex;
+        hint.style.display = 'block';
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+            hint.style.display = 'none';
+        }, 1200);
+    }
 
-  cards.forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var hex = btn.getAttribute('data-hex') || '';
-      if (!hex) return;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(hex).then(function () { showHint(hex); });
-      } else {
-        // Fallback.
-        var tmp = document.createElement('textarea');
-        tmp.value = hex;
-        document.body.appendChild(tmp);
-        tmp.select();
-        try { document.execCommand('copy'); } catch (e) {}
-        document.body.removeChild(tmp);
-        showHint(hex);
-      }
+    cards.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var hex = btn.getAttribute('data-hex') || '';
+            if (!hex) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(hex).then(function () {
+                    showHint(hex);
+                });
+            } else {
+                // Fallback.
+                var tmp = document.createElement('textarea');
+                tmp.value = hex;
+                document.body.appendChild(tmp);
+                tmp.select();
+                try {
+                    document.execCommand('copy');
+                } catch (e) {}
+                document.body.removeChild(tmp);
+                showHint(hex);
+            }
+        });
     });
-  });
 })();
 
 // Apply dynamic styles from data attributes (colors, etc.)
 (function () {
-  function applyDynamicStyles() {
-    // color cards: card data-hex for the swatch
-    document.querySelectorAll('.tr-color-card').forEach(function (card) {
-      var hex = card.getAttribute('data-hex') || '';
-      var sw = card.querySelector('.tr-color-swatch[data-hex]') || card.querySelector('.tr-color-swatch');
-      if (sw && hex) {
-        try { sw.style.backgroundImage = 'none'; } catch (e) {}
-        sw.style.backgroundColor = hex;
-      }
-    });
+    function applyDynamicStyles() {
+        // color cards: card data-hex for the swatch
+        document.querySelectorAll('.tr-color-card').forEach(function (card) {
+            var hex = card.getAttribute('data-hex') || '';
+            var sw = card.querySelector('.tr-color-swatch[data-hex]') || card.querySelector('.tr-color-swatch');
+            if (sw && hex) {
+                try {
+                    sw.style.backgroundImage = 'none';
+                } catch (e) {}
+                sw.style.backgroundColor = hex;
+            }
+        });
 
-    // individual color squares
-    document.querySelectorAll('.tr-color-square[data-hex]').forEach(function (el) {
-      var hex = el.getAttribute('data-hex');
-      if (hex) {
-        try { el.style.backgroundImage = 'none'; } catch (e) {}
-        el.style.backgroundColor = hex;
-      }
-    });
+        // individual color squares
+        document.querySelectorAll('.tr-color-square[data-hex]').forEach(function (el) {
+            var hex = el.getAttribute('data-hex');
+            if (hex) {
+                try {
+                    el.style.backgroundImage = 'none';
+                } catch (e) {}
+                el.style.backgroundColor = hex;
+            }
+        });
 
-    // dash bars: set CSS variable from data-height (percentage number)
-    document.querySelectorAll('.tr-dash-bar[data-height]').forEach(function (el) {
-      var h = el.getAttribute('data-height');
-      if (h) el.style.setProperty('--bar-height', h + '%');
-    });
-  }
+        // dash bars: set CSS variable from data-height (percentage number)
+        document.querySelectorAll('.tr-dash-bar[data-height]').forEach(function (el) {
+            var h = el.getAttribute('data-height');
+            if (h) el.style.setProperty('--bar-height', h + '%');
+        });
+    }
 
-  // expose for other modules and manual re-run
-  window.TR_applyDynamicStyles = applyDynamicStyles;
+    // expose for other modules and manual re-run
+    window.TR_applyDynamicStyles = applyDynamicStyles;
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', applyDynamicStyles);
-  } else {
-    applyDynamicStyles();
-  }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', applyDynamicStyles);
+    } else {
+        applyDynamicStyles();
+    }
 
-  // schedule a couple of delayed re-applies to handle DOM reflows/async moves
-  setTimeout(function () { try { applyDynamicStyles(); } catch (e) {} }, 250);
-  setTimeout(function () { try { applyDynamicStyles(); } catch (e) {} }, 1000);
+    // schedule a couple of delayed re-applies to handle DOM reflows/async moves
+    setTimeout(function () {
+        try {
+            applyDynamicStyles();
+        } catch (e) {}
+    }, 250);
+    setTimeout(function () {
+        try {
+            applyDynamicStyles();
+        } catch (e) {}
+    }, 1000);
 
-  // MutationObserver fallback: when new nodes are added or attributes change, re-apply styles.
-  try {
-    var _observer = new MutationObserver(function (mutations) {
-      var needs = false;
-      for (var i = 0; i < mutations.length; i++) {
-        var m = mutations[i];
-        if (m.type === 'childList' && (m.addedNodes && m.addedNodes.length)) {
-          needs = true; break;
-        }
-        if (m.type === 'attributes' && (m.attributeName === 'data-hex' || m.attributeName === 'data-height')) {
-          needs = true; break;
-        }
-      }
-      if (needs) {
-        // schedule to avoid thrashing
-        window.requestAnimationFrame(function () { applyDynamicStyles(); });
-      }
-    });
-    _observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-hex', 'data-height'] });
-  } catch (e) {
-    // MutationObserver not supported -> ignore
-  }
+    // MutationObserver fallback: when new nodes are added or attributes change, re-apply styles.
+    try {
+        var _observer = new MutationObserver(function (mutations) {
+            var needs = false;
+            for (var i = 0; i < mutations.length; i++) {
+                var m = mutations[i];
+                if (m.type === 'childList' && m.addedNodes && m.addedNodes.length) {
+                    needs = true;
+                    break;
+                }
+                if (m.type === 'attributes' && (m.attributeName === 'data-hex' || m.attributeName === 'data-height')) {
+                    needs = true;
+                    break;
+                }
+            }
+            if (needs) {
+                // schedule to avoid thrashing
+                window.requestAnimationFrame(function () {
+                    applyDynamicStyles();
+                });
+            }
+        });
+        _observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['data-hex', 'data-height'],
+        });
+    } catch (e) {
+        // MutationObserver not supported -> ignore
+    }
 })();
 
 // Branding slides (desktop only).
 (function () {
-  if (!window.matchMedia || !window.matchMedia('(min-width: 980px)').matches) {
-    return;
-  }
-
-  var container = document.querySelector('.tr-branding-container');
-  if (!container) return;
-
-  var children = Array.prototype.slice.call(container.children);
-  if (!children.length) return;
-
-  var slides = [];
-  var current = document.createElement('div');
-  current.className = 'tr-slide';
-  slides.push(current);
-
-  children.forEach(function (node) {
-    if (node.matches && node.matches('section.tr-section')) {
-      var mode = node.getAttribute('data-slide') || '';
-      if (mode !== 'continue' && current.childNodes.length) {
-        current = document.createElement('div');
-        current.className = 'tr-slide';
-        slides.push(current);
-      }
+    if (!window.matchMedia || !window.matchMedia('(min-width: 980px)').matches) {
+        return;
     }
 
-    current.appendChild(node);
-  });
+    var container = document.querySelector('.tr-branding-container');
+    if (!container) return;
 
-  container.innerHTML = '';
-  container.classList.add('tr-slide-mode');
+    var children = Array.prototype.slice.call(container.children);
+    if (!children.length) return;
 
-  var nav = document.createElement('div');
-  nav.className = 'tr-slide-nav';
+    var slides = [];
+    var current = document.createElement('div');
+    current.className = 'tr-slide';
+    slides.push(current);
 
-  var btnPrev = document.createElement('button');
-  btnPrev.type = 'button';
-  btnPrev.className = 'tr-btn tr-btn-outline';
-  btnPrev.textContent = 'Prev';
+    children.forEach(function (node) {
+        if (node.matches && node.matches('section.tr-section')) {
+            var mode = node.getAttribute('data-slide') || '';
+            if (mode !== 'continue' && current.childNodes.length) {
+                current = document.createElement('div');
+                current.className = 'tr-slide';
+                slides.push(current);
+            }
+        }
 
-  var indicator = document.createElement('div');
-  indicator.className = 'tr-slide-indicator';
-
-  var btnNext = document.createElement('button');
-  btnNext.type = 'button';
-  btnNext.className = 'tr-btn tr-btn-outline';
-  btnNext.textContent = 'Next';
-
-  nav.appendChild(btnPrev);
-  nav.appendChild(indicator);
-  nav.appendChild(btnNext);
-
-  var navHost = document.getElementById('branding-slide-nav');
-  if (navHost) {
-    navHost.appendChild(nav);
-  } else {
-    container.appendChild(nav);
-  }
-  slides.forEach(function (slide) {
-    container.appendChild(slide);
-  });
-
-  // Re-run dynamic styles after slide construction in case nodes were moved
-  if (window.TR_applyDynamicStyles) {
-    try { window.TR_applyDynamicStyles(); } catch (e) {}
-  }
-
-  var index = 0;
-
-  function setActive(next) {
-    if (next < 0 || next >= slides.length) return;
-    slides[index].classList.remove('is-active');
-    index = next;
-    slides[index].classList.add('is-active');
-    indicator.textContent = 'Slide ' + (index + 1) + ' / ' + slides.length;
-  }
-
-  slides[index].classList.add('is-active');
-  indicator.textContent = 'Slide 1 / ' + slides.length;
-
-  btnPrev.addEventListener('click', function () {
-    setActive(index - 1);
-  });
-
-  btnNext.addEventListener('click', function () {
-    setActive(index + 1);
-  });
-
-  document.addEventListener('keydown', function (event) {
-    if (event.key === 'ArrowRight' || event.key === 'PageDown') {
-      setActive(index + 1);
-    }
-    if (event.key === 'ArrowLeft' || event.key === 'PageUp') {
-      setActive(index - 1);
-    }
-  });
-})();
-
-(function () {
-  var page = document.querySelector('.tr-branding-page');
-  var actions = document.querySelector('.tr-branding-actions-inner');
-  if (!page || !actions) return;
-
-  function syncWidth() {
-    var rect = page.getBoundingClientRect();
-    var parentRect = actions.parentElement
-      ? actions.parentElement.getBoundingClientRect()
-      : { left: 0 };
-    actions.style.width = rect.width + 'px';
-    actions.style.marginLeft = (rect.left - parentRect.left) + 'px';
-    actions.style.marginRight = '0';
-  }
-
-  if (window.ResizeObserver) {
-    var observer = new ResizeObserver(syncWidth);
-    observer.observe(page);
-  } else {
-    window.addEventListener('resize', syncWidth);
-  }
-
-  window.addEventListener('load', syncWidth);
-  syncWidth();
-})();
-
-(function () {
-  var box = document.querySelector('.tr-clearspace-box');
-  if (!box) return;
-
-  var inner = box.querySelector('.tr-clearspace-inner');
-  var svg = box.querySelector('.tr-clearspace-label svg');
-  if (!inner || !svg) return;
-
-  var circleSelectors = ['#path17', '#path15'];
-
-  function updateInset() {
-    var maxHeight = 0;
-    circleSelectors.forEach(function (selector) {
-      var node = svg.querySelector(selector);
-      if (!node || !node.getBoundingClientRect) return;
-      var rect = node.getBoundingClientRect();
-      if (rect.height > maxHeight) {
-        maxHeight = rect.height;
-      }
+        current.appendChild(node);
     });
 
-    if (maxHeight > 0) {
-      var insetValue = maxHeight.toFixed(1) + 'px';
-      inner.style.inset = insetValue;
-      box.style.setProperty('--tr-clearspace-inset', insetValue);
+    container.innerHTML = '';
+    container.classList.add('tr-slide-mode');
+
+    var nav = document.createElement('div');
+    nav.className = 'tr-slide-nav';
+
+    var btnPrev = document.createElement('button');
+    btnPrev.type = 'button';
+    btnPrev.className = 'tr-btn tr-btn-outline';
+    btnPrev.textContent = 'Prev';
+
+    var indicator = document.createElement('div');
+    indicator.className = 'tr-slide-indicator';
+
+    var btnNext = document.createElement('button');
+    btnNext.type = 'button';
+    btnNext.className = 'tr-btn tr-btn-outline';
+    btnNext.textContent = 'Next';
+
+    nav.appendChild(btnPrev);
+    nav.appendChild(indicator);
+    nav.appendChild(btnNext);
+
+    var navHost = document.getElementById('branding-slide-nav');
+    if (navHost) {
+        navHost.appendChild(nav);
+    } else {
+        container.appendChild(nav);
     }
-  }
+    slides.forEach(function (slide) {
+        container.appendChild(slide);
+    });
 
-  function scheduleUpdate() {
-    window.requestAnimationFrame(updateInset);
-  }
+    // Re-run dynamic styles after slide construction in case nodes were moved
+    if (window.TR_applyDynamicStyles) {
+        try {
+            window.TR_applyDynamicStyles();
+        } catch (e) {}
+    }
 
-  if (window.ResizeObserver) {
-    var observer = new ResizeObserver(scheduleUpdate);
-    observer.observe(box);
-  } else {
-    window.addEventListener('resize', scheduleUpdate);
-  }
+    var index = 0;
 
-  window.addEventListener('load', scheduleUpdate);
-  scheduleUpdate();
+    function setActive(next) {
+        if (next < 0 || next >= slides.length) return;
+        slides[index].classList.remove('is-active');
+        index = next;
+        slides[index].classList.add('is-active');
+        indicator.textContent = 'Slide ' + (index + 1) + ' / ' + slides.length;
+    }
+
+    slides[index].classList.add('is-active');
+    indicator.textContent = 'Slide 1 / ' + slides.length;
+
+    btnPrev.addEventListener('click', function () {
+        setActive(index - 1);
+    });
+
+    btnNext.addEventListener('click', function () {
+        setActive(index + 1);
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'ArrowRight' || event.key === 'PageDown') {
+            setActive(index + 1);
+        }
+        if (event.key === 'ArrowLeft' || event.key === 'PageUp') {
+            setActive(index - 1);
+        }
+    });
+})();
+
+(function () {
+    var page = document.querySelector('.tr-branding-page');
+    var actions = document.querySelector('.tr-branding-actions-inner');
+    if (!page || !actions) return;
+
+    function syncWidth() {
+        var rect = page.getBoundingClientRect();
+        var parentRect = actions.parentElement ? actions.parentElement.getBoundingClientRect() : { left: 0 };
+        actions.style.width = rect.width + 'px';
+        actions.style.marginLeft = rect.left - parentRect.left + 'px';
+        actions.style.marginRight = '0';
+    }
+
+    if (window.ResizeObserver) {
+        var observer = new ResizeObserver(syncWidth);
+        observer.observe(page);
+    } else {
+        window.addEventListener('resize', syncWidth);
+    }
+
+    window.addEventListener('load', syncWidth);
+    syncWidth();
+})();
+
+(function () {
+    var box = document.querySelector('.tr-clearspace-box');
+    if (!box) return;
+
+    var inner = box.querySelector('.tr-clearspace-inner');
+    var svg = box.querySelector('.tr-clearspace-label svg');
+    if (!inner || !svg) return;
+
+    var circleSelectors = ['#path17', '#path15'];
+
+    function updateInset() {
+        var maxHeight = 0;
+        circleSelectors.forEach(function (selector) {
+            var node = svg.querySelector(selector);
+            if (!node || !node.getBoundingClientRect) return;
+            var rect = node.getBoundingClientRect();
+            if (rect.height > maxHeight) {
+                maxHeight = rect.height;
+            }
+        });
+
+        if (maxHeight > 0) {
+            var insetValue = maxHeight.toFixed(1) + 'px';
+            inner.style.inset = insetValue;
+            box.style.setProperty('--tr-clearspace-inset', insetValue);
+        }
+    }
+
+    function scheduleUpdate() {
+        window.requestAnimationFrame(updateInset);
+    }
+
+    if (window.ResizeObserver) {
+        var observer = new ResizeObserver(scheduleUpdate);
+        observer.observe(box);
+    } else {
+        window.addEventListener('resize', scheduleUpdate);
+    }
+
+    window.addEventListener('load', scheduleUpdate);
+    scheduleUpdate();
 })();
