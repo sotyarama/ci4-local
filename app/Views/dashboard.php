@@ -16,7 +16,39 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* --- Margin Extreme badges (scoped) --- */
+        .dashboard-page .db-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+
+        .dashboard-page .badge-danger {
+            background: #FDECEC;
+            color: #B42318;
+        }
+
+        .dashboard-page .badge-warning {
+            background: #FFF4E5;
+            color: #B54708;
+        }
+
+        .dashboard-page .badge-success {
+            background: #ECFDF3;
+            color: #027A48;
+        }
+
+        .dashboard-page .badge-muted {
+            background: #F2F4F7;
+            color: #667085;
+        }
     </style>
+
 
     <?php
     /**
@@ -39,6 +71,29 @@
     $marginColor = static function ($margin): string {
         return ((float) ($margin ?? 0)) >= 0 ? 'var(--tr-primary-deep)' : 'var(--tr-accent-brown)';
     };
+
+    $marginReasonBadge = static function (string $reason): array {
+        return match ($reason) {
+            'NEGATIVE'  => ['label' => 'Margin Negatif', 'class' => 'badge-danger'],
+            'INVALID'   => ['label' => 'Cost > Sales',   'class' => 'badge-danger'],
+            'COST_ZERO' => ['label' => 'Cost 0',         'class' => 'badge-warning'],
+            'LOW'       => ['label' => 'Margin Rendah',  'class' => 'badge-warning'],
+            'HIGH'      => ['label' => 'Margin Tinggi',  'class' => 'badge-success'],
+            default     => ['label' => 'Perlu Cek',      'class' => 'badge-muted'],
+        };
+    };
+
+    $marginReasonTooltip = static function (string $reason): string {
+        return match ($reason) {
+            'NEGATIVE'  => 'Margin negatif. Umumnya karena diskon besar atau data cost/price perlu dicek.',
+            'INVALID'   => 'Cost lebih besar dari penjualan. Data tidak valid dan perlu diperbaiki.',
+            'COST_ZERO' => 'Cost tercatat 0. Bisa karena HPP belum diinput atau item gratis/promo.',
+            'LOW'       => 'Margin sangat rendah (≤ threshold). Perlu evaluasi harga atau biaya.',
+            'HIGH'      => 'Margin sangat tinggi (≥ threshold). Umum di F&B tertentu, namun tetap perlu dicek kewajarannya.',
+            default     => 'Transaksi perlu perhatian.',
+        };
+    };
+
 
     // ------------------------------------------------------
     // Pre-calc warna & label (supaya HTML bersih)
@@ -203,13 +258,63 @@
                 <div class="db-card-top">
                     <div>
                         <div class="db-card-title">Margin Ekstrem (Transaksi)</div>
-                        <div class="db-card-subtitle">Transaksi dengan hasil margin yang tidak wajar dan perlu dicek.</div>
+                        <div class="db-card-subtitle">Transaksi dengan margin tidak wajar atau data yang perlu diverifikasi.</div>
                     </div>
+
+                    <?php if (($extremeMarginCount ?? 0) > 0): ?>
+                        <span class="db-pill"><?= (int) $extremeMarginCount; ?> terdeteksi</span>
+                    <?php endif; ?>
                 </div>
-                <p class="db-card-subtitle" style="margin: 10px 0 0;">
-                    Tidak ada transaksi dengan margin ekstrem pada periode ini.
-                    Margin penjualan berada dalam rentang yang wajar.
-                </p>
+
+                <?php if (($extremeMarginCount ?? 0) === 0): ?>
+                    <p class="db-card-subtitle" style="margin: 10px 0 0;">
+                        Tidak ada transaksi dengan margin ekstrem pada periode ini.
+                        Margin penjualan berada dalam rentang yang wajar.
+                    </p>
+                <?php else: ?>
+                    <table class="db-table" style="margin-top: 8px;">
+                        <thead>
+                            <tr>
+                                <th class="db-th-left">Tanggal</th>
+                                <th class="db-th-left">Invoice</th>
+                                <th class="db-th-right">Total</th>
+                                <th class="db-th-right">Margin</th>
+                                <th class="db-th-right">Margin %</th>
+                                <th class="db-th-left">Alasan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach (($extremeMargins ?? []) as $row): ?>
+                                <?php
+                                $reason  = (string) ($row['reason'] ?? '');
+                                $badge   = $marginReasonBadge($reason);
+                                $tooltip = $marginReasonTooltip($reason);
+
+                                $total   = (float) ($row['total'] ?? 0);
+                                $margin  = (float) ($row['margin'] ?? 0);
+                                $pct     = (float) ($row['margin_pct'] ?? 0);
+                                $color   = $marginColor($margin);
+                                ?>
+                                <tr>
+                                    <td><?= esc($row['sale_date'] ?? '-'); ?></td>
+                                    <td><?= esc($row['invoice_no'] ?? '-'); ?></td>
+                                    <td class="db-td-right">Rp <?= $fmtMoney($total); ?></td>
+                                    <td class="db-td-right" style="color: <?= $color; ?>;">Rp <?= $fmtMoney($margin); ?></td>
+                                    <td class="db-td-right" style="color: <?= $color; ?>;"><?= $fmtNum1($pct); ?>%</td>
+                                    <td>
+                                        <span class="db-badge <?= esc($badge['class']); ?>" title="<?= esc($tooltip); ?>">
+                                            <?= esc($badge['label']); ?>
+                                        </span>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+
+                    <div class="db-card-subtitle" style="margin-top: 10px;">
+                        Menampilkan 3 transaksi terbaru yang perlu dicek pada periode aktif.
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
