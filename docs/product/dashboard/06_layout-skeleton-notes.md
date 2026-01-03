@@ -64,6 +64,18 @@ Alasan:
 -   mengikuti hierarchy kognitif
 -   menghindari insight terbaca sebelum kondisi bisnis
 
+### Clarification — Vertical Layout Scope
+
+The term **vertical layout** in this document refers to the **ordering of sections**, not the internal layout of components inside a section.
+
+Each section (e.g. Ringkasan Performa, Perlu Perhatian, Insight, Transaksi Terbaru) must be read in a top-to-bottom order.
+
+Components **within the same section** may use grid or multi-column layouts as long as:
+
+-   the section hierarchy is preserved
+-   the section does not visually dominate other sections
+-   the reading order between sections remains vertical
+
 ---
 
 ## 4. Section Behavior Notes
