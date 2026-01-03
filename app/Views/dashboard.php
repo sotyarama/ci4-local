@@ -47,6 +47,42 @@
             background: #F2F4F7;
             color: #667085;
         }
+
+        .db-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            line-height: 1;
+            font-weight: 600;
+            border: 1px solid var(--tr-border);
+            background: #fff;
+        }
+
+        .db-badge-danger {
+            background: rgba(255, 0, 0, .06);
+            border-color: rgba(255, 0, 0, .15);
+            color: #b42318;
+        }
+
+        .db-badge-warn {
+            background: rgba(245, 158, 11, .10);
+            border-color: rgba(245, 158, 11, .20);
+            color: #92400e;
+        }
+
+        .db-badge-ok {
+            background: rgba(34, 197, 94, .10);
+            border-color: rgba(34, 197, 94, .20);
+            color: #166534;
+        }
+
+        .db-badge-neutral {
+            background: rgba(100, 116, 139, .08);
+            border-color: rgba(100, 116, 139, .18);
+            color: #334155;
+        }
     </style>
 
 
@@ -70,6 +106,61 @@
 
     $marginColor = static function ($margin): string {
         return ((float) ($margin ?? 0)) >= 0 ? 'var(--tr-primary-deep)' : 'var(--tr-accent-brown)';
+    };
+
+    // ------------------------------------------------------
+    // Margin ekstrem: reason mapping (badge + tooltip)
+    // ------------------------------------------------------
+    $marginReasonMeta = static function (?string $reason): array {
+        $reason = strtoupper((string) $reason);
+
+        // default fallback
+        $meta = [
+            'label'   => 'Perlu Cek',
+            'class'   => 'db-badge-neutral',
+            'tooltip' => null,
+        ];
+
+        return match ($reason) {
+            // Paling relevan (tooltip ON)
+            'LOW' => [
+                'label'   => 'Margin Rendah',
+                'class'   => 'db-badge-warn',
+                'tooltip' => 'Margin sangat rendah. Bisa karena promo, harga terlalu murah, atau HPP terlalu tinggi. Cek resep/HPP & pricing.',
+            ],
+            'NEGATIVE', 'INVALID' => [
+                'label'   => 'Margin Negatif',
+                'class'   => 'db-badge-danger',
+                'tooltip' => 'Biaya lebih besar dari harga jual. Biasanya karena HPP salah, resep belum update, atau input transaksi keliru. Perlu dicek.',
+            ],
+
+            // Support reason lain (tooltip optional/off)
+            'COST_ZERO' => [
+                'label'   => 'HPP 0',
+                'class'   => 'db-badge-warn',
+                'tooltip' => null, // sengaja off (biar tidak ramai)
+            ],
+            'HIGH' => [
+                'label'   => 'Margin Tinggi',
+                'class'   => 'db-badge-ok',
+                'tooltip' => null, // F&B: sering wajar (minuman/add-on)
+            ],
+
+            default => $meta,
+        };
+    };
+
+    // Helper render badge HTML (with optional tooltip)
+    $renderReasonBadge = static function (?string $reason) use ($marginReasonMeta): string {
+        $m = $marginReasonMeta($reason);
+        $label = esc($m['label']);
+        $class = esc($m['class']);
+        $tip   = $m['tooltip'];
+
+        if ($tip) {
+            return '<span class="db-badge ' . $class . '" title="' . esc($tip) . '">' . $label . '</span>';
+        }
+        return '<span class="db-badge ' . $class . '">' . $label . '</span>';
     };
 
     $marginReasonBadge = static function (string $reason): array {
@@ -297,15 +388,28 @@
                                 ?>
                                 <tr>
                                     <td><?= esc($row['sale_date'] ?? '-'); ?></td>
-                                    <td><?= esc($row['invoice_no'] ?? '-'); ?></td>
+                                    <td>
+                                        <?php
+                                        $saleId = $row['sale_id'] ?? null;
+                                        $invoice = $row['invoice_no'] ?? null;
+
+                                        $label = $invoice ?: ($saleId ? '#' . $saleId : '(tanpa invoice)');
+                                        $detailUrl = $saleId ? site_url('transactions/sales/detail/' . $saleId) : null;
+                                        ?>
+
+                                        <?php if ($detailUrl): ?>
+                                            <a href="<?= esc($detailUrl); ?>" class="db-link" title="Lihat detail transaksi">
+                                                <?= esc($label); ?>
+                                            </a>
+                                        <?php else: ?>
+                                            <?= esc($label); ?>
+                                        <?php endif; ?>
+                                    </td>
+
                                     <td class="db-td-right">Rp <?= $fmtMoney($total); ?></td>
                                     <td class="db-td-right" style="color: <?= $color; ?>;">Rp <?= $fmtMoney($margin); ?></td>
                                     <td class="db-td-right" style="color: <?= $color; ?>;"><?= $fmtNum1($pct); ?>%</td>
-                                    <td>
-                                        <span class="db-badge <?= esc($badge['class']); ?>" title="<?= esc($tooltip); ?>">
-                                            <?= esc($badge['label']); ?>
-                                        </span>
-                                    </td>
+                                    <td class="db-td-right"><?= $renderReasonBadge($row['reason'] ?? null); ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>

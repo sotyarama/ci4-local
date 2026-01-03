@@ -113,6 +113,7 @@ class Dashboard extends BaseController
                     'margin'      => $margin,
                     'margin_pct'  => $margin_pct,
                     'reason'      => $reason,
+                    'sale_id' => $row['id'],
                 ];
             }
         }
@@ -322,7 +323,8 @@ class Dashboard extends BaseController
             ->where('sale_date >=', $dateFrom)
             ->where('sale_date <=', $dateTo)
             ->orderBy('sale_date', 'DESC')
-            ->orderBy('id', 'DESC');
+            ->orderBy('id', 'DESC')
+            ->select('id, sale_date, invoice_no, total_amount, total_cost');
 
         return $builder->get()->getResultArray();
     }
