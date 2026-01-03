@@ -207,7 +207,8 @@
                     </div>
                 </div>
                 <p class="db-card-subtitle" style="margin: 10px 0 0;">
-                    Belum ada transaksi yang terdeteksi memiliki margin ekstrem pada periode ini.
+                    Tidak ada transaksi dengan margin ekstrem pada periode ini.
+                    Margin penjualan berada dalam rentang yang wajar.
                 </p>
             </div>
         </div>
