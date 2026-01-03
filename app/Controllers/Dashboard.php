@@ -77,6 +77,55 @@ class Dashboard extends BaseController
         $recentSales = $this->getRecentSales($db, 5, $dateFrom, $dateTo);
         $lowStocks   = $this->getLowStocks($db, 6);
 
+        // Margin Ekstrem: scan all sales in range and collect extremes per spec v1
+        $salesInRange = $this->getSalesInRange($db, $dateFrom, $dateTo);
+        $extremes = [];
+
+        foreach ($salesInRange as $row) {
+            $total = (float) ($row['total_amount'] ?? 0);
+            if ($total <= 0) {
+                continue; // ignore non-positive sales
+            }
+
+            $cost = (float) ($row['total_cost'] ?? 0);
+            $margin = $total - $cost;
+            $margin_pct = $total > 0 ? ($margin / $total * 100.0) : 0.0;
+
+            $reason = null;
+            if ($cost < 0) {
+                $reason = 'INVALID';
+            } elseif ($cost == 0 && $total > 0) {
+                $reason = 'COST_ZERO';
+            } elseif ($cost > $total) {
+                $reason = 'NEGATIVE';
+            } elseif ($margin_pct <= 5) {
+                $reason = 'LOW';
+            } elseif ($margin_pct >= 300) {
+                $reason = 'HIGH';
+            }
+
+            if ($reason !== null) {
+                $extremes[] = [
+                    'sale_date'   => $row['sale_date'] ?? null,
+                    'invoice_no'  => $row['invoice_no'] ?? null,
+                    'total'       => $total,
+                    'cost'        => $cost,
+                    'margin'      => $margin,
+                    'margin_pct'  => $margin_pct,
+                    'reason'      => $reason,
+                ];
+            }
+        }
+
+        // Ensure sorted by sale_date DESC (stable if already ordered)
+        usort($extremes, function ($a, $b) {
+            return strcmp((string)$b['sale_date'], (string)$a['sale_date']);
+        });
+
+
+        $extremeMarginCount = count($extremes);
+        $extremeMargins = array_slice($extremes, 0, 3);
+
         // 5) Rekap pembelian & biaya — follow the selected date range
         $purchaseRange = $this->sumPurchases($db, $dateFrom, $dateTo);
         $overheadRange = $this->sumOverheads($db, $dateFrom, $dateTo);
@@ -144,6 +193,10 @@ class Dashboard extends BaseController
                 'operational' => $overheadRange,
                 'payroll'     => $payrollRange,
             ],
+
+            // Extreme margin sales
+            'extremeMarginCount' => $extremeMarginCount,
+            'extremeMargins'     => $extremeMargins,
         ];
 
         return view('dashboard', $data);
@@ -252,6 +305,26 @@ class Dashboard extends BaseController
             ->limit($limit)
             ->get()
             ->getResultArray();
+    }
+
+    /**
+     * Ambil semua transaksi sales pada rentang tanggal (exclude void).
+     *
+     * @param mixed       $db
+     * @param string      $dateFrom Format 'Y-m-d'
+     * @param string      $dateTo   Format 'Y-m-d'
+     * @return array<int,array<string,mixed>>
+     */
+    private function getSalesInRange($db, string $dateFrom, string $dateTo): array
+    {
+        $builder = $db->table('sales')
+            ->where('status !=', 'void')
+            ->where('sale_date >=', $dateFrom)
+            ->where('sale_date <=', $dateTo)
+            ->orderBy('sale_date', 'DESC')
+            ->orderBy('id', 'DESC');
+
+        return $builder->get()->getResultArray();
     }
 
     /**
