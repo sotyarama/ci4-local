@@ -30,6 +30,12 @@ $todayMarginColor = $marginColor($todayStats['margin'] ?? 0);
 $monthMarginColor = $marginColor($monthStats['margin'] ?? 0);
 $weekMarginColor  = $marginColor($weekStats['margin'] ?? 0);
 
+// Range info provided by controller; ensure safe fallbacks
+$rangeLabel = $rangeLabel ?? ('Periode: ' . date('d/m/Y', strtotime($dateFrom ?? $weekStart)) . ' - ' . date('d/m/Y', strtotime($dateTo ?? $today)));
+$rangeDays  = $rangeDays ?? null;
+$rangeStats = $rangeStats ?? null;
+$effectiveStats = $rangeStats ?? ($todayStats ?? []);
+
 $monthDeltaColor = (($monthDeltaPct ?? 0) >= 0) ? 'var(--tr-primary-deep)' : 'var(--tr-accent-brown)';
 $monthDeltaLabel = is_null($monthDeltaPct) ? 'n/a' : number_format((float) $monthDeltaPct, 1, ',', '.') . '%';
 
@@ -52,70 +58,51 @@ $itemsPerTx = $todayTx > 0 ? number_format((float) ($todayItems / max(1, $todayT
         </div>
 
         <div class="db-pills">
-            <span class="db-pill">Hari ini: <?= esc($today); ?></span>
-            <span class="db-pill">7 hari: <?= esc($weekStart); ?> - <?= esc($today); ?></span>
+            <span class="db-pill">Range aktif: <?= esc(str_replace('Periode: ', '', $rangeLabel)); ?><?= $rangeDays ? ' (' . (int)$rangeDays . ' hari)' : ''; ?></span>
         </div>
 
         <div style="margin-left:12px;">
             <?= $this->include('partials/date_range_picker', ['mode' => 'date']) ?>
+
+            <?php
+            // Preset links: use server-side $today (Y-m-d) as reference
+            $presetToday = $today ?? date('Y-m-d');
+            $preset7Start = date('Y-m-d', strtotime($presetToday . ' -6 days'));
+            $presetMonthStart = date('Y-m-01', strtotime($presetToday));
+            $dashUrl = site_url('dashboard');
+            ?>
+
+            <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+                <a href="<?= esc($dashUrl . '?' . http_build_query(['start' => $presetToday, 'end' => $presetToday])); ?>" class="db-pill">Today</a>
+                <a href="<?= esc($dashUrl . '?' . http_build_query(['start' => $preset7Start, 'end' => $presetToday])); ?>" class="db-pill">7 Hari</a>
+                <a href="<?= esc($dashUrl . '?' . http_build_query(['start' => $presetMonthStart, 'end' => $presetToday])); ?>" class="db-pill">Bulan Ini</a>
+                <a href="<?= esc($dashUrl); ?>" class="db-pill">Reset</a>
+            </div>
         </div>
     </div>
 
     <!-- KPI utama: sales/margin -->
-    <div class="db-kpi-grid">
+        <div class="db-kpi-grid">
 
-        <!-- Penjualan Hari Ini -->
+        <!-- Ringkasan Periode Terpilih (single source of truth) -->
         <div class="db-kpi-card">
-            <div class="db-kpi-label">Penjualan Hari Ini</div>
-            <div class="db-kpi-value">Rp <?= $fmtMoney($todayStats['sales'] ?? 0); ?></div>
+            <div class="db-kpi-label">Penjualan (Periode Terpilih)</div>
+            <div class="db-kpi-value">Rp <?= $fmtMoney($effectiveStats['sales'] ?? 0); ?></div>
 
-            <div class="db-text-muted" style="color: <?= $todayMarginColor; ?>;">
-                Margin: Rp <?= $fmtMoney($todayStats['margin'] ?? 0); ?>
+            <div class="db-text-muted" style="color: <?= $marginColor($effectiveStats['margin'] ?? 0); ?>;">
+                Margin: Rp <?= $fmtMoney($effectiveStats['margin'] ?? 0); ?>
                 <span class="db-text-muted" style="color: var(--tr-muted-text);">
-                    (<?= $fmtNum1($todayStats['margin_pct'] ?? 0); ?>%)
+                    (<?= $fmtNum1($effectiveStats['margin_pct'] ?? 0); ?>%)
                 </span>
             </div>
 
             <div class="db-kpi-sub">
-                <?= (int) ($todayStats['tx'] ?? 0); ?> transaksi |
-                <?= $fmtNum0($todayStats['items'] ?? 0); ?> item |
-                Avg ticket Rp <?= $fmtMoney($todayStats['avg_ticket'] ?? 0); ?>
-            </div>
-        </div>
-
-        <!-- Bulan Ini -->
-        <div class="db-kpi-card">
-            <div class="db-kpi-label">Bulan Ini (<?= esc($monthLabel); ?>)</div>
-            <div class="db-kpi-value">Rp <?= $fmtMoney($monthStats['sales'] ?? 0); ?></div>
-
-            <div class="db-text-muted" style="color: <?= $monthMarginColor; ?>;">
-                Margin: Rp <?= $fmtMoney($monthStats['margin'] ?? 0); ?>
-                <span class="db-text-muted" style="color: var(--tr-muted-text);">
-                    (<?= $fmtNum1($monthStats['margin_pct'] ?? 0); ?>%)
-                </span>
-            </div>
-
-            <div class="db-kpi-sub">
-                vs bulan lalu:
-                <span class="db-text-strong" style="color: <?= $monthDeltaColor; ?>;"><?= $monthDeltaLabel; ?></span>
-            </div>
-        </div>
-
-        <!-- 7 Hari Terakhir -->
-        <div class="db-kpi-card">
-            <div class="db-kpi-label">7 Hari Terakhir</div>
-            <div class="db-kpi-value">Rp <?= $fmtMoney($weekStats['sales'] ?? 0); ?></div>
-
-            <div class="db-text-muted" style="color: <?= $weekMarginColor; ?>;">
-                Margin: Rp <?= $fmtMoney($weekStats['margin'] ?? 0); ?>
-                <span class="db-text-muted" style="color: var(--tr-muted-text);">
-                    (<?= $fmtNum1($weekStats['margin_pct'] ?? 0); ?>%)
-                </span>
-            </div>
-
-            <div class="db-kpi-sub">
-                <?= (int) ($weekStats['tx'] ?? 0); ?> transaksi |
-                <?= $fmtNum0($weekStats['items'] ?? 0); ?> item
+                Berdasarkan periode terpilih
+                <div style="margin-top:6px; font-size:12px; color:var(--tr-muted-text);">
+                    <?= (int) ($effectiveStats['tx'] ?? 0); ?> transaksi |
+                    <?= $fmtNum0($effectiveStats['items'] ?? 0); ?> item |
+                    Avg ticket Rp <?= $fmtMoney($effectiveStats['avg_ticket'] ?? 0); ?>
+                </div>
             </div>
         </div>
     </div>
@@ -123,26 +110,26 @@ $itemsPerTx = $todayTx > 0 ? number_format((float) ($todayItems / max(1, $todayT
     <!-- KPI tambahan: transaksi, item, pembelian, biaya -->
     <div class="db-mini-grid">
         <div class="db-mini-card">
-            <div class="db-mini-label">Transaksi Hari Ini</div>
-            <div class="db-mini-value"><?= $todayTx; ?> trx</div>
-            <div class="db-mini-sub">Avg ticket Rp <?= $fmtMoney($todayStats['avg_ticket'] ?? 0); ?></div>
+            <div class="db-mini-label">Transaksi (Periode Terpilih)</div>
+            <div class="db-mini-value"><?= (int) ($effectiveStats['tx'] ?? 0); ?> trx</div>
+            <div class="db-mini-sub">Avg ticket Rp <?= $fmtMoney($effectiveStats['avg_ticket'] ?? 0); ?></div>
         </div>
 
         <div class="db-mini-card">
-            <div class="db-mini-label">Item Terjual (Hari Ini)</div>
-            <div class="db-mini-value"><?= $fmtNum0($todayItems); ?> item</div>
-            <div class="db-mini-sub">Rata-rata <?= $itemsPerTx; ?> / transaksi</div>
+            <div class="db-mini-label">Item Terjual (Periode Terpilih)</div>
+            <div class="db-mini-value"><?= $fmtNum0($effectiveStats['items'] ?? 0); ?> item</div>
+            <div class="db-mini-sub">Rata-rata <?= $effectiveStats['tx'] > 0 ? number_format($effectiveStats['items'] / max(1, $effectiveStats['tx']), 1, ',', '.') : '0.0'; ?> / transaksi</div>
         </div>
 
         <div class="db-mini-card">
-            <div class="db-mini-label">Pembelian Bulan Ini</div>
-            <div class="db-mini-value">Rp <?= $fmtMoney($purchaseMonth); ?></div>
-            <div class="db-mini-sub">Periode <?= esc($monthLabel); ?></div>
+            <div class="db-mini-label">Pembelian (Periode Terpilih)</div>
+            <div class="db-mini-value">Rp <?= $fmtMoney($purchaseRange ?? 0); ?></div>
+            <div class="db-mini-sub">Periode <?= esc($dateFrom ?? '-'); ?> - <?= esc($dateTo ?? '-'); ?></div>
         </div>
 
         <div class="db-mini-card">
-            <div class="db-mini-label">Biaya Bulan Ini</div>
-            <div class="db-mini-value">Rp <?= $fmtMoney($overheadMonth); ?></div>
+            <div class="db-mini-label">Biaya (Periode Terpilih)</div>
+            <div class="db-mini-value">Rp <?= $fmtMoney($overheadRange ?? ($overheadBreakdown['operational'] ?? 0) + ($overheadBreakdown['payroll'] ?? 0)); ?></div>
             <div class="db-mini-sub">
                 Operasional: Rp <?= $fmtMoney($overheadBreakdown['operational'] ?? 0); ?> |
                 Payroll: Rp <?= $fmtMoney($overheadBreakdown['payroll'] ?? 0); ?>
@@ -160,7 +147,7 @@ $itemsPerTx = $todayTx > 0 ? number_format((float) ($todayItems / max(1, $todayT
     <div class="card db-card-pad">
         <div class="db-card-top">
             <div>
-                <div class="db-card-title">Top Menu 7 Hari</div>
+                <div class="db-card-title">Top Menu</div>
                 <div class="db-card-subtitle">Periode <?= esc($dateFrom ?? $weekStart); ?> - <?= esc($dateTo ?? $today); ?></div>
             </div>
             <a href="<?= site_url('reports/sales/menu'); ?>" class="db-link-pill">Laporan</a>
@@ -266,7 +253,7 @@ $itemsPerTx = $todayTx > 0 ? number_format((float) ($todayItems / max(1, $todayT
     <div class="db-card-top">
         <div>
             <div class="db-card-title">Transaksi Terbaru</div>
-            <div class="db-card-subtitle">5 transaksi non-void terakhir.</div>
+            <div class="db-card-subtitle">5 transaksi non-void terakhir. Menampilkan transaksi dalam range aktif.</div>
         </div>
         <a href="<?= site_url('transactions/sales'); ?>" class="db-link">Lihat semua</a>
     </div>

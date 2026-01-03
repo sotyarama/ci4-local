@@ -33,6 +33,7 @@ class Dashboard extends BaseController
         $range = tr_parse_range_dateonly($this->request);
         $dateFrom = $range['startDate'];
         $dateTo   = $range['endDate'];
+        $rangeDays = $range['rangeDays'] ?? null;
 
         // Also keep timezone & today for labels
         $tz = new DateTimeZone('Asia/Jakarta');
@@ -56,16 +57,51 @@ class Dashboard extends BaseController
         $monthStats     = $this->aggregateSales($db, $dateFrom, $dateTo);
         $lastMonthStats = $this->aggregateSales($db, $dateFrom, $dateTo);
 
+        // Provide an explicit 'rangeStats' aggregation to make it clear these
+        // KPIs reflect the selected range. Keep existing keys for
+        // backward-compatibility but prefer 'rangeStats' in the view.
+        $rangeStats = $this->aggregateSales($db, $dateFrom, $dateTo);
+
+        // Human-readable label for the selected range (dd/mm/YYYY)
+        try {
+            $d1 = (new DateTime($dateFrom, $tz))->format('d/m/Y');
+            $d2 = (new DateTime($dateTo, $tz))->format('d/m/Y');
+            $rangeLabel = "Periode: {$d1} - {$d2}";
+        } catch (\Exception $e) {
+            $rangeLabel = "Periode: {$dateFrom} - {$dateTo}";
+        }
+
         // 4) Dataset tambahan untuk widget dashboard
         // Top menus & recent sales follow the selected range
         $topMenus    = $this->getTopMenus($db, $dateFrom, $dateTo, 5);
         $recentSales = $this->getRecentSales($db, 5, $dateFrom, $dateTo);
         $lowStocks   = $this->getLowStocks($db, 6);
 
-        // 5) Rekap pembelian & biaya (bulan berjalan)
-        $purchaseMonth = $this->sumPurchases($db, $monthStart, $today);
-        $overheadMonth = $this->sumOverheads($db, $monthStart, $today);
-        $payrollMonth  = $this->sumPayrolls($db, $todayDate->format('Y-m'));
+        // 5) Rekap pembelian & biaya — follow the selected date range
+        $purchaseRange = $this->sumPurchases($db, $dateFrom, $dateTo);
+        $overheadRange = $this->sumOverheads($db, $dateFrom, $dateTo);
+
+        // Payroll is stored per month; sum payrolls for months overlapping the range
+        $payrollRange = 0.0;
+        try {
+            $startMonth = new DateTime($dateFrom, $tz);
+            $startMonth->modify('first day of this month');
+            $endMonth = new DateTime($dateTo, $tz);
+            $endMonth->modify('first day of this month');
+
+            $period = new \DatePeriod(
+                $startMonth,
+                new \DateInterval('P1M'),
+                (clone $endMonth)->modify('+1 month')
+            );
+
+            foreach ($period as $m) {
+                $payrollRange += $this->sumPayrolls($db, $m->format('Y-m'));
+            }
+        } catch (\Exception $e) {
+            // Fallback: treat as zero on error
+            $payrollRange = 0.0;
+        }
 
         // 6) Delta penjualan bulan berjalan vs bulan lalu (persen)
         $monthDeltaPct = null;
@@ -83,6 +119,9 @@ class Dashboard extends BaseController
             'weekStart'        => $weekStart,
             'dateFrom'         => $dateFrom,
             'dateTo'           => $dateTo,
+            'rangeLabel'       => $rangeLabel,
+            'rangeDays'        => $rangeDays,
+            'rangeStats'       => $rangeStats,
             'monthLabel'       => $todayDate->format('Y-m'),
             'lastMonthLabel'   => (clone $todayDate)->modify('first day of last month')->format('Y-m'),
 
@@ -98,12 +137,12 @@ class Dashboard extends BaseController
             'recentSales'      => $recentSales,
             'lowStocks'        => $lowStocks,
 
-            // Financial summaries (bulan berjalan)
-            'purchaseMonth'    => $purchaseMonth,
-            'overheadMonth'    => $overheadMonth + $payrollMonth,
+            // Financial summaries for the selected range
+            'purchaseRange'    => $purchaseRange,
+            'overheadRange'    => $overheadRange + $payrollRange,
             'overheadBreakdown' => [
-                'operational' => $overheadMonth,
-                'payroll'     => $payrollMonth,
+                'operational' => $overheadRange,
+                'payroll'     => $payrollRange,
             ],
         ];
 
