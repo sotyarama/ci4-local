@@ -2,24 +2,33 @@
     <?php
     // Defensive defaults — ensure the partial is safe when included anywhere
     $mode = $mode ?? 'datetime';
+
+    // Dashboard mode: hide per-page + submit/reset controls
+    $isDashboard = ($mode === 'dashboard');
+
     // prefer controller-provided $dateFrom/$dateTo if present
     $startDate = $startDate ?? ($dateFrom ?? date('Y-m-01'));
     $endDate   = $endDate ?? ($dateTo ?? date('Y-m-d'));
+
     $allDay    = isset($allDay) ? (bool) $allDay : true;
     $startTime = $startTime ?? '00:00';
     $endTime   = $endTime ?? '23:59';
+
     // per-page: prefer explicit $perPage, then request GET param, else 20
     $perPage   = $perPage ?? (int) (request()->getGet('per_page') ?? 20);
-    ?>
-    <?php if ($mode === 'date'): ?>
-        <?php $hiddenAllday = '1';
+
+    // Normalize hidden inputs based on mode
+    if ($mode === 'date' || $mode === 'dashboard') {
+        $hiddenAllday    = '1';
         $hiddenStartTime = '00:00';
-        $hiddenEndTime = '23:59'; ?>
-    <?php else: ?>
-        <?php $hiddenAllday = $allDay ? '1' : '0';
+        $hiddenEndTime   = '23:59';
+    } else {
+        $hiddenAllday    = $allDay ? '1' : '0';
         $hiddenStartTime = esc($startTime);
-        $hiddenEndTime = esc($endTime); ?>
-    <?php endif; ?>
+        $hiddenEndTime   = esc($endTime);
+    }
+    ?>
+
 
     <input type="hidden" name="start" id="input-start" value="<?= esc($startDate); ?>">
     <input type="hidden" name="end" id="input-end" value="<?= esc($endDate); ?>">
@@ -30,36 +39,41 @@
     <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
         <div style="display:flex; align-items:center; gap:8px; padding:8px 10px; border:1px solid var(--tr-border); border-radius:10px; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.04);">
             <button type="button" id="range-prev" style="border:none; background:var(--tr-border); border-radius:8px; width:28px; height:28px; cursor:pointer;">‹</button>
+
             <div id="range-label" style="font-size:12px; color:var(--tr-text); min-width:200px;">
                 <!-- filled by JS -->
             </div>
+
             <button type="button" id="range-next" style="border:none; background:var(--tr-border); border-radius:8px; width:28px; height:28px; cursor:pointer;">›</button>
+
             <button type="button" id="open-picker" style="margin-left:6px; padding:6px 10px; border-radius:8px; border:1px solid var(--tr-border); background:var(--tr-secondary-beige); color:var(--tr-text); cursor:pointer;">
                 Pilih Range
             </button>
         </div>
 
-        <div style="display:flex; gap:10px; align-items:center;">
-            <?php if (($mode ?? 'datetime') !== 'date'): ?>
-                <div style="display:flex; flex-direction:column; font-size:12px;">
-                    <label for="per_page" style="margin-bottom:2px; color:var(--tr-muted-text);">Baris per halaman</label>
-                    <select name="per_page" id="per_page"
-                        style="min-width:120px; padding:5px 8px; border-radius:6px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:12px;">
-                        <?php foreach ([20, 50, 100, 200] as $opt): ?>
-                            <option value="<?= $opt; ?>" <?= ((int)$perPage === $opt) ? 'selected' : ''; ?>><?= $opt; ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-            <?php endif; ?>
+        <?php if (!$isDashboard): ?>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <?php if ($mode !== 'date'): ?>
+                    <div style="display:flex; flex-direction:column; font-size:12px;">
+                        <label for="per_page" style="margin-bottom:2px; color:var(--tr-muted-text);">Baris per halaman</label>
+                        <select name="per_page" id="per_page"
+                            style="min-width:120px; padding:5px 8px; border-radius:6px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:12px;">
+                            <?php foreach ([20, 50, 100, 200] as $opt): ?>
+                                <option value="<?= $opt; ?>" <?= ((int)$perPage === $opt) ? 'selected' : ''; ?>><?= $opt; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                <?php endif; ?>
 
-            <div style="display:flex; gap:6px; align-items:flex-end; padding-top:14px;">
-                <button type="submit"
-                    style="padding:6px 10px; border-radius:999px; border:none; font-size:12px; background:var(--tr-primary); color:#fff; cursor:pointer;">
-                    Terapkan Filter
-                </button>
-                <a href="<?= current_url(); ?>" style="font-size:12px; color:var(--tr-muted-text); text-decoration:none;">Reset</a>
+                <div style="display:flex; gap:6px; align-items:flex-end; padding-top:14px;">
+                    <button type="submit"
+                        style="padding:6px 10px; border-radius:999px; border:none; font-size:12px; background:var(--tr-primary); color:#fff; cursor:pointer;">
+                        Terapkan Filter
+                    </button>
+                    <a href="<?= current_url(); ?>" style="font-size:12px; color:var(--tr-muted-text); text-decoration:none;">Reset</a>
+                </div>
             </div>
-        </div>
+        <?php endif; ?>
     </div>
 </form>
 

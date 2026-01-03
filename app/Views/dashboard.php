@@ -28,26 +28,6 @@
             white-space: nowrap;
         }
 
-        .dashboard-page .badge-danger {
-            background: #FDECEC;
-            color: #B42318;
-        }
-
-        .dashboard-page .badge-warning {
-            background: #FFF4E5;
-            color: #B54708;
-        }
-
-        .dashboard-page .badge-success {
-            background: #ECFDF3;
-            color: #027A48;
-        }
-
-        .dashboard-page .badge-muted {
-            background: #F2F4F7;
-            color: #667085;
-        }
-
         .db-badge {
             display: inline-flex;
             align-items: center;
@@ -163,29 +143,6 @@
         return '<span class="db-badge ' . $class . '">' . $label . '</span>';
     };
 
-    $marginReasonBadge = static function (string $reason): array {
-        return match ($reason) {
-            'NEGATIVE'  => ['label' => 'Margin Negatif', 'class' => 'badge-danger'],
-            'INVALID'   => ['label' => 'Cost > Sales',   'class' => 'badge-danger'],
-            'COST_ZERO' => ['label' => 'Cost 0',         'class' => 'badge-warning'],
-            'LOW'       => ['label' => 'Margin Rendah',  'class' => 'badge-warning'],
-            'HIGH'      => ['label' => 'Margin Tinggi',  'class' => 'badge-success'],
-            default     => ['label' => 'Perlu Cek',      'class' => 'badge-muted'],
-        };
-    };
-
-    $marginReasonTooltip = static function (string $reason): string {
-        return match ($reason) {
-            'NEGATIVE'  => 'Margin negatif. Umumnya karena diskon besar atau data cost/price perlu dicek.',
-            'INVALID'   => 'Cost lebih besar dari penjualan. Data tidak valid dan perlu diperbaiki.',
-            'COST_ZERO' => 'Cost tercatat 0. Bisa karena HPP belum diinput atau item gratis/promo.',
-            'LOW'       => 'Margin sangat rendah (≤ threshold). Perlu evaluasi harga atau biaya.',
-            'HIGH'      => 'Margin sangat tinggi (≥ threshold). Umum di F&B tertentu, namun tetap perlu dicek kewajarannya.',
-            default     => 'Transaksi perlu perhatian.',
-        };
-    };
-
-
     // ------------------------------------------------------
     // Pre-calc warna & label (supaya HTML bersih)
     // ------------------------------------------------------
@@ -223,7 +180,7 @@
             </div>
 
             <div style="margin-left:12px;">
-                <?= $this->include('partials/date_range_picker', ['mode' => 'date']) ?>
+                <?= view('partials/date_range_picker', ['mode' => 'dashboard']) ?>
 
                 <?php
                 // Preset links: use server-side $today (Y-m-d) as reference
@@ -292,17 +249,15 @@
         </div>
     </div>
 
-    <!-- ======================================================
-     Middle Row: Perlu Perhatian (vertical) + Insight + Top Menu
-    ======================================================= -->
+    <div class="card db-card-pad db-section-card">
+        <div class="db-card-top">
+            <div>
+                <div class="db-card-title">Perlu Perhatian</div>
+                <div class="db-card-subtitle">Beberapa hal yang sebaiknya dicek agar operasional tetap lancar.</div>
+            </div>
+        </div>
 
-    <div class="db-section-header">
-        <div class="db-section-title">Perlu Perhatian</div>
-        <div class="db-section-subtitle">Beberapa hal yang sebaiknya dicek agar operasional tetap lancar.</div>
-    </div>
-
-    <div class="db-section db-attention-section">
-        <div class="db-attention-grid">
+        <div class="db-attention-grid" style="margin-top:10px;">
             <div class="card db-card-pad db-card-flexcol">
                 <div>
                     <div class="db-card-top" style="margin-bottom: 0;">
@@ -378,9 +333,6 @@
                             <?php foreach (($extremeMargins ?? []) as $row): ?>
                                 <?php
                                 $reason  = (string) ($row['reason'] ?? '');
-                                $badge   = $marginReasonBadge($reason);
-                                $tooltip = $marginReasonTooltip($reason);
-
                                 $total   = (float) ($row['total'] ?? 0);
                                 $margin  = (float) ($row['margin'] ?? 0);
                                 $pct     = (float) ($row['margin_pct'] ?? 0);
@@ -423,100 +375,120 @@
         </div>
     </div>
 
-    <div class="db-section-header">
-        <div class="db-section-title">Insight Periode Ini</div>
-        <div class="db-section-subtitle">Pola dan kecenderungan yang menonjol dari periode ini.</div>
-    </div>
 
-    <!-- Top Menu (moved below Insight header) -->
-    <div class="card db-card-pad">
+    <div class="card db-card-pad db-section-card" style="margin-top: 12px;">
         <div class="db-card-top">
             <div>
-                <div class="db-card-title">Top Menu</div>
-                <div class="db-card-subtitle">Periode <?= esc($dateFrom ?? $weekStart); ?> - <?= esc($dateTo ?? $today); ?></div>
-            </div>
-            <a href="<?= site_url('reports/sales/menu'); ?>" class="db-link-pill">Laporan</a>
-        </div>
-
-        <?php if (empty($topMenus)): ?>
-            <p class="db-card-subtitle" style="margin: 8px 0 0;">Belum ada data penjualan 7 hari terakhir.</p>
-        <?php else: ?>
-            <table class="db-table">
-                <thead>
-                    <tr>
-                        <th class="db-th-left">Menu</th>
-                        <th class="db-th-right">Qty</th>
-                        <th class="db-th-right">Omzet</th>
-                        <th class="db-th-right">Margin %</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($topMenus as $row): ?>
-                        <?php
-                        $sales     = (float) ($row['total_sales'] ?? 0);
-                        $cost      = (float) ($row['total_cost'] ?? 0);
-                        $margin    = $sales - $cost;
-                        $marginPct = $sales > 0 ? ($margin / $sales * 100) : 0;
-                        $rowColor  = $marginColor($margin);
-                        ?>
-                        <tr>
-                            <td><?= esc($row['menu_name'] ?? 'Menu'); ?></td>
-                            <td class="db-td-right"><?= $fmtNum0($row['total_qty'] ?? 0); ?></td>
-                            <td class="db-td-right">Rp <?= $fmtMoney($sales); ?></td>
-                            <td class="db-td-right" style="color: <?= $rowColor; ?>;"><?= $fmtNum1($marginPct); ?>%</td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php endif; ?>
-    </div>
-
-    <!-- ======================================================
-     Recent Transactions
-======================================================= -->
-    <div class="card db-card-pad" style="margin-top: 12px;">
-        <div class="db-card-top">
-            <div>
-                <div class="db-card-title">Transaksi Terbaru</div>
-                <div class="db-card-subtitle">5 transaksi non-void terakhir. Menampilkan transaksi dalam range aktif.</div>
+                <div class="db-card-title">Aktivitas Terbaru</div>
+                <div class="db-card-subtitle">Ringkasan aktivitas terbaru pada periode aktif.</div>
             </div>
             <a href="<?= site_url('transactions/sales'); ?>" class="db-link">Lihat semua</a>
         </div>
 
-        <?php if (empty($recentSales)): ?>
-            <p class="db-card-subtitle" style="margin: 8px 0 0;">Belum ada transaksi.</p>
-        <?php else: ?>
-            <table class="db-table">
-                <thead>
-                    <tr>
-                        <th class="db-th-left">Tanggal</th>
-                        <th class="db-th-left">Invoice</th>
-                        <th class="db-th-right">Total</th>
-                        <th class="db-th-right">Margin</th>
-                        <th class="db-th-right">Margin %</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($recentSales as $sale): ?>
-                        <?php
-                        $total     = (float) ($sale['total_amount'] ?? 0);
-                        $cost      = (float) ($sale['total_cost'] ?? 0);
-                        $margin    = $total - $cost;
-                        $marginPct = $total > 0 ? ($margin / $total * 100) : 0;
-                        $color     = $marginColor($margin);
-                        ?>
-                        <tr>
-                            <td><?= esc($sale['sale_date'] ?? '-'); ?></td>
-                            <td><?= esc($sale['invoice_no'] ?? '-'); ?></td>
-                            <td class="db-td-right">Rp <?= $fmtMoney($total); ?></td>
-                            <td class="db-td-right" style="color: <?= $color; ?>;">Rp <?= $fmtMoney($margin); ?></td>
-                            <td class="db-td-right" style="color: <?= $color; ?>;"><?= $fmtNum1($marginPct); ?>%</td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php endif; ?>
-    </div> <!-- /.card Recent Transactions -->
+        <div style="margin-top:10px;">
+            <div class="card db-card-pad">
+                <div class="db-card-top">
+                    <div>
+                        <div class="db-card-title">Transaksi Terbaru</div>
+                        <div class="db-card-subtitle">5 transaksi non-void terakhir. Menampilkan transaksi dalam range aktif.</div>
+                    </div>
+                </div>
+
+                <?php if (empty($recentSales)): ?>
+                    <p class="db-card-subtitle" style="margin: 8px 0 0;">Belum ada transaksi.</p>
+                <?php else: ?>
+                    <table class="db-table">
+                        <thead>
+                            <tr>
+                                <th class="db-th-left">Tanggal</th>
+                                <th class="db-th-left">Invoice</th>
+                                <th class="db-th-right">Total</th>
+                                <th class="db-th-right">Margin</th>
+                                <th class="db-th-right">Margin %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($recentSales as $sale): ?>
+                                <?php
+                                $total     = (float) ($sale['total_amount'] ?? 0);
+                                $cost      = (float) ($sale['total_cost'] ?? 0);
+                                $margin    = $total - $cost;
+                                $marginPct = $total > 0 ? ($margin / $total * 100) : 0;
+                                $color     = $marginColor($margin);
+                                ?>
+                                <tr>
+                                    <td><?= esc($sale['sale_date'] ?? '-'); ?></td>
+                                    <td><?= esc($sale['invoice_no'] ?? '-'); ?></td>
+                                    <td class="db-td-right">Rp <?= $fmtMoney($total); ?></td>
+                                    <td class="db-td-right" style="color: <?= $color; ?>;">Rp <?= $fmtMoney($margin); ?></td>
+                                    <td class="db-td-right" style="color: <?= $color; ?>;"><?= $fmtNum1($marginPct); ?>%</td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="card db-card-pad db-section-card">
+        <div class="db-card-top">
+            <div>
+                <div class="db-card-title">Insight Periode Ini</div>
+                <div class="db-card-subtitle">Pola dan kecenderungan yang menonjol dari periode ini.</div>
+            </div>
+        </div>
+
+        <div style="margin-top:10px;">
+            <!-- isi insight kamu, misal Top Menu card/table -->
+            <div class="card db-card-pad">
+                <div class="db-card-top">
+                    <div>
+                        <div class="db-card-title">Top Menu</div>
+                        <div class="db-card-subtitle">Periode <?= esc($dateFrom ?? $weekStart); ?> - <?= esc($dateTo ?? $today); ?></div>
+                    </div>
+                    <a href="<?= site_url('reports/sales/menu'); ?>" class="db-link-pill">Laporan</a>
+                </div>
+
+                <?php if (empty($topMenus)): ?>
+                    <p class="db-card-subtitle" style="margin: 8px 0 0;">Belum ada data penjualan 7 hari terakhir.</p>
+                <?php else: ?>
+                    <table class="db-table">
+                        <thead>
+                            <tr>
+                                <th class="db-th-left">Menu</th>
+                                <th class="db-th-right">Qty</th>
+                                <th class="db-th-right">Omzet</th>
+                                <th class="db-th-right">Margin %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($topMenus as $row): ?>
+                                <?php
+                                $sales     = (float) ($row['total_sales'] ?? 0);
+                                $cost      = (float) ($row['total_cost'] ?? 0);
+                                $margin    = $sales - $cost;
+                                $marginPct = $sales > 0 ? ($margin / $sales * 100) : 0;
+                                $rowColor  = $marginColor($margin);
+                                ?>
+                                <tr>
+                                    <td><?= esc($row['menu_name'] ?? 'Menu'); ?></td>
+                                    <td class="db-td-right"><?= $fmtNum0($row['total_qty'] ?? 0); ?></td>
+                                    <td class="db-td-right">Rp <?= $fmtMoney($sales); ?></td>
+                                    <td class="db-td-right" style="color: <?= $rowColor; ?>;"><?= $fmtNum1($marginPct); ?>%</td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+
+
+
 
 </div> <!-- /.dashboard-page -->
 
