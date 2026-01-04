@@ -75,7 +75,7 @@ $dashOrders = [
         </div>
 
         <header class="tr-branding-header">
-            <h1>Temu Rasa - Brand Guideline</h1>
+            <h1>TERAS (Temu Rasa) Malangsuko - Brand Guideline</h1>
             <p class="tr-branding-subtitle">Tempat Bertemu, Tempat Berasa.</p>
         </header>
 
