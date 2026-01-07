@@ -1,0 +1,131 @@
+:root{
+  /* Layout dimensions */
+  --sidebar-w: 260px;
+  --topbar-h: 60px;
+  --footer-h: 50px;
+  --logo-h: 120px;
+
+  /* Colors */
+  /* Basic color palette */
+  --color-white: #FFFFFF;
+  --color-black: #000000;
+
+  /* Background colors */
+  --color-bg-blue-primary: #0F172A;
+  --color-bg-gray-light: #F8FAFC;
+  
+  /* Text colors */
+  --color-text-primary: #F1F5F9;
+
+}
+
+/* 16:9 */
+@media (min-aspect-ratio: 16/9){
+  :root{ 
+
+    }
+}
+
+/* 4:3 */
+@media (max-aspect-ratio: 4/3){
+  :root{ 
+    --sidebar-w: 200px;
+    --topbar-h: 50px;
+    --footer-h: 40px; 
+    --logo-h: 80px; 
+    }
+}
+
+html, body{ height:100%; }
+body{ margin:0; }
+
+.app{
+  height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(240px, var(--sidebar-w)) 1fr;
+  overflow: hidden; /* jangan scroll di window */
+}
+
+.app__sidebar{
+  display: flex;
+  flex-direction: column;
+  height: 100%;          /* karena parent .app sudah 100dvh */
+  overflow: hidden;      /* IMPORTANT: jangan scroll di sidebar */
+  min-width: var(--sidebar-w);
+  background-color: var(--color-bg-blue-primary);
+}
+
+.app__main{
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* scroll hanya di content */
+  min-width: 0;
+}
+
+.app__topbar{
+  flex: 0 0 var(--topbar-h);
+  min-height: var(--topbar-h);
+  background-color: var(--color-white)
+}
+
+.app__footer{
+  flex: 0 0 var(--footer-h);
+  min-height: var(--footer-h);
+  background-color: var(--color-bg-blue-primary);
+}
+
+.app__content{
+  flex: 1 1 auto;
+  min-height: 0;     /* KRUSIAL agar scroll bekerja di flex column */
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  background-color: var(--color-bg-gray-light);
+}
+
+/* Logo area: fixed height (sesuai Figma 150) */
+.app__logo{
+  flex: 0 0 var(--logo-h);
+  min-height: var(--logo-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* padding: 12px;  (opsional) */
+}
+
+/* Nav area: fill remaining height + scroll */
+.app__nav{
+  flex: 1 1 auto;
+  min-height: 0;         /* KRUSIAL agar overflow scroll bekerja */
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  display: flex;
+  flex-direction: column;
+  /* gap: 6px;           (opsional) */
+  /* padding: 12px;      (opsional) */
+
+  scrollbar-gutter: stable;
+}
+
+/* Link style (minimal) */
+.app__navlink{
+  display: block;
+  text-decoration: none;
+  user-select: none;
+
+  /* ukuran touch-friendly */
+  padding: 10px 12px;
+  border-radius: 10px;
+
+  /* biar text ga bikin layout pecah */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Active state */
+.app__navlink.is-active{
+  font-weight: 600;
+}

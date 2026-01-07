@@ -28,6 +28,13 @@ $routes->post('auth/reset',   'Auth\ResetPassword::update');
 
 
 // ======================================================
+// App Routes (namespace: App\Controllers\App)
+// ======================================================
+$routes->group('app', ['namespace' => 'App\Controllers\App'], static function ($routes) {
+    $routes->get('playground', 'Playground::index');
+});
+
+// ======================================================
 // Protected Routes (Auth + Role)
 // ======================================================
 $routes->group('', ['filter' => 'auth'], static function ($routes) {
