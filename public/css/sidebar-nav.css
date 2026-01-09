@@ -124,6 +124,48 @@
     opacity: 0.95;
 }
 
+/* Scoped collapsed-state rules: only affect sidebar visuals */
+.layout.sidebar-collapsed .sidebar {
+    width: var(--tr-sidebar-w-collapsed, 64px);
+    transition: width 160ms ease;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.layout.sidebar-collapsed .sidebar .sidebar-logo {
+    max-width: 40px;
+}
+
+.layout.sidebar-collapsed .sidebar .nav-label {
+    display: none; /* hide link text only */
+}
+
+/* hide section headings and title in collapsed state to keep sidebar compact */
+.layout.sidebar-collapsed .sidebar .sidebar-title,
+.layout.sidebar-collapsed .sidebar .nav-section-title {
+    display: none;
+}
+
+/* keep links horizontally centered when collapsed */
+.layout.sidebar-collapsed .sidebar .nav-group,
+.layout.sidebar-collapsed .sidebar .nav-link {
+    text-align: center;
+}
+
+.sidebar-toggle-btn .toggle-icon {
+    font-size: 14px;
+}
+
+/* Fallback dot for collapsed links when no icon is present */
+.layout.sidebar-collapsed .sidebar .nav-link::before {
+  content: '•';
+  display: inline-block;
+  width: 1em;
+  text-align: center;
+  color: currentColor;
+}
+
+
 /* Divider under logo */
 .sidebar-brand::after {
     content: '';

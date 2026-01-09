@@ -50,7 +50,7 @@ if (! isset($canManageUsers)) {
 
 <?php // Logo / brand (optional). Provide `$logoUrl` from layout data to override.
 ?>
-<aside class="sidebar">
+<aside id="sidebar" class="sidebar">
     <div class="sidebar-brand">
         <a href="<?= site_url('dashboard') ?>" class="sidebar-brand-link">
             <img
@@ -62,7 +62,10 @@ if (! isset($canManageUsers)) {
 
     <div class="sidebar-title-row">
         <div class="sidebar-title">Point of Sales</div>
-        <button id="sidebar-collapse-all-btn" class="btn btn-ghost sidebar-collapse-btn" aria-label="Collapse all"><span class="collapse-icon">−</span></button>
+        <div class="sidebar-title-actions">
+            <button id="sidebar-toggle-btn" class="btn btn-ghost sidebar-toggle-btn" aria-controls="sidebar" aria-expanded="true" aria-label="Toggle sidebar"><span class="toggle-icon">☰</span></button>
+            <button id="sidebar-collapse-all-btn" class="btn btn-ghost sidebar-collapse-btn" aria-label="Collapse all"><span class="collapse-icon">−</span></button>
+        </div>
     </div>
 
     <div class="sidebar-scroll">

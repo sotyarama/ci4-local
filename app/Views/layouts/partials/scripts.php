@@ -7,3 +7,4 @@
 <script src="<?= base_url('js/theme-toggle.js') . '?v=' . $assetVer; ?>"></script>
 <script src="<?= base_url('js/sidebar-toggle.js') . '?v=' . $assetVer; ?>"></script>
 <script src="<?= base_url('js/tr-daterange.js') . '?v=' . $assetVer; ?>"></script>
+<script src="<?= base_url('js/sidebar-collapse-state.js') . '?v=' . $assetVer; ?>"></script>

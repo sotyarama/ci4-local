@@ -38,21 +38,23 @@ $isActive = static function (array $paths) use ($currentPath): bool {
     return false;
 };
 
-$navLink = static function (
-    string $href,
-    string $label,
-    bool $allowed,
-    bool $active,
-    bool $small = true
-): string {
-    $classes = ['nav-link'];
-    if ($small) $classes[] = 'small';
-    if (! $allowed) $classes[] = 'disabled-link';
-    if ($active) $classes[] = 'active';
+    $navLink = static function (
+        string $href,
+        string $label,
+        bool $allowed,
+        bool $active,
+        bool $small = true
+    ): string {
+        $classes = ['nav-link'];
+        if ($small) $classes[] = 'small';
+        if (! $allowed) $classes[] = 'disabled-link';
+        if ($active) $classes[] = 'active';
 
-    $classAttr = implode(' ', $classes);
-    return '<a href="' . site_url($href) . '" class="' . esc($classAttr) . '">' . esc($label) . '</a>';
-};
+        $classAttr = implode(' ', $classes);
+        // Wrap label so collapsed state can hide text, and add title for tooltip support.
+        $labelHtml = '<span class="nav-label">' . esc($label) . '</span>';
+        return '<a href="' . site_url($href) . '" class="' . esc($classAttr) . '" title="' . esc($label) . '">' . $labelHtml . '</a>';
+    };
 
 $layoutData = [
     'assetVer'       => $assetVer,
