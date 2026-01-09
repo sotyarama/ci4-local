@@ -1,0 +1,29 @@
+{
+  "name": "ci4-local",
+  "version": "1.0.0",
+  "description": "Project: Temu Rasa POS (Point-of-Sale + Inventory + Recipes)",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sotyarama/ci4-local.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/sotyarama/ci4-local/issues"
+  },
+  "homepage": "https://github.com/sotyarama/ci4-local#readme",
+  "devDependencies": {
+    "stylelint": "^16.26.1",
+    "stylelint-config-standard": "^39.0.1"
+  }
+}
