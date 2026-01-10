@@ -7,9 +7,10 @@
     <title><?= esc($title ?? 'Login'); ?></title>
 
     <?php $assetVer = time(); ?>
-    <link rel="stylesheet" href="<?= base_url('css/theme-temurasa.css') . '?v=' . $assetVer; ?>">
-    <link rel="stylesheet" href="<?= base_url('css/ui-baseline.css') . '?v=' . $assetVer; ?>">
-    <link rel="stylesheet" href="<?= base_url('css/auth.css') . '?v=' . $assetVer; ?>">
+    <link rel="stylesheet" href="<?= base_url('css/00-theme/theme-temurasa.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('css/20-base/ui-baseline.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('css/60-pages/auth.css') ?>">
+
 </head>
 
 <body class="tr-auth">

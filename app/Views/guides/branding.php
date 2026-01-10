@@ -1,8 +1,6 @@
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
 
-<link rel="stylesheet" href="<?= base_url('css/branding.css'); ?>">
-
 <!-- PDF export intentionally disabled for Branding/How-To modules — web-only content. -->
 <div class="tr-branding-actions">
     <div class="tr-branding-actions-inner">
