@@ -7,7 +7,6 @@
 	padding: 7px 10px;
 	border-radius: 999px;
 	white-space: nowrap;
-
 	font-size: 12px;
 	font-weight: 700;
 	line-height: 1;
@@ -15,8 +14,8 @@
 
 /* Primary accent pill */
 .tr-pill{
-	background: rgba(37, 99, 235, 0.12);
-	border: 1px solid rgba(37, 99, 235, 0.45);
+	background: rgb(37 99 235 / 12%);
+	border: 1px solid rgb(37 99 235 / 45%);
 	color: var(--tr-primary);
 }
 
@@ -26,21 +25,20 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-
 	height: 24px;
 	padding: 0 10px;
 	border-radius: 999px;
-
 	font-size: 12px;
 	font-weight: 800;
 	line-height: 1;
-
-	border: 1px solid rgba(37,99,235,.35);
-	background: rgba(37,99,235,.10);
+	border: 1px solid rgb(37 99 235 / 35%);
+	background: rgb(37 99 235 / 10%);
 	color: var(--tr-primary);
-
 	white-space: nowrap;
 }
 
-.customer-badge.is-selected{ border-color: rgba(37,99,235,.55); background: rgba(37,99,235,.16); }
+.customer-badge.is-selected{ 
+	border-color: rgb(37 99 235 / 55%); 
+	background: rgb(37 99 235 / 16%); 
+}
 

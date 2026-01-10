@@ -11,8 +11,8 @@
    ========================================================= */
 :root {
     /* ---------- Typography (contract) ---------- */
-    --tr-font-base: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --tr-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    --tr-font-base: 'Inter', system-ui, -apple-system, blinkmacsystemfont, 'Segoe UI', sans-serif;
+    --tr-font-mono: ui-monospace, sfmono-regular, menlo, monaco, consolas, 'Liberation Mono', 'Courier New', monospace;
 
     /* Font sizes (hierarchy frozen; values tunable ±1–2px) */
     --tr-fs-xs: 12px;
@@ -37,16 +37,13 @@
     --tr-type-label: var(--tr-fs-sm);
     --tr-type-body: var(--tr-fs-md);
     --tr-type-small: var(--tr-fs-sm);
-
     --tr-type-title: var(--tr-fs-xl);
     --tr-type-h1: var(--tr-fs-2xl);
     --tr-type-h2: var(--tr-fs-xl);
     --tr-type-h3: var(--tr-fs-lg);
-
     --tr-type-weight-body: var(--tr-fw-regular);
     --tr-type-weight-label: var(--tr-fw-medium);
     --tr-type-weight-title: var(--tr-fw-semibold);
-
     --tr-type-lh-body: var(--tr-lh-normal);
     --tr-type-lh-tight: var(--tr-lh-tight);
 
@@ -77,27 +74,24 @@
     --tr-radius-lg: 16px;
 
     /* ---------- Shadow ---------- */
-    --tr-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
-    --tr-shadow-md: 0 8px 20px rgba(0, 0, 0, 0.1);
+    --tr-shadow-sm: 0 1px 2px rgb(0 0 0 / 6%);
+    --tr-shadow-md: 0 8px 20px rgb(0 0 0 / 10%);
 
     /* ---------- Semantic Colors (roles frozen; values come from theme) ---------- */
     --tr-primary: var(--accent-primary);
     --tr-secondary: var(--text-muted);
     --tr-accent: var(--accent-primary-strong);
-
     --tr-bg: var(--bg-page);
     --tr-surface: var(--bg-card);
     --tr-border: var(--border);
-
     --tr-text: var(--text-main);
     --tr-text-muted: var(--text-muted);
-
     --tr-success: var(--success);
     --tr-warning: var(--warning);
     --tr-danger: var(--danger);
 
     /* ---------- Interaction ---------- */
-    --tr-focus: rgba(37, 99, 235, 0.35);
+    --tr-focus: rgb(37 99 235 / 35%);
 }
 
 /* =========================================================
@@ -106,6 +100,7 @@
 html,
 body {
     height: 100%;
+    line-height: 1.4 !important;
 }
 
 body {
@@ -130,6 +125,7 @@ a {
     color: var(--tr-primary);
     text-decoration: none;
 }
+
 a:hover {
     text-decoration: underline;
 }
@@ -141,14 +137,17 @@ h3 {
     margin: 0 0 var(--tr-space-xs);
     line-height: var(--tr-type-lh-tight);
 }
+
 h1 {
     font-size: var(--tr-type-h1);
     font-weight: var(--tr-type-weight-title);
 }
+
 h2 {
     font-size: var(--tr-type-h2);
     font-weight: var(--tr-type-weight-title);
 }
+
 h3 {
     font-size: var(--tr-type-h3);
     font-weight: var(--tr-fw-medium);
@@ -159,9 +158,11 @@ small,
     font-size: var(--tr-fs-xs);
     color: var(--tr-text-muted);
 }
+
 .text-sm {
     font-size: var(--tr-fs-sm);
 }
+
 .text-muted {
     color: var(--tr-text-muted);
 }
@@ -210,6 +211,7 @@ small,
 header.header {
     min-height: var(--tr-header-h);
 }
+
 footer.footer {
     min-height: var(--tr-footer-h);
 }
@@ -232,7 +234,7 @@ main:not(.content) {
     padding: var(--tr-space-lg);
 }
 
-.card--compact {
+.card-compact {
     padding: var(--tr-space-md);
     border-radius: var(--tr-radius-md);
 }
@@ -251,16 +253,13 @@ main:not(.content) {
     align-items: center;
     justify-content: center;
     gap: 8px;
-
     font-family: inherit;
     font-size: var(--tr-fs-md);
     font-weight: var(--tr-fw-medium);
     line-height: 1;
-
     padding: 10px 14px;
     border-radius: var(--tr-radius-md);
     border: 1px solid transparent;
-
     cursor: pointer;
     user-select: none;
     transition: transform 0.02s ease, opacity 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease,
@@ -322,6 +321,7 @@ main:not(.content) {
     gap: 6px;
     transition: background 0.15s ease, border-color 0.15s ease;
 }
+
 .theme-toggle-btn:hover {
     background: var(--accent-soft);
     border-color: var(--accent-primary);
@@ -356,13 +356,11 @@ main:not(.content) {
     font-family: inherit;
     font-size: var(--tr-fs-md);
     line-height: var(--tr-lh-normal);
-
     padding: 10px 12px;
     border-radius: var(--tr-radius-sm);
     border: 1px solid var(--tr-border);
     background: var(--tr-surface);
     color: var(--tr-text);
-
     box-shadow: none;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -390,7 +388,7 @@ main:not(.content) {
 
 .is-invalid {
     border-color: var(--tr-danger) !important;
-    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.18) !important;
+    box-shadow: 0 0 0 4px rgb(220 38 38 / 18%) !important;
 }
 
 /* =========================================================
@@ -446,18 +444,20 @@ main:not(.content) {
 }
 
 .badge-success {
-    border-color: rgba(22, 163, 74, 0.25);
-    background: rgba(22, 163, 74, 0.08);
+    border-color: rgb(22 163 74 / 25%);
+    background: rgb(22 163 74 / 8%);
     color: var(--tr-success);
 }
+
 .badge-warning {
-    border-color: rgba(217, 119, 6, 0.25);
-    background: rgba(217, 119, 6, 0.1);
+    border-color: rgb(217 119 6 / 25%);
+    background: rgb(217 119 6 / 10%);
     color: var(--tr-warning);
 }
+
 .badge-danger {
-    border-color: rgba(220, 38, 38, 0.25);
-    background: rgba(220, 38, 38, 0.08);
+    border-color: rgb(220 38 38 / 25%);
+    background: rgb(220 38 38 / 8%);
     color: var(--tr-danger);
 }
 
@@ -470,46 +470,6 @@ main:not(.content) {
 *::before,
 *::after {
     box-sizing: border-box;
-}
-
-label {
-    display: block;
-    margin: 0 0 6px;
-    line-height: 1.2;
-}
-
-input,
-select,
-textarea {
-    font: inherit; /* ikut font keluarga & size */
-    line-height: 1.25; /* penting supaya teks nggak “nabrak” */
-}
-
-input[type='text'],
-input[type='password'],
-input[type='number'],
-input[type='email'],
-input[type='search'],
-select,
-textarea {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid var(--tr-border);
-    border-radius: 12px;
-    background: #fff;
-    color: var(--tr-text);
-    min-height: 40px; /* hindari “ketiban” */
-}
-
-input::placeholder,
-textarea::placeholder {
-    color: var(--tr-muted-text);
-}
-
-/* ===== FORCE FIX: prevent form overlap everywhere ===== */
-html,
-body {
-    line-height: 1.4 !important;
 }
 
 label {
@@ -537,8 +497,21 @@ select,
 textarea {
     width: 100% !important;
     padding: 10px 12px !important;
+    border: 1px solid var(--tr-border);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--tr-text);
     min-height: 42px !important; /* kunci tinggi minimal */
 }
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--tr-muted-text);
+}
+
+
+
+
 
 /* jarak antar field kalau wrapper gak punya gap */
 label + input,

@@ -10,11 +10,11 @@
 :root {
   /* Sidebar text */
   --sidebar-text: #e5e7eb;
-  --sidebar-text-muted: rgba(229, 231, 235, 0.72);
+  --sidebar-text-muted: rgb(229 231 235 / 72%);
 
   /* Base palette (light default) */
   --bg-page: #f8fafc;
-  --bg-card: #ffffff;
+  --bg-card: #fff;
   --bg-sidebar: #0f172a;
   --text-main: #0f172a;
   --text-muted: #64748b;
@@ -25,32 +25,26 @@
   --accent-primary-strong: #1d4ed8;
   --accent-primary-deep: #1e40af;
   --accent-soft: #dbeafe;
-
   --success: #16a34a;
   --danger: #dc2626;
   --warning: #f59e0b;
-
-  --shadow-card: 0 10px 28px rgba(15, 23, 42, 0.12);
-
-  --text-on-primary: #ffffff;
-  --text-on-primary-muted: rgba(255, 255, 255, 0.82);
+  --shadow-card: 0 10px 28px rgb(15 23 42 / 12%);
+  --text-on-primary: #fff;
+  --text-on-primary-muted: rgb(255 255 255 / 82%);
 
   /* Tables (if needed by some legacy modules) */
   --table-head-bg: #f1f5f9;
-  --table-hover: rgba(37, 99, 235, 0.10);
+  --table-hover: rgb(37 99 235 / 10%);
 
   /* ---------- Compatibility mappings (legacy --tr-*) ---------- */
   --tr-primary: var(--accent-primary);
   --tr-primary-strong: var(--accent-primary-strong);
   --tr-primary-deep: var(--accent-primary-deep);
-
   --tr-bg: var(--bg-page);
   --tr-surface: var(--bg-card);
   --tr-border: var(--border);
-
   --tr-text: var(--text-main);
   --tr-text-muted: var(--text-muted);
-
   --tr-shadow: var(--shadow-card);
 
   /* Keep these for any remaining legacy inline style usage */
@@ -62,8 +56,7 @@
 :root[data-theme="dark"] {
   /* Sidebar text */
   --sidebar-text: #e5e7eb;
-  --sidebar-text-muted: rgba(229, 231, 235, 0.70);
-
+  --sidebar-text-muted: rgb(229 231 235 / 70%);
   --bg-page: #020617;
   --bg-card: #0f172a;
   --bg-sidebar: #020617;
@@ -76,33 +69,25 @@
   --accent-primary-strong: #2563eb;
   --accent-primary-deep: #1e40af;
   --accent-soft: #1e3a8a;
-
   --success: #22c55e;
   --danger: #ef4444;
   --warning: #fbbf24;
-
-  --shadow-card: 0 14px 32px rgba(0, 0, 0, 0.28);
-
-  --text-on-primary: #ffffff;
-  --text-on-primary-muted: rgba(255, 255, 255, 0.86);
-
+  --shadow-card: 0 14px 32px rgb(0 0 0 / 28%);
+  --text-on-primary: #fff;
+  --text-on-primary-muted: rgb(255 255 255 / 86%);
   --table-head-bg: #111827;
-  --table-hover: rgba(59, 130, 246, 0.18);
+  --table-hover: rgb(59 130 246 / 18%);
 
   /* Legacy mapping stays consistent */
   --tr-primary: var(--accent-primary);
   --tr-primary-strong: var(--accent-primary-strong);
   --tr-primary-deep: var(--accent-primary-deep);
-
   --tr-bg: var(--bg-page);
   --tr-surface: var(--bg-card);
   --tr-border: var(--border);
-
   --tr-text: var(--text-main);
   --tr-text-muted: var(--text-muted);
-
   --tr-shadow: var(--shadow-card);
-
   --tr-secondary-green: var(--accent-soft);
   --tr-secondary-beige: var(--accent-soft);
   --tr-accent-brown: var(--accent-primary-deep);

@@ -7,39 +7,39 @@
 $sales = (isset($sales) && is_iterable($sales)) ? $sales : [];
 ?>
 
-<div class="tr-card tr-card--outlined">
-    <div class="tr-card__header">
+<div class="tr-card tr-card-outlined">
+    <div class="tr-card-header">
         <div>
-            <h2 class="tr-card__title" style="font-size:18px;">Riwayat Penjualan</h2>
-            <p class="tr-card__subtitle">Daftar transaksi penjualan beserta ringkasan margin.</p>
+            <h2 class="tr-card-title" style="font-size:18px;">Riwayat Penjualan</h2>
+            <p class="tr-card-subtitle">Daftar transaksi penjualan beserta ringkasan margin.</p>
         </div>
 
-        <div class="tr-card__actions">
-            <a href="<?= site_url('transactions/sales/create'); ?>" class="tr-btn tr-btn--primary tr-btn--sm">
-                <span class="tr-btn__label">+ Transaksi Baru</span>
+        <div class="tr-card-actions">
+            <a href="<?= site_url('transactions/sales/create'); ?>" class="tr-btn tr-btn-primary tr-btn-sm">
+                <span class="tr-btn-label">+ Transaksi Baru</span>
             </a>
         </div>
     </div>
 
-    <div class="tr-card__body">
+    <div class="tr-card-body">
 
         <?php if (isset($todaySales)): ?>
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:12px;">
-                <div class="tr-card tr-card--flat" style="padding:10px; border:1px solid var(--tr-border); border-radius:12px; background:var(--tr-secondary-beige); box-shadow:none;">
+                <div class="tr-card tr-card-flat" style="padding:10px; border:1px solid var(--tr-border); border-radius:12px; background:var(--tr-secondary-beige); box-shadow:none;">
                     <div class="tr-help" style="margin:0;">Tanggal</div>
                     <div style="font-size:14px; color:var(--tr-text); font-weight:700; margin-top:2px;">
                         <?= esc($todayDate ?? date('Y-m-d')); ?>
                     </div>
                 </div>
 
-                <div class="tr-card tr-card--flat" style="padding:10px; border:1px solid var(--tr-border); border-radius:12px; background:var(--tr-secondary-beige); box-shadow:none;">
+                <div class="tr-card tr-card-flat" style="padding:10px; border:1px solid var(--tr-border); border-radius:12px; background:var(--tr-secondary-beige); box-shadow:none;">
                     <div class="tr-help" style="margin:0;">Total Penjualan (hari ini)</div>
                     <div style="font-size:16px; color:var(--tr-text); font-weight:800; margin-top:2px;">
                         Rp <?= number_format((float) ($todaySales ?? 0), 0, ',', '.'); ?>
                     </div>
                 </div>
 
-                <div class="tr-card tr-card--flat" style="padding:10px; border:1px solid var(--tr-border); border-radius:12px; background:var(--tr-secondary-beige); box-shadow:none;">
+                <div class="tr-card tr-card-flat" style="padding:10px; border:1px solid var(--tr-border); border-radius:12px; background:var(--tr-secondary-beige); box-shadow:none;">
                     <div class="tr-help" style="margin:0;">Margin (hari ini)</div>
                     <?php
                     $marginToday     = (float) ($todayMargin ?? 0);
@@ -82,7 +82,7 @@ $sales = (isset($sales) && is_iterable($sales)) ? $sales : [];
             </div>
 
             <div class="tr-table-wrap">
-                <table class="tr-table tr-table--compact">
+                <table class="tr-table tr-table-compact">
                     <thead>
                         <tr>
                             <th>Tanggal</th>
@@ -158,15 +158,15 @@ $sales = (isset($sales) && is_iterable($sales)) ? $sales : [];
                                 <td class="is-center">
                                     <div style="display:inline-flex; gap:8px; justify-content:center; flex-wrap:wrap;">
                                         <a href="<?= site_url('transactions/sales/detail/' . $saleId); ?>"
-                                            class="tr-btn tr-btn--secondary tr-btn--sm">
-                                            <span class="tr-btn__label">Detail</span>
+                                            class="tr-btn tr-btn-secondary tr-btn-sm">
+                                            <span class="tr-btn-label">Detail</span>
                                         </a>
 
                                         <?php if (! $isVoid): ?>
                                             <button type="button"
-                                                class="tr-btn tr-btn--danger tr-btn--sm btn-void"
+                                                class="tr-btn tr-btn-danger tr-btn-sm btn-void"
                                                 data-url="<?= site_url('transactions/sales/void/' . $saleId); ?>">
-                                                <span class="tr-btn__label">Void</span>
+                                                <span class="tr-btn-label">Void</span>
                                             </button>
                                         <?php endif; ?>
                                     </div>
@@ -190,26 +190,26 @@ $sales = (isset($sales) && is_iterable($sales)) ? $sales : [];
 <div id="void-modal"
     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:9998; align-items:center; justify-content:center; padding:16px;">
     <div class="tr-card" style="max-width:420px; width:100%;">
-        <div class="tr-card__header">
+        <div class="tr-card-header">
             <div>
-                <div class="tr-card__title" style="font-size:16px;">Void Transaksi</div>
-                <div class="tr-card__subtitle">Isi alasan (opsional) lalu konfirmasi.</div>
+                <div class="tr-card-title" style="font-size:16px;">Void Transaksi</div>
+                <div class="tr-card-subtitle">Isi alasan (opsional) lalu konfirmasi.</div>
             </div>
-            <button type="button" id="void-close" class="tr-btn tr-btn--ghost tr-btn--sm" style="height:32px; padding:0 10px;">×</button>
+            <button type="button" id="void-close" class="tr-btn tr-btn-ghost tr-btn-sm" style="height:32px; padding:0 10px;">×</button>
         </div>
 
-        <div class="tr-card__body">
+        <div class="tr-card-body">
             <form id="void-form" method="post" action="" style="display:flex; flex-direction:column; gap:10px;">
                 <?= csrf_field(); ?>
 
                 <textarea name="void_reason" id="void-reason" rows="3" placeholder="Alasan void (opsional)" class="tr-control"></textarea>
 
                 <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:2px;">
-                    <button type="button" id="void-cancel" class="tr-btn tr-btn--secondary">
-                        <span class="tr-btn__label">Batal</span>
+                    <button type="button" id="void-cancel" class="tr-btn tr-btn-secondary">
+                        <span class="tr-btn-label">Batal</span>
                     </button>
-                    <button type="submit" class="tr-btn tr-btn--danger">
-                        <span class="tr-btn__label">Void &amp; Kembalikan Stok</span>
+                    <button type="submit" class="tr-btn tr-btn-danger">
+                        <span class="tr-btn-label">Void &amp; Kembalikan Stok</span>
                     </button>
                 </div>
             </form>

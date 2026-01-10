@@ -1,0 +1,4 @@
+**/*.min.css
+**/vendor/**
+**/dist/**
+**/build/**

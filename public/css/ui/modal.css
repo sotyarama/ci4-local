@@ -8,10 +8,9 @@
 .pos-modal-dialog{
 	border: 1px solid var(--tr-border);
 	border-radius: 16px;
-	box-shadow: 0 14px 30px rgba(0,0,0,0.18);
+	box-shadow: 0 14px 30px rgb(0 0 0 / 18%);
 }
 
-.tr-modal__title,
 .tr-modal-title, .pos-modal-title{
 	font-size: 16px;
 	font-weight: 900;
@@ -19,32 +18,30 @@
 	color: var(--tr-text);
 }
 
-.tr-modal__subtitle,
+.tr-modal-subtitle,
 .tr-modal-sub, .pos-modal-sub{
 	font-size: 12px;
 	color: var(--tr-muted-text);
 	margin-top: 2px;
 }
 
-.tr-modal__close,
+.tr-modal-close,
 .tr-modal-x, .pos-modal-x{
 	width: 34px;
 	height: 34px;
 	border-radius: 12px;
 	border: 1px solid var(--tr-border) !important;
 	background: #fff !important;
-
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-
 	color: var(--tr-muted-text) !important;
 }
 
-.tr-modal__close:hover,
+.tr-modal-close:hover,
 .tr-modal-x, .pos-modal-x:hover{
-	border-color: rgba(37, 99, 235, 0.35) !important;
-	background: rgba(37, 99, 235, 0.06) !important;
+	border-color: rgb(37 99 235 / 35%) !important;
+	background: rgb(37 99 235 / 6%) !important;
 	color: var(--tr-primary) !important;
 }
 
@@ -54,39 +51,36 @@
 	height: 40px;
 	border-radius: 12px;
 }
+
 .tr-modal .tr-control:focus,
 .tr-modal-search, .pos-modal-search .tr-control:focus{
-	outline: 2px solid rgba(31, 95, 255, .18);
-	border-color: rgba(31, 95, 255, .45);
+	outline: 2px solid rgb(31 95 255 / 18%);
+	border-color: rgb(31 95 255 / 45%);
 }
 
 /* Modal list items */
-.tr-modal__list,
 .tr-modal-list, .pos-modal-list{ padding-right: 6px; }
 
 .tr-list-item,
 .customer-item{
 	width: 100%;
 	text-align: left;
-
 	display: flex !important;
 	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
-
 	padding: 10px 12px !important;
 	border: 1px solid var(--tr-border) !important;
 	border-radius: 14px !important;
 	background: #fff !important;
-
 	cursor: pointer;
 	transition: background 120ms ease, border-color 120ms ease, transform 80ms ease;
 }
 
 .tr-list-item:hover,
 .customer-item:hover{
-	background: rgba(37, 99, 235, 0.06) !important;
-	border-color: rgba(37, 99, 235, 0.35) !important;
+	background: rgb(37 99 235 / 6%) !important;
+	border-color: rgb(37 99 235 / 35%) !important;
 }
 
 .tr-list-item:active,
@@ -94,23 +88,41 @@
 
 .tr-list-item.is-selected,
 .customer-item.is-selected{
-	background: rgba(37, 99, 235, 0.10) !important;
-	border-color: rgba(37, 99, 235, 0.55) !important;
+	background: rgb(37 99 235 / 10%) !important;
+	border-color: rgb(37 99 235 / 55%) !important;
 }
 
 .tr-list-left,
 .customer-left{ min-width: 0; }
 
 .tr-list-title,
-.pos-list-title{ font-weight: 800; font-size: 13px; line-height: 1.2; color: var(--tr-text); }
+.pos-list-title{ 
+	font-weight: 800; 
+	font-size: 13px; 
+	line-height: 1.2; 
+	color: var(--tr-text); 
+}
+
 .tr-list-sub,
-.pos-list-sub{ margin-top: 4px; font-size: 11px; line-height: 1.2; color: var(--tr-muted-text); }
+.pos-list-sub{ 
+	margin-top: 4px; 
+	font-size: 11px; 
+	line-height: 1.2; 
+	color: var(--tr-muted-text); 
+}
 
 .tr-modal-empty,
 .pos-modal-empty{ padding: 10px 6px; }
 
-@media (max-width: 520px){
-	.tr-modal{ padding: 12px; }
-	.tr-modal-dialog{ width: 96vw !important; padding: 14px !important; border-radius: 14px !important; }
+@media (width <= 520px){
+	.tr-modal{ 
+		padding: 12px; 
+	}
+	
+	.tr-modal-dialog{ 
+		width: 96vw !important; 
+		padding: 14px !important; 
+		border-radius: 14px !important; 
+	}
 }
 

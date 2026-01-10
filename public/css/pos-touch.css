@@ -23,6 +23,7 @@
 .content:has(.tr-touch, .pos-touch) {
     overflow: hidden;
 }
+
 .content:has(.tr-touch, .pos-touch) .pos-touch {
     height: 100%;
 }
@@ -39,7 +40,6 @@
 .pos-card {
     padding: 14px;
     height: 100%;
-
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -52,7 +52,6 @@
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 14px;
-
     flex: 1;
     min-height: 0;
 }
@@ -75,11 +74,21 @@
     padding-right: 6px;
 }
 
-/* Right: panel fills available height */
+/* =========================================================
+   4) Right Panel (Cart + Totals + Payment)
+   ========================================================= */
 .tr-touch,
 .pos-touch .tr-side,
 .pos-side {
     height: 100%;
+    border: 1px solid var(--tr-border);
+    border-radius: 16px;
+    background: var(--tr-surface);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
 }
 
 /* =========================================================
@@ -93,7 +102,6 @@
     justify-content: space-between;
     align-items: flex-start;
     gap: 12px;
-
     margin-bottom: 12px;
 }
 
@@ -104,7 +112,6 @@
     position: sticky;
     top: 0;
     z-index: 50;
-
     background: var(--tr-surface);
     padding-bottom: 10px;
     border-bottom: 1px solid var(--tr-border);
@@ -131,13 +138,15 @@
 }
 
 /* Date pill */
+
 /* Date pill moved to public/css/ui/badges.css (.tr-pill / .pos-pill) */
 
 /* Alert */
+
 /* Inline alert moved to public/css/ui/alerts.css (.tr-alert / .pos-alert) */
 
 /* small screen header stack */
-@media (max-width: 720px) {
+@media (width <= 720px) {
     .tr-touch,
     .pos-touch .tr-header,
     .pos-header {
@@ -164,21 +173,17 @@
     list-style: none;
     cursor: pointer;
     user-select: none;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
-
-    padding: 10px 10px;
+    padding: 10px;
     border-radius: 12px;
-
     font-weight: 900;
     font-size: 13px;
     line-height: 1.2;
     color: var(--tr-text);
-
-    background: rgba(0, 0, 0, 0.02);
-    border: 1px solid rgba(0, 0, 0, 0.03);
+    background: rgb(0 0 0 / 2%);
+    border: 1px solid rgb(0 0 0 / 3%);
 }
 
 .tr-touch,
@@ -188,14 +193,22 @@
 
 .tr-touch,
 .pos-touch #menu-list details > summary:hover {
-    border-color: rgba(37, 99, 235, 0.35);
-    background: rgba(37, 99, 235, 0.06);
+    border-color: rgb(37 99 235 / 35%);
+    background: rgb(37 99 235 / 6%);
 }
 
 .tr-touch,
 .pos-touch #menu-list details[open] > summary {
-    background: rgba(37, 99, 235, 0.06);
-    border-color: rgba(37, 99, 235, 0.3);
+    background: rgb(37 99 235 / 6%);
+    border-color: rgb(37 99 235 / 30%);
+}
+
+.tr-touch,
+.pos-touch #options-modal > div {
+    background: #fff;
+    border: 1px solid var(--tr-border);
+    border-radius: 16px;
+    box-shadow: 0 14px 30px rgb(0 0 0 / 18%);
 }
 
 .tr-touch,
@@ -203,72 +216,62 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
     width: 28px;
     height: 28px;
     border-radius: 10px;
-
     border: 1px solid var(--tr-border);
     background: #fff;
-
     font-size: 16px !important;
     font-weight: 900;
     color: var(--tr-muted-text) !important;
+}
+
+.tr-touch,
+.pos-touch #options-body > div {
+    border-radius: 14px !important;
+    padding: 12px !important;
+    background: var(--tr-surface);
 }
 
 /* grid of menu cards */
 .tr-touch,
 .pos-touch #menu-list details > div {
     margin-top: 12px !important;
-
-    display: grid !important;
+    display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
-    gap: 12px !important;
+    gap: 6px;
 }
 
-/* menu card */
-/* Menu-card styles moved to public/css/ui/cards.css (.tr-menu-card, .pos-menu-card / .tr-card--menu) */
 
-@media (max-width: 980px) {
+/* menu card */
+
+/* Menu-card styles moved to public/css/ui/cards.css (.tr-menu-card, .pos-menu-card / .tr-card-menu) */
+
+@media (width <= 980px) {
     .tr-touch,
     .pos-touch #menu-list details {
         padding: 8px !important;
     }
+
     .tr-touch,
     .pos-touch #menu-list details > summary {
-        padding: 9px 9px;
+        padding: 9px;
     }
+
     .tr-touch,
     .pos-touch #menu-list details > div {
         gap: 10px !important;
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
     }
+
     .tr-touch,
     .pos-touch .tr-menu-card,
     .pos-menu-card {
         min-height: 68px;
-        padding: 10px 10px;
+        padding: 10px;
     }
 }
 
-/* =========================================================
-   4) Right Panel (Cart + Totals + Payment)
-   ========================================================= */
-
-.tr-touch,
-.pos-touch .tr-side,
-.pos-side {
-    border: 1px solid var(--tr-border);
-    border-radius: 16px;
-    background: var(--tr-surface);
-    padding: 12px;
-
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-
-    min-height: 0;
-}
 
 /* top section */
 .tr-touch,
@@ -322,11 +325,11 @@
     flex: 1;
     min-height: 0;
     overflow: auto;
-
     border: 1px dashed var(--tr-border);
     border-radius: 12px;
-    padding: 10px;
+    padding: 12px; /* optional: spacing dalam */
     background: #fff;
+    height: 100%;
 }
 
 .tr-touch,
@@ -344,11 +347,9 @@
 .pos-side-bottom {
     position: sticky;
     bottom: 0;
-
     background: var(--tr-surface);
     border-top: 1px solid var(--tr-border);
     padding-top: 10px;
-
     display: grid;
     gap: 10px;
 }
@@ -367,7 +368,6 @@
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-
     font-size: 13px;
     line-height: 1.2;
     color: var(--tr-text);
@@ -381,6 +381,7 @@
 }
 
 /* actions */
+
 /* Button helpers moved to public/css/ui/buttons.css (.tr-actions, .pos-actions, .tr-icon-btn, .pos-icon-btn, .tr-small-btn, .pos-small-btn, .tr-save-btn, .pos-save-btn) */
 
 /* =========================================================
@@ -394,7 +395,6 @@
     grid-template-columns: 1fr auto;
     align-items: start;
     gap: 10px;
-
     padding: 10px 8px;
     border-bottom: 1px solid var(--tr-border);
 }
@@ -408,7 +408,7 @@
 .tr-touch,
 .pos-touch .tr-cart-item,
 .pos-cart-item.is-even {
-    background: rgba(0, 0, 0, 0.015);
+    background: rgb(0 0 0 / 1.5%);
 }
 
 .tr-touch,
@@ -467,7 +467,6 @@
     padding: 8px 10px;
     font-size: 12px;
     line-height: 1.25;
-
     border: 1px solid var(--tr-border);
     border-radius: 12px;
     background: #fff;
@@ -506,7 +505,6 @@
     border: 1px solid var(--tr-border);
     background: #fff;
     cursor: pointer;
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -516,7 +514,7 @@
 .tr-touch,
 .pos-touch .tr-mini-btn,
 .pos-mini-btn:hover {
-    border-color: rgba(37, 99, 235, 0.35);
+    border-color: rgb(37 99 235 / 35%);
 }
 
 .tr-touch,
@@ -569,12 +567,6 @@
     align-items: start;
 }
 
-.tr-touch,
-.pos-touch .tr-pay-amounts,
-.pos-pay-amounts > div {
-    display: grid;
-    gap: 6px;
-}
 
 /* money input group — rely on global ui/forms.css (.tr-money / .pos-money) for base styles */
 
@@ -600,21 +592,21 @@
 .tr-touch,
 .pos-touch .tr-money,
 .pos-money:focus-within {
-    outline: 2px solid rgba(31, 95, 255, 0.2);
-    border-color: rgba(31, 95, 255, 0.45);
+    outline: 2px solid rgb(31 95 255 / 20%);
+    border-color: rgb(31 95 255 / 45%);
 }
 
 .tr-touch,
 .pos-touch .tr-money,
 .pos-money.is-readonly {
-    background: rgba(0, 0, 0, 0.02);
+    background: rgb(0 0 0 / 2%);
 }
 
 .tr-touch,
 .pos-touch .tr-money,
 .pos-money.is-readonly .tr-money-prefix,
 .pos-money-prefix {
-    background: rgba(37, 99, 235, 0.06);
+    background: rgb(37 99 235 / 6%);
     color: var(--tr-primary);
 }
 
@@ -628,11 +620,11 @@
 .tr-touch,
 .pos-touch .tr-pay,
 .pos-pay:not(.is-qris) #money-paid:focus-within {
-    outline: 2px solid rgba(31, 95, 255, 0.22);
-    border-color: rgba(31, 95, 255, 0.55);
+    outline: 2px solid rgb(31 95 255 / 22%);
+    border-color: rgb(31 95 255 / 55%);
 }
 
-@media (max-width: 980px) {
+@media (width <= 980px) {
     .tr-touch,
     .pos-touch .tr-pay-amounts,
     .pos-pay-amounts {
@@ -649,13 +641,6 @@
     padding: 18px;
 }
 
-.tr-touch,
-.pos-touch #options-modal > div {
-    background: #fff;
-    border: 1px solid var(--tr-border);
-    border-radius: 16px;
-    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
-}
 
 .tr-touch,
 .pos-touch #options-title {
@@ -671,7 +656,6 @@
     border-radius: 10px;
     border: 1px solid var(--tr-border);
     background: #fff;
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -679,7 +663,7 @@
 
 .tr-touch,
 .pos-touch #options-modal [id='options-close']:hover {
-    background: rgba(0, 0, 0, 0.02);
+    background: rgb(0 0 0 / 2%);
 }
 
 .tr-touch,
@@ -687,12 +671,6 @@
     gap: 12px;
 }
 
-.tr-touch,
-.pos-touch #options-body > div {
-    border-radius: 14px !important;
-    padding: 12px !important;
-    background: var(--tr-surface);
-}
 
 .tr-touch,
 .pos-touch #options-body > div > div:first-child {
@@ -718,15 +696,15 @@
 .tr-touch,
 .pos-touch #options-body > div > div:nth-child(3) > div {
     border-radius: 12px !important;
-    padding: 10px 10px !important;
+    padding: 10px !important;
     background: #fff;
     transition: background 120ms ease, border-color 120ms ease;
 }
 
 .tr-touch,
 .pos-touch #options-body > div > div:nth-child(3) > div:hover {
-    background: rgba(122, 154, 108, 0.06);
-    border-color: rgba(122, 154, 108, 0.35);
+    background: rgb(122 154 108 / 6%);
+    border-color: rgb(122 154 108 / 35%);
 }
 
 .tr-touch,
@@ -753,8 +731,8 @@
 
 .tr-touch,
 .pos-touch #options-body > div > div:nth-child(3) > div:has(input[type='checkbox']:checked) {
-    background: rgba(122, 154, 108, 0.1);
-    border-color: rgba(122, 154, 108, 0.45);
+    background: rgb(122 154 108 / 10%);
+    border-color: rgb(122 154 108 / 45%);
 }
 
 .tr-touch,
@@ -789,44 +767,10 @@
 .pos-cart-body {
     flex: 1;
     min-height: 0;
-    padding: 0; /* opsional: biar list mengatur padding sendiri */
-}
-
-/* Right panel: make card occupy full available height */
-.tr-touch,
-.pos-touch .tr-side,
-.pos-side {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-}
-
-.tr-touch,
-.pos-touch .tr-cart-card,
-.pos-cart-card {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0; /* penting agar scroll bekerja */
-}
-
-/* Body becomes the scroll container (cart list area) */
-.tr-touch,
-.pos-touch .tr-cart-body,
-.pos-cart-body {
-    flex: 1;
-    min-height: 0;
     padding: 0; /* biar pos-cart-list yang atur */
     overflow: hidden; /* jaga border card */
 }
 
-.tr-touch,
-.pos-touch .tr-cart-list,
-.pos-cart-list {
-    height: 100%;
-    overflow: auto;
-    padding: 12px; /* optional: spacing dalam */
-}
 
 /* Footer stays at bottom naturally */
 .tr-touch,
@@ -844,6 +788,7 @@
 }
 
 /* Bridge: pos-money -> tr-money */
+
 /* Minimal page-specific overrides — rely on global ui/forms.css (.tr-money, .tr-control) */
 .tr-touch,
 .pos-touch #pos-pay .pos-money {

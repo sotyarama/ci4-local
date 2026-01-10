@@ -4,11 +4,9 @@
 	padding: 10px 12px;
 	margin-bottom: 12px;
 	border-radius: 12px;
-
 	background: var(--tr-secondary-beige);
 	border: 1px solid var(--tr-accent-brown);
 	color: var(--tr-text);
-
 	font-size: 12px;
 	line-height: 1.35;
 }
@@ -18,6 +16,7 @@
 	margin: 0;
 	padding-left: 18px;
 }
+
 .tr-alert li,
 .pos-alert li{ margin: 2px 0; }
 

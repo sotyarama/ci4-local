@@ -18,7 +18,7 @@
 
 .greeting-datetime {
     font-size: var(--tr-fs-sm, 13px);
-    color: var(--tr-text-muted, rgba(0, 0, 0, 0.6));
+    color: var(--tr-text-muted, rgb(0 0 0 / 60%));
     display: flex;
     gap: var(--tr-space-sm, 12px);
     align-items: center;
@@ -42,7 +42,7 @@
 }
 
 .breadcrumb-sep {
-    color: var(--tr-text-muted, rgba(0, 0, 0, 0.5));
+    color: var(--tr-text-muted, rgb(0 0 0 / 50%));
 }
 
 .breadcrumb-current {
@@ -50,7 +50,7 @@
     color: var(--tr-text, #111827);
 }
 
-@media (max-width: 640px) {
+@media (width <= 640px) {
     .greeting-datetime {
         display: none;
     }

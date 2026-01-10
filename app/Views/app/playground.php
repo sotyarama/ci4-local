@@ -2,15 +2,15 @@
 
 <?= $this->section('sidebar') ?>
 <div style="padding:16px;">
-    <div class="app__logo">
+    <div class="app-logo">
         <!-- logo / brand -->
     </div>
 
-    <nav class="app__nav">
-        <a class="app__navlink is-active" href="#">Dashboard</a>
-        <a class="app__navlink" href="#">Sales</a>
-        <a class="app__navlink" href="#">Transactions</a>
-        <a class="app__navlink" href="#">Inventory</a>
+    <nav class="app-nav">
+        <a class="app-navlink is-active" href="#">Dashboard</a>
+        <a class="app-navlink" href="#">Sales</a>
+        <a class="app-navlink" href="#">Transactions</a>
+        <a class="app-navlink" href="#">Inventory</a>
         <!-- ...banyak item, nav akan scroll -->
     </nav>
 </div>

@@ -12,20 +12,20 @@
 <body>
 
     <div class="app">
-        <aside class="app__sidebar">
+        <aside class="app-sidebar">
             <?= $this->renderSection('sidebar') ?>
         </aside>
 
-        <main class="app__main">
-            <header class="app__topbar">
+        <main class="app-main">
+            <header class="app-topbar">
                 <?= $this->renderSection('topbar') ?>
             </header>
 
-            <section class="app__content">
+            <section class="app-content">
                 <?= $this->renderSection('content') ?>
             </section>
 
-            <footer class="app__footer">
+            <footer class="app-footer">
                 <?= $this->renderSection('footer') ?>
             </footer>
         </main>

@@ -38,8 +38,8 @@
   padding: 32px 28px;
   background: linear-gradient(
     160deg,
-    rgba(122,154,108,.18),
-    rgba(122,154,108,.06)
+    rgb(122 154 108 / 18%),
+    rgb(122 154 108 / 6%)
   );
   display: grid;
   align-content: center;
@@ -88,13 +88,13 @@
 
 .tr-auth-form{
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .tr-auth-field label{
   display: block;
   font-size: 12px;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   color: var(--tr-muted-text);
 }
 
@@ -103,13 +103,13 @@
   padding: 10px 12px;
   border-radius: 12px;
   border: 1px solid var(--tr-border);
-  background: rgba(255,255,255,.06);
+  background: rgb(255 255 255 / 6%);
   color: var(--tr-text);
   font-size: 13px;
 }
 
 .tr-auth-input:focus{
-  outline: 2px solid rgba(122,154,108,0.35);
+  outline: 2px solid rgb(122 154 108 / 35%);
   border-color: var(--tr-primary);
 }
 
@@ -131,7 +131,7 @@
 }
 
 /* ===== RESPONSIVE ===== */
-@media (max-width: 720px){
+@media (width <= 720px){
   .tr-auth-wrap{
     max-width: 420px;
   }
@@ -153,6 +153,3 @@
   }
 }
 
-/* FIX: keep original look, only ensure spacing */
-.tr-auth-form{ gap: 14px; }               /* dari 12px -> 14px (sedikit) */
-.tr-auth-field label{ margin-bottom: 8px; } /* dari 5px -> 8px */

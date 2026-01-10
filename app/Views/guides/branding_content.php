@@ -200,7 +200,7 @@ $dashOrders = [
                             Gunakan background terang agar logo tetap jelas dan memiliki kontras yang optimal.
                         </p>
                     </div>
-                    <div class="tr-color-usage-card tr-color-usage-card--warn">
+                    <div class="tr-color-usage-card tr-color-usage-card-warn">
                         <h3 class="tr-subtitle">Background yang Tidak Disarankan</h3>
                         <div class="tr-grid tr-color-samples tr-color-samples-row4 tr-color-samples-compact">
                             <?php foreach ($avoidBackgrounds as $bg): ?>
@@ -403,7 +403,7 @@ $dashOrders = [
                         <span class="tr-logo-meaning-caption">Manusia - rasa - perjumpaan</span>
                     </div>
                     <div class="tr-card-body tr-logo-meaning-body">
-                        <img class="tr-logo-meaning-image tr-logo-meaning-image--combo" src="<?= base_url('images/temurasa_logo-only_fit.png'); ?>" alt="Logo Temu Rasa">
+                        <img class="tr-logo-meaning-image tr-logo-meaning-image-combo" src="<?= base_url('images/temurasa_logo-only_fit.png'); ?>" alt="Logo Temu Rasa">
                     </div>
                     <div class="tr-card-footer tr-logo-meaning-footer">
                         <h3 class="tr-subtitle">C. Keharmonisan Keduanya</h3>
@@ -632,7 +632,7 @@ $dashOrders = [
                 <div>
                     <h3 class="tr-subtitle">Gaya Pattern yang Direkomendasikan</h3>
                     <div class="tr-grid tr-grid-3 tr-pattern-grid">
-                        <div class="tr-pattern-card tr-pattern-card--compact">
+                        <div class="tr-pattern-card tr-pattern-card-compact">
                             <div class="tr-pattern-card-head">
                                 <span class="tr-typography-label">Primary Pattern</span>
                                 <span class="tr-essence-pill">Subtle</span>
@@ -646,7 +646,7 @@ $dashOrders = [
                                 <em>Typical usage:</em> header menu, divider section, frame Instagram.
                             </p>
                         </div>
-                        <div class="tr-pattern-card tr-pattern-card--compact">
+                        <div class="tr-pattern-card tr-pattern-card-compact">
                             <div class="tr-pattern-card-head">
                                 <span class="tr-typography-label">Supporting Pattern</span>
                                 <span class="tr-essence-pill">Modular</span>
@@ -660,7 +660,7 @@ $dashOrders = [
                                 <em>Typical usage:</em> stiker kecil, cup, interior detail, watermark.
                             </p>
                         </div>
-                        <div class="tr-pattern-card tr-pattern-card--compact">
+                        <div class="tr-pattern-card tr-pattern-card-compact">
                             <div class="tr-pattern-card-head">
                                 <span class="tr-typography-label">Background Accent</span>
                                 <span class="tr-essence-pill">Field</span>
@@ -769,25 +769,25 @@ $dashOrders = [
                         <p class="tr-text-sm tr-text-warn tr-logo-usage-lead">
                             Jangan distorsi / beri efek berat / background ramai
                         </p>
-                        <div class="tr-logo-usage-preview tr-logo-usage-preview--warn">
+                        <div class="tr-logo-usage-preview tr-logo-usage-preview-warn">
                             <div class="tr-logo-usage-dont-grid">
                                 <div class="tr-logo-usage-dont-tile">
-                                    <div class="tr-logo-usage-dont-logo tr-logo-usage-dont-logo--rotate">
+                                    <div class="tr-logo-usage-dont-logo tr-logo-usage-dont-logo-rotate">
                                         <?= $usageSvg ?>
                                     </div>
                                 </div>
                                 <div class="tr-logo-usage-dont-tile">
-                                    <div class="tr-logo-usage-dont-logo tr-logo-usage-dont-logo--stretch">
+                                    <div class="tr-logo-usage-dont-logo tr-logo-usage-dont-logo-stretch">
                                         <?= $usageSvg ?>
                                     </div>
                                 </div>
-                                <div class="tr-logo-usage-dont-tile tr-logo-usage-dont-tile--neon">
-                                    <div class="tr-logo-usage-dont-logo tr-logo-usage-dont-logo--neon">
+                                <div class="tr-logo-usage-dont-tile tr-logo-usage-dont-tile-neon">
+                                    <div class="tr-logo-usage-dont-logo tr-logo-usage-dont-logo-neon">
                                         <?= $usageSvg ?>
                                     </div>
                                 </div>
-                                <div class="tr-logo-usage-dont-tile tr-logo-usage-dont-tile--busy">
-                                    <div class="tr-logo-usage-dont-logo tr-logo-usage-dont-logo--busy">
+                                <div class="tr-logo-usage-dont-tile tr-logo-usage-dont-tile-busy">
+                                    <div class="tr-logo-usage-dont-logo tr-logo-usage-dont-logo-busy">
                                         <?= $usageSvg ?>
                                     </div>
                                 </div>
@@ -855,7 +855,7 @@ $dashOrders = [
                         </div>
                     </div>
                 </div>
-                <div class="tr-tone-compass-grid tr-tone-compass-grid--split">
+                <div class="tr-tone-compass-grid tr-tone-compass-grid-split">
                     <div class="tr-panel tr-panel-soft tr-tone-compass-summary-card">
                         <h3 class="tr-subtitle">Tone of Voice Compass</h3>
                         <p class="tr-text-xs tr-muted">
@@ -878,7 +878,7 @@ $dashOrders = [
                         </p>
                     </div>
                     <div class="tr-tone-compass-illustration">
-                        <div class="tr-tone-compass-map-inner tr-tone-compass-map-inner--standalone">
+                        <div class="tr-tone-compass-map-inner tr-tone-compass-map-inner-standalone">
                             <div class="tr-tone-compass-oval"></div>
                             <span class="tr-tone-compass-chip tr-tone-compass-chip--top">Hangat</span>
                             <span class="tr-tone-compass-chip tr-tone-compass-chip--right">Ramah</span>
@@ -906,7 +906,7 @@ $dashOrders = [
                     </div>
                     <div class="tr-photo-direction-grid">
                         <div class="tr-photo-hero">
-                            <div class="tr-photo-frame tr-photo-frame--hero">
+                            <div class="tr-photo-frame tr-photo-frame-hero">
                                 <img src="<?= base_url('images/hero-photo.png'); ?>" alt="Hero photo" class="tr-photo-img">
                             </div>
                             <div class="tr-photo-caption">
@@ -970,7 +970,7 @@ $dashOrders = [
                             Gunakan <strong>natural light</strong>, warna sesuai palet, dan komposisi sederhana dengan
                             <strong>negative space</strong>.
                         </p>
-                        <div class="tr-photo-tags tr-photo-tags--compact">
+                        <div class="tr-photo-tags tr-photo-tags-compact">
                             <span class="tr-essence-pill">Warm tone</span>
                             <span class="tr-essence-pill">Soft shadow</span>
                             <span class="tr-essence-pill">Clean background</span>
@@ -1011,7 +1011,7 @@ $dashOrders = [
                                 <span class="tr-essence-pill">Recommended</span>
                             </div>
                             <p class="tr-photo-do-title">Warm * clean * calm</p>
-                            <div class="tr-photo-frame tr-photo-frame--mini">
+                            <div class="tr-photo-frame tr-photo-frame-mini">
                                 <img src="<?= base_url('images/photography-do.png'); ?>" alt="Contoh foto do" class="tr-photo-img">
                             </div>
                             <div class="tr-photo-pill-row">
@@ -1026,7 +1026,7 @@ $dashOrders = [
                                 <span class="tr-essence-pill">Avoid</span>
                             </div>
                             <p class="tr-photo-dont-title">Flash * busy * over-filter</p>
-                            <div class="tr-photo-frame tr-photo-frame--mini tr-photo-frame--warn">
+                            <div class="tr-photo-frame tr-photo-frame-mini tr-photo-frame-warn">
                                 <img src="<?= base_url('images/photography-dont.png'); ?>" alt="Contoh foto dont" class="tr-photo-img">
                             </div>
                             <div class="tr-photo-pill-row">
@@ -1055,7 +1055,7 @@ $dashOrders = [
                         <div class="tr-application-tags">
                             <span class="tr-application-pill">Menu</span>
                             <span class="tr-application-tag-text">Minimalis feel</span>
-                            <span class="tr-application-tag-text tr-application-tag-text--muted">text-first</span>
+                            <span class="tr-application-tag-text tr-application-tag-text-muted">text-first</span>
                         </div>
                         <div class="tr-application-mockup-inner">
                             <img src="<?= base_url('images/application-menu.png'); ?>" alt="Menu mockup" class="tr-application-img tr-application-img--ig">
@@ -1077,7 +1077,7 @@ $dashOrders = [
                         <div class="tr-application-tags">
                             <span class="tr-application-pill">Cup</span>
                             <span class="tr-application-tag-text">symbol-only</span>
-                            <span class="tr-application-tag-text tr-application-tag-text--muted">calm wall</span>
+                            <span class="tr-application-tag-text tr-application-tag-text-muted">calm wall</span>
                         </div>
                         <div class="tr-application-mockup-inner">
                             <img src="<?= base_url('images/application-cup.png'); ?>" alt="Cup mockup" class="tr-application-img tr-application-img--ig">
@@ -1099,7 +1099,7 @@ $dashOrders = [
                         <div class="tr-application-tags">
                             <span class="tr-application-pill">Instagram</span>
                             <span class="tr-application-tag-text">Clean post</span>
-                            <span class="tr-application-tag-text tr-application-tag-text--muted">minimal overlay</span>
+                            <span class="tr-application-tag-text tr-application-tag-text-muted">minimal overlay</span>
                         </div>
                         <div class="tr-application-mockup-inner">
                             <img src="<?= base_url('images/application-ig.png'); ?>" alt="Social media mockup" class="tr-application-img tr-application-img--ig">

@@ -1,16 +1,16 @@
 /* =========================================================
-   SIDEBAR NAV MODULE
-   - extracted from layout.css
-   - goal: keep layout.css structural only
-   - no visual changes intended
-   ========================================================= */
+SIDEBAR NAV MODULE
+- extracted from layout.css
+- goal: keep layout.css structural only
+- no visual changes intended
+========================================================= */
 
 /* Sidebar module typography */
 .sidebar-title {
     font-size: var(--tr-fs-2xl); /* 18px */
     font-weight: var(--tr-fw-semibold); /* 600 */
     margin-bottom: 8px;
-    padding-top: 0px;
+    padding-top: 0;
     color: var(--temu-accent, #8fb78f);
 }
 
@@ -24,36 +24,43 @@
 /* Navigation */
 .nav-section-title {
     font-size: var(--tr-fs-lg); /* 16px */
+    font-weight: 600;
     text-transform: uppercase;
-    color: var(--sidebar-text-muted, rgba(0, 0, 0, 0.6));
+    color: var(--sidebar-text-muted, rgb(255 255 255 / 46%));
     letter-spacing: 0.08em;
-    margin: 16px 0 6px;
+    margin: 18px 0 8px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    cursor: pointer;
-
+    cursor: default;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
+    padding: 0 4px;
+    transition: none !important;
 }
 
 .nav-group {
-    margin-bottom: 4px;
+    padding-top: 6px;
+    margin-bottom: 6px;
+    border-top: 1px solid rgb(255 255 255 / 2%);
+    
+    /* Small visual easing when sections expand/collapse. */
+    transition: max-height 0.18s ease, opacity 0.12s ease;
 }
 
 .nav-link {
     display: block;
-    padding: 7px 8px;
+    padding: 8px 10px;
     border-radius: 8px;
     font-size: var(--tr-fs-lg); /* 16px */
-    color: var(--sidebar-text, #111827);
+    color: rgb(255 255 255 / 92%);
     text-decoration: none;
     margin-bottom: 3px;
     border: 1px solid transparent;
-    transition: background 0.15s ease, border-color 0.15s ease;
-
+    background: transparent;
+    transition: background 160ms ease;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -61,20 +68,23 @@
 
 .nav-link.small {
     font-size: var(--tr-fs-md); /* 14px */
-    color: var(--sidebar-text-muted, rgba(0, 0, 0, 0.6));
+    color: var(--sidebar-text-muted, rgb(255 255 255 / 72%));
 }
 
 .nav-link:hover {
-    background: rgba(59, 130, 246, 0.16);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: rgb(255 255 255 / 3%);
+    border-color: transparent;
+    text-decoration: none;
 }
 
 .nav-link.active {
-    background: rgba(59, 130, 246, 0.2);
-    border: 1px solid var(--accent-primary);
-    color: #ffffff;
+    border: none;
+    box-shadow: none;
+    background: rgb(143 183 143 / 6%);
+    color: #fff;
     font-weight: 600;
-    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.28);
+    border-left: 2px solid rgb(143 183 143 / 60%);
+    padding-left: 8px;
 }
 
 .disabled-link {
@@ -87,7 +97,7 @@
 .collapse-arrow {
     font-size: var(--tr-fs-2xl); /* 18px */
     transition: transform 0.2s ease;
-    color: var(--sidebar-text-muted, rgba(0, 0, 0, 0.6));
+    color: var(--sidebar-text-muted, rgb(0 0 0 / 60%));
     flex: 0 0 auto;
 }
 
@@ -95,15 +105,12 @@
     transform: rotate(-90deg);
 }
 
+
 /* When a section title is collapsed, hide the following nav group. */
 .nav-section-title.collapsed + .nav-group {
     display: none;
 }
 
-/* Small visual easing when sections expand/collapse. */
-.nav-group {
-    transition: max-height 0.18s ease, opacity 0.12s ease;
-}
 
 /* Brand logo alignment */
 .sidebar-brand {
@@ -124,6 +131,13 @@
     opacity: 0.95;
 }
 
+.sidebar {
+    background: var(--sidebar-bg, #091022);
+    color: var(--tr-text, #e6eef6);
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
 /* Scoped collapsed-state rules: only affect sidebar visuals */
 .layout.sidebar-collapsed .sidebar {
     width: var(--tr-sidebar-w-collapsed, 64px);
@@ -140,17 +154,20 @@
     display: none; /* hide link text only */
 }
 
+
 /* hide section headings and title in collapsed state to keep sidebar compact */
 .layout.sidebar-collapsed .sidebar .sidebar-title,
 .layout.sidebar-collapsed .sidebar .nav-section-title {
     display: none;
 }
 
+
 /* keep links horizontally centered when collapsed */
 .layout.sidebar-collapsed .sidebar .nav-group,
 .layout.sidebar-collapsed .sidebar .nav-link {
     text-align: center;
 }
+
 
 .sidebar-toggle-btn .toggle-icon {
     font-size: 14px;
@@ -162,7 +179,7 @@
   display: inline-block;
   width: 1em;
   text-align: center;
-  color: currentColor;
+  color: currentcolor;
 }
 
 
@@ -171,9 +188,10 @@
     content: '';
     display: block;
     height: 1px;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgb(255 255 255 / 3%);
     margin-top: 8px;
     margin-bottom: 12px;
+
     /* Expand the divider to reach the sidebar edges (account for .sidebar-brand padding) */
     width: calc(100% + 24px);
     margin-left: -12px;
@@ -181,65 +199,21 @@
 }
 
 /* Visual differentiation between section titles and links (blend-friendly) */
-.nav-section-title {
-    text-transform: uppercase;
-    font-size: 15px;
-    letter-spacing: 0.08em;
-    color: var(--sidebar-text-muted, rgba(255, 255, 255, 0.46));
-    margin: 18px 0 8px;
-    padding: 0 4px;
-    font-weight: 600;
-    cursor: default;
-    transition: none !important;
-}
 
-.nav-group {
-    padding-top: 6px;
-    margin-bottom: 6px;
-    border-top: 1px solid rgba(255, 255, 255, 0.02);
-}
 
-.nav-link {
-    display: block;
-    padding: 8px 10px;
-    border-radius: 8px;
-    color: var(--sidebar-text, rgba(255, 255, 255, 0.86));
-    background: transparent;
-    transition: background 160ms ease;
-}
 
-.nav-link.small {
-    color: var(--sidebar-text-muted, rgba(255, 255, 255, 0.72));
-}
 
-.nav-link:hover {
-    background: rgba(255, 255, 255, 0.02);
-    text-decoration: none;
-}
 
-.nav-link.active {
-    background: rgba(143, 183, 143, 0.06);
-    color: #ffffff;
-    font-weight: 600;
-    border-left: 2px solid rgba(143, 183, 143, 0.6);
-    padding-left: 8px;
-}
 
 .nav-section-title .collapse-arrow {
-    color: var(--sidebar-text-muted, rgba(255, 255, 255, 0.5));
+    color: var(--sidebar-text-muted, rgb(255 255 255 / 50%));
     transition: none;
 }
 
 /* Dark-theme blend overrides for sidebar */
-.sidebar {
-    background: var(--sidebar-bg, #091022);
-    color: var(--tr-text, #e6eef6);
-    padding-left: 8px;
-    padding-right: 8px;
-}
 
 .sidebar-sub {
-    color: rgba(255, 255, 255, 0.65);
+    color: rgb(255 255 255 / 65%);
 }
 
 /* Title row with collapse button */
@@ -253,17 +227,6 @@
 
 .sidebar-collapse-btn {
     font-size: 12px;
-    padding: 6px 8px;
-}
-
-@media (max-width: 420px) {
-    .sidebar-collapse-btn {
-        display: none;
-    }
-}
-
-/* Small icon styling for collapse button */
-.sidebar-collapse-btn {
     width: 36px;
     height: 30px;
     display: inline-flex;
@@ -272,43 +235,29 @@
     padding: 4px;
 }
 
+
+@media (width <= 420px) {
+    .sidebar-collapse-btn {
+        display: none;
+    }
+}
+
+/* Small icon styling for collapse button */
+
 .sidebar-collapse-btn .collapse-icon {
     font-size: 14px;
     line-height: 1;
-    color: var(--text-on-primary-muted, rgba(255, 255, 255, 0.82));
+    color: var(--text-on-primary-muted, rgb(255 255 255 / 82%));
 }
 
-.nav-link {
-    color: rgba(255, 255, 255, 0.92);
-    background: transparent;
-}
 
-.nav-link.small {
-    color: rgba(255, 255, 255, 0.72);
-}
 
-.nav-link:hover {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: transparent;
-}
 
-.nav-link.active {
-    background: rgba(143, 183, 143, 0.06);
-    border: none;
-    color: #ffffff;
-    font-weight: 600;
-    box-shadow: none;
-    border-left: 2px solid rgba(143, 183, 143, 0.6);
-    padding-left: 8px; /* compensate for left border */
-}
 
 /* Make section titles more subtle on dark bg */
-.nav-section-title {
-    color: rgba(255, 255, 255, 0.46);
-}
 
 /* Slightly smaller logo on very narrow viewports */
-@media (max-width: 420px) {
+@media (width <= 420px) {
     .sidebar-logo {
         max-width: 120px;
     }

@@ -24,14 +24,11 @@
   position: sticky; /* optional, helpful inside cards */
   top: 0;
   z-index: 1;
-
   text-align: left;
   font-weight: 700;
   font-size: 12px;
-
   color: var(--tr-muted-text, #6b7280);
   background: var(--tr-surface-2, #f7f7f8);
-
   padding: 10px 12px;
   border-bottom: 1px solid var(--tr-border, #e5e7eb);
 }
@@ -41,6 +38,13 @@
   padding: 10px 12px;
   border-bottom: 1px solid var(--tr-border, #e5e7eb);
   vertical-align: middle;
+}
+
+/* Compact variant */
+.tr-table-compact thead th,
+.tr-table-compact tbody td{
+  padding: 8px 10px;
+  font-size: 12.5px;
 }
 
 /* Last row border cleanup */
@@ -58,16 +62,10 @@
 .tr-table .is-center{ text-align: center; }
 .tr-table .is-muted{ color: var(--tr-muted-text, #6b7280); }
 
-/* Compact variant */
-.tr-table--compact thead th,
-.tr-table--compact tbody td{
-  padding: 8px 10px;
-  font-size: 12.5px;
-}
 
 /* Striped variant (optional) */
-.tr-table--striped tbody tr:nth-child(even){
-  background: rgba(0,0,0,.02);
+.tr-table-striped tbody tr:nth-child(even){
+  background: rgb(0 0 0 / 2%);
 }
 
 /* Empty state (place inside tbody) */
