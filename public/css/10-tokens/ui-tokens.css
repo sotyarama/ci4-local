@@ -1,3 +1,93 @@
+/* ===================================================================
+   LAYER: Tokens
+   FILE : public/css/10-tokens/ui-tokens.css
+   SCOPE: Design tokens (non-color)
+   NOTES:
+   - Typography scale, spacing, radius, shadows, layout sizes
+   - Tokens only (no selectors)
+   =================================================================== */
+
 :root {
-  /* Token layer placeholder */
+  /* Typography */
+  --tr-font-base: 'Inter', system-ui, -apple-system, blinkmacsystemfont, 'Segoe UI', sans-serif;
+  --tr-font-mono: ui-monospace, sfmono-regular, menlo, monaco, consolas, 'Liberation Mono', 'Courier New', monospace;
+
+  /* Font sizes */
+  --tr-fs-xs: 12px;
+  --tr-fs-sm: 13px;
+  --tr-fs-md: 14px;
+  --tr-fs-lg: 16px;
+  --tr-fs-xl: 18px;
+  --tr-fs-2xl: 22px;
+
+  /* Line height */
+  --tr-lh-tight: 1.2;
+  --tr-lh-normal: 1.5;
+  --tr-lh-relaxed: 1.7;
+
+  /* Font weight */
+  --tr-fw-regular: 400;
+  --tr-fw-medium: 500;
+  --tr-fw-semibold: 600;
+
+  /* Typography semantics */
+  --tr-type-caption: var(--tr-fs-xs);
+  --tr-type-label: var(--tr-fs-sm);
+  --tr-type-body: var(--tr-fs-md);
+  --tr-type-small: var(--tr-fs-sm);
+  --tr-type-title: var(--tr-fs-xl);
+  --tr-type-h1: var(--tr-fs-2xl);
+  --tr-type-h2: var(--tr-fs-xl);
+  --tr-type-h3: var(--tr-fs-lg);
+  --tr-type-weight-body: var(--tr-fw-regular);
+  --tr-type-weight-label: var(--tr-fw-medium);
+  --tr-type-weight-title: var(--tr-fw-semibold);
+  --tr-type-lh-body: var(--tr-lh-normal);
+  --tr-type-lh-tight: var(--tr-lh-tight);
+
+  /* Layout contract */
+  --tr-header-h: 60px;
+  --tr-sidebar-w: 280px;
+  --tr-footer-h: 40px;
+
+  /* Content padding contract */
+  --tr-content-pad-x: 20px;
+  --tr-content-pad-y: 18px;
+  --tr-content-pad-b: 32px;
+
+  /* Legacy single pad token */
+  --tr-content-pad: 16px;
+
+  /* Spacing scale */
+  --tr-space-2xs: 4px;
+  --tr-space-xs: 8px;
+  --tr-space-sm: 12px;
+  --tr-space-md: 16px;
+  --tr-space-lg: 24px;
+  --tr-space-xl: 32px;
+
+  /* Radius */
+  --tr-radius-sm: 8px;
+  --tr-radius-md: 12px;
+  --tr-radius-lg: 16px;
+
+  /* Shadow */
+  --tr-shadow-sm: 0 1px 2px rgb(0 0 0 / 6%);
+  --tr-shadow-md: 0 8px 20px rgb(0 0 0 / 10%);
+
+  /* Interaction */
+  --tr-focus: rgb(37 99 235 / 35%);
+
+  /* Semantic color roles (values come from theme variables) */
+  --tr-primary: var(--accent-primary);
+  --tr-secondary: var(--text-muted);
+  --tr-accent: var(--accent-primary-strong);
+  --tr-bg: var(--bg-page);
+  --tr-surface: var(--bg-card);
+  --tr-border: var(--border);
+  --tr-text: var(--text-main);
+  --tr-text-muted: var(--text-muted);
+  --tr-success: var(--success);
+  --tr-warning: var(--warning);
+  --tr-danger: var(--danger);
 }

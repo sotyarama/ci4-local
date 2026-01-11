@@ -1,220 +1,250 @@
+/* ===================================================================
+   LAYER: Component
+   FILE : public/css/50-components/buttons.css
+   SCOPE: Button component
+   NOTES:
+   - PRIMARY API : .tr-btn, .tr-btn-*
+   - LEGACY ALIAS: .btn, .btn-* (temporary, do not add new usage)
+   - All button capabilities live in .tr-btn system
+   =================================================================== */
+
 /* =========================================================
-   B2.1 — GLOBAL BUTTON SYSTEM (Temu Rasa)
-   File: public/css/ui/buttons.css
+   Base button (PRIMARY)
    ========================================================= */
+.tr-btn,
+.btn {
+    --btn-h: 38px;
+    --btn-px: 14px;
+    --btn-radius: 12px;
 
-/* Base button (semantic + reusable) */
-.tr-btn{
-  --btn-h: 38px;
-  --btn-px: 14px;
-  --btn-radius: 12px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: var(--btn-h);
-  padding: 0 var(--btn-px);
-  border-radius: var(--btn-radius);
-  border: 1px solid transparent;
-  font-size: 13px;
-  line-height: 1;
-  font-weight: 600;
-  cursor: pointer;
-  user-select: none;
-  text-decoration: none;
-  transition: transform .04s ease, background-color .12s ease, border-color .12s ease, color .12s ease, box-shadow .12s ease;
-  -webkit-tap-highlight-color: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: var(--btn-h);
+    padding: 0 var(--btn-px);
+    border-radius: var(--btn-radius);
+    border: 1px solid transparent;
+    font-family: inherit;
+    font-size: var(--tr-fs-md);
+    font-weight: var(--tr-fw-medium);
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+    text-decoration: none;
+    transition:
+        transform 0.04s ease,
+        background-color 0.12s ease,
+        border-color 0.12s ease,
+        color 0.12s ease,
+        box-shadow 0.12s ease,
+        opacity 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.tr-btn:active{
-  transform: translateY(1px);
+.tr-btn:active,
+.btn:active {
+    transform: translateY(1px);
 }
 
-/* Focus ring (keyboard) */
-.tr-btn:focus{
-  outline: none;
+/* Focus (keyboard) */
+.tr-btn:focus,
+.btn:focus {
+    outline: none;
 }
 
-.tr-btn:focus-visible{
-  box-shadow: 0 0 0 3px rgb(0 0 0 / 12%);
+.tr-btn:focus-visible,
+.btn:focus-visible {
+    outline: 3px solid var(--tr-focus);
+    outline-offset: 2px;
 }
 
 /* Disabled */
 .tr-btn:disabled,
-.tr-btn.is-disabled{
-  opacity: .55;
-  cursor: not-allowed;
-  pointer-events: none;
-  transform: none;
-}
-
-/* Loading state (simple) */
-.tr-btn.is-loading{
-  position: relative;
-  pointer-events: none;
-}
-
-.tr-btn.is-loading .tr-btn-label{
-  opacity: .65;
-}
-
-.tr-btn.is-loading::after{
-  content: "";
-  width: 14px;
-  height: 14px;
-  border-radius: 999px;
-  border: 2px solid currentcolor;
-  border-right-color: transparent;
-  display: inline-block;
-  margin-left: 8px;
-  animation: tr-spin .7s linear infinite;
-}
-
-@keyframes tr-spin{
-  to{ transform: rotate(360deg); }
-}
-
-/* Icon helpers (optional) */
-.tr-btn-icon{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-}
-
-.tr-btn-icon svg{
-  width: 16px;
-  height: 16px;
-  display: block;
-}
-
-/* Sizes */
-.tr-btn-sm{
-  --btn-h: 34px;
-  --btn-px: 12px;
-
-  font-size: 12.5px;
-}
-
-.tr-btn-lg{
-  --btn-h: 44px;
-  --btn-px: 16px;
-
-  font-size: 14px;
-  border-radius: 14px;
-}
-
-/* Full width */
-.tr-btn-block{
-  width: 100%;
+.tr-btn.is-disabled,
+.btn:disabled,
+.btn[aria-disabled='true'],
+.btn.is-disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    pointer-events: none;
+    transform: none;
 }
 
 /* =========================================================
-   Variants
-   NOTE: pakai token kalau tersedia: --tr-primary, --tr-text, --tr-border, dst.
-   Kalau token belum ada, fallback tetap aman.
+   Loading state
    ========================================================= */
-
-.tr-btn-primary{
-  background: var(--tr-primary, #1f6feb);
-  color: #fff;
-  border-color: transparent;
-  box-shadow: 0 6px 18px rgb(0 0 0 / 10%);
+.tr-btn.is-loading,
+.btn.is-loading {
+    position: relative;
+    pointer-events: none;
 }
 
-.tr-btn-primary:hover{
-  background: var(--tr-primary-hover, #1b5fd1);
-  box-shadow: 0 8px 22px rgb(0 0 0 / 12%);
+.tr-btn.is-loading .tr-btn-label,
+.btn.is-loading .tr-btn-label {
+    opacity: 0.65;
 }
 
-.tr-btn-primary:active{
-  background: var(--tr-primary-active, #1957c0);
+.tr-btn.is-loading::after,
+.btn.is-loading::after {
+    content: "";
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    border: 2px solid currentcolor;
+    border-right-color: transparent;
+    display: inline-block;
+    margin-left: 8px;
+    animation: tr-spin 0.7s linear infinite;
 }
 
-.tr-btn-secondary{
-  background: var(--tr-surface, #fff);
-  color: var(--tr-text, #111);
-  border-color: var(--tr-border, #e5e7eb);
+@keyframes tr-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
-.tr-btn-secondary:hover{
-  background: var(--tr-surface-2, #f7f7f8);
+/* =========================================================
+   Sizes
+   ========================================================= */
+.tr-btn-sm,
+.btn-sm {
+    --btn-h: 34px;
+    --btn-px: 12px;
+    
+    font-size: 12.5px;
 }
 
-.tr-btn-secondary:active{
-  background: var(--tr-surface-3, #f0f1f2);
+.tr-btn-lg,
+.btn-lg {
+    --btn-h: 44px;
+    --btn-px: 16px;
+    
+    font-size: 14px;
+    border-radius: 14px;
 }
 
-.tr-btn-danger{
-  background: var(--tr-danger, #dc2626);
-  color: #fff;
-  border-color: transparent;
+.tr-btn-block,
+.btn-block {
+    width: 100%;
 }
 
-.tr-btn-danger:hover{
-  background: var(--tr-danger-hover, #c81e1e);
+/* =========================================================
+   Icon helpers
+   ========================================================= */
+.tr-btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
 }
 
-.tr-btn-danger:active{
-  background: var(--tr-danger-active, #b91c1c);
+.tr-btn-icon svg {
+    width: 16px;
+    height: 16px;
+    display: block;
 }
 
-.tr-btn-ghost{
-  background: transparent;
-  color: var(--tr-text, #111);
-  border-color: transparent;
+/* =========================================================
+   Variants (PRIMARY)
+   ========================================================= */
+.tr-btn-primary,
+.btn-primary {
+    background: var(--accent-primary-strong);
+    border-color: var(--accent-primary);
+    color: var(--text-on-primary);
 }
 
-.tr-btn-ghost:hover{
-  background: var(--tr-surface-2, #f7f7f8);
+.tr-btn-secondary,
+.btn-secondary {
+    background: var(--accent-soft);
+    border-color: var(--tr-border);
+    color: var(--tr-text);
 }
 
-.tr-btn-ghost:active{
-  background: var(--tr-surface-3, #f0f1f2);
+.tr-btn-danger,
+.btn-danger {
+    background: var(--tr-danger);
+    border-color: var(--tr-danger);
+    color: #fff;
 }
 
-
-
-/* Action & POS-specific button helpers (promoted from pos-touch.css) */
-.tr-icon-btn, .pos-icon-btn{
-  width: 40px;
-  height: 38px;
-  border-radius: 12px;
-  border: 1px solid var(--tr-border);
-  background: #fff;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  line-height: 1;
+.tr-btn-ghost,
+.btn-ghost {
+    background: transparent;
+    color: var(--tr-text);
+    border-color: transparent;
 }
 
-.tr-small-btn, .pos-small-btn{
-  padding: 6px 10px;
-  border-radius: 10px;
-  font-size: 12px;
-  line-height: 1;
-  white-space: nowrap;
+/* =========================================================
+   Theme toggle (special-case component)
+   ========================================================= */
+.theme-toggle-btn {
+    background: var(--tr-surface);
+    border: 1px solid var(--tr-border);
+    color: var(--tr-text);
+    padding: 6px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: var(--tr-fs-xs);
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-/* Save/primary full-width variant used in POS */
-.tr-save-btn, .pos-save-btn{
-  width: 100%;
-  border-radius: 12px;
-  padding: 10px 12px;
-  font-weight: 700;
+.theme-toggle-btn:hover {
+    background: var(--accent-soft);
+    border-color: var(--accent-primary);
 }
 
-/* Action group layout helper */
-.tr-actions, .pos-actions{
-  display: flex;
-  gap: 10px;
+/* =========================================================
+   POS / Action helpers
+   ========================================================= */
+.tr-icon-btn,
+.pos-icon-btn {
+    width: 40px;
+    height: 38px;
+    border-radius: 12px;
+    border: 1px solid var(--tr-border);
+    background: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 1;
 }
 
-.tr-actions, .pos-actions .btn{
-  min-height: 40px;
-  border-radius: 12px;
+.tr-small-btn,
+.pos-small-btn {
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.tr-save-btn,
+.pos-save-btn {
+    width: 100%;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-weight: 700;
+}
+
+.tr-actions,
+.pos-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.tr-actions .tr-btn,
+.tr-actions .btn,
+.pos-actions .tr-btn,
+.pos-actions .btn {
+    min-height: 40px;
+    border-radius: 12px;
 }

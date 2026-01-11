@@ -1,102 +1,19 @@
-/* =========================================================
-   UI BASELINE v1 — Temu Rasa POS
-   File: public/css/ui-baseline.css
-   Policy:
-   - You MAY tune values during tuning window
-   - You MUST NOT add new token roles or random hardcodes
-   ========================================================= */
+/* ===================================================================
+   LAYER: Base
+   FILE : public/css/20-base/ui-baseline.css
+   SCOPE: HTML element defaults & global UI baseline
+   NOTES:
+   - Base typography, links, headings
+   - Accessibility & form baseline fixes
+   - No design tokens, no components, no layout sizing
+   =================================================================== */
 
-/* =========================================================
-   1) TOKENS (SYSTEM FREEZE)
-   ========================================================= */
-:root {
-    /* ---------- Typography (contract) ---------- */
-    --tr-font-base: 'Inter', system-ui, -apple-system, blinkmacsystemfont, 'Segoe UI', sans-serif;
-    --tr-font-mono: ui-monospace, sfmono-regular, menlo, monaco, consolas, 'Liberation Mono', 'Courier New', monospace;
-
-    /* Font sizes (hierarchy frozen; values tunable ±1–2px) */
-    --tr-fs-xs: 12px;
-    --tr-fs-sm: 13px;
-    --tr-fs-md: 14px; /* default */
-    --tr-fs-lg: 16px;
-    --tr-fs-xl: 18px;
-    --tr-fs-2xl: 22px;
-
-    /* Line height */
-    --tr-lh-tight: 1.2;
-    --tr-lh-normal: 1.5;
-    --tr-lh-relaxed: 1.7;
-
-    /* Font weight (do not add new weights) */
-    --tr-fw-regular: 400;
-    --tr-fw-medium: 500;
-    --tr-fw-semibold: 600;
-
-    /* ---------- Typography Semantics (C2) ---------- */
-    --tr-type-caption: var(--tr-fs-xs);
-    --tr-type-label: var(--tr-fs-sm);
-    --tr-type-body: var(--tr-fs-md);
-    --tr-type-small: var(--tr-fs-sm);
-    --tr-type-title: var(--tr-fs-xl);
-    --tr-type-h1: var(--tr-fs-2xl);
-    --tr-type-h2: var(--tr-fs-xl);
-    --tr-type-h3: var(--tr-fs-lg);
-    --tr-type-weight-body: var(--tr-fw-regular);
-    --tr-type-weight-label: var(--tr-fw-medium);
-    --tr-type-weight-title: var(--tr-fw-semibold);
-    --tr-type-lh-body: var(--tr-lh-normal);
-    --tr-type-lh-tight: var(--tr-lh-tight);
-
-    /* ---------- Layout Contract (structural freeze) ---------- */
-    --tr-header-h: 60px;
-    --tr-sidebar-w: 280px;
-    --tr-footer-h: 40px;
-
-    /* Content padding contract (match current layout.css to avoid UI change) */
-    --tr-content-pad-x: 20px;
-    --tr-content-pad-y: 18px;
-    --tr-content-pad-b: 32px;
-
-    /* Keep legacy single pad token (optional) */
-    --tr-content-pad: 16px;
-
-    /* ---------- Spacing ---------- */
-    --tr-space-2xs: 4px;
-    --tr-space-xs: 8px;
-    --tr-space-sm: 12px;
-    --tr-space-md: 16px;
-    --tr-space-lg: 24px;
-    --tr-space-xl: 32px;
-
-    /* ---------- Radius ---------- */
-    --tr-radius-sm: 8px;
-    --tr-radius-md: 12px;
-    --tr-radius-lg: 16px;
-
-    /* ---------- Shadow ---------- */
-    --tr-shadow-sm: 0 1px 2px rgb(0 0 0 / 6%);
-    --tr-shadow-md: 0 8px 20px rgb(0 0 0 / 10%);
-
-    /* ---------- Semantic Colors (roles frozen; values come from theme) ---------- */
-    --tr-primary: var(--accent-primary);
-    --tr-secondary: var(--text-muted);
-    --tr-accent: var(--accent-primary-strong);
-    --tr-bg: var(--bg-page);
-    --tr-surface: var(--bg-card);
-    --tr-border: var(--border);
-    --tr-text: var(--text-main);
-    --tr-text-muted: var(--text-muted);
-    --tr-success: var(--success);
-    --tr-warning: var(--warning);
-    --tr-danger: var(--danger);
-
-    /* ---------- Interaction ---------- */
-    --tr-focus: rgb(37 99 235 / 35%);
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
 }
 
-/* =========================================================
-   2) BASE
-   ========================================================= */
 html,
 body {
     height: 100%;
@@ -113,7 +30,6 @@ body {
     background: var(--tr-bg);
 }
 
-/* Typography base for code-ish elements */
 code,
 pre,
 kbd,
@@ -130,7 +46,6 @@ a:hover {
     text-decoration: underline;
 }
 
-/* Headings */
 h1,
 h2,
 h3 {
@@ -167,9 +82,6 @@ small,
     color: var(--tr-text-muted);
 }
 
-/* =========================================================
-   Typography Utilities
-   ========================================================= */
 .tr-caption {
     font-size: var(--tr-type-caption);
     line-height: var(--tr-type-lh-body);
@@ -200,14 +112,6 @@ small,
     color: var(--tr-text);
 }
 
-/* =========================================================
-   3) LAYOUT BASELINE (light-touch)
-   IMPORTANT:
-   - App layout (.layout/.sidebar/.topbar/.content/.footer) is owned by layout.css
-   - ui-baseline.css should NOT pad/size those app-specific layout classes
-   ========================================================= */
-
-/* Safe generic defaults only (do not touch .topbar/.sidebar/.content/.footer classes) */
 header.header {
     min-height: var(--tr-header-h);
 }
@@ -216,262 +120,11 @@ footer.footer {
     min-height: var(--tr-footer-h);
 }
 
-/* Keep generic <main> padding for simple pages/templates only
-   IMPORTANT: Do NOT apply padding to the app's main content container (<main class="content">)
-*/
 main:not(.content) {
     padding: var(--tr-content-pad);
 }
 
-/* =========================================================
-   4) CARD
-   ========================================================= */
-.card {
-    background: var(--tr-surface);
-    border: 1px solid var(--tr-border);
-    border-radius: var(--tr-radius-lg);
-    box-shadow: var(--tr-shadow-sm);
-    padding: var(--tr-space-lg);
-}
-
-.card-compact {
-    padding: var(--tr-space-md);
-    border-radius: var(--tr-radius-md);
-}
-
-.divider {
-    height: 1px;
-    background: var(--tr-border);
-    margin: var(--tr-space-md) 0;
-}
-
-/* =========================================================
-   5) BUTTONS
-   ========================================================= */
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-family: inherit;
-    font-size: var(--tr-fs-md);
-    font-weight: var(--tr-fw-medium);
-    line-height: 1;
-    padding: 10px 14px;
-    border-radius: var(--tr-radius-md);
-    border: 1px solid transparent;
-    cursor: pointer;
-    user-select: none;
-    transition: transform 0.02s ease, opacity 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease,
-        border-color 0.15s ease;
-}
-
-.btn:active {
-    transform: translateY(1px);
-}
-
-.btn-primary {
-    background: var(--accent-primary-strong);
-    border: 1px solid var(--accent-primary);
-    color: var(--text-on-primary);
-}
-
-.btn-secondary {
-    background: var(--accent-soft);
-    border: 1px solid var(--tr-border);
-    color: var(--tr-text);
-}
-
-.btn-danger {
-    background: var(--tr-danger);
-    border: 1px solid var(--tr-danger);
-    color: #fff;
-}
-
-.btn-ghost {
-    background: transparent;
-    color: var(--tr-text);
-    border-color: var(--tr-border);
-}
-
-.btn:disabled,
-.btn[aria-disabled='true'] {
-    opacity: 0.55;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.btn:focus-visible {
-    outline: 3px solid var(--tr-focus);
-    outline-offset: 2px;
-}
-
-/* Theme toggle button (component) */
-.theme-toggle-btn {
-    background: var(--tr-surface);
-    border: 1px solid var(--tr-border);
-    color: var(--tr-text);
-    padding: 6px 10px;
-    border-radius: 999px;
-    cursor: pointer;
-    font-size: var(--tr-fs-xs);
-    line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.theme-toggle-btn:hover {
-    background: var(--accent-soft);
-    border-color: var(--accent-primary);
-}
-
-/* =========================================================
-   6) FORMS
-   ========================================================= */
-.form-label {
-    display: block;
-    font-size: var(--tr-fs-sm);
-    font-weight: var(--tr-fw-medium);
-    margin-bottom: var(--tr-space-2xs);
-}
-
-.form-hint {
-    font-size: var(--tr-fs-xs);
-    color: var(--tr-text-muted);
-    margin-top: var(--tr-space-2xs);
-}
-
-.form-error {
-    font-size: var(--tr-fs-xs);
-    color: var(--tr-danger);
-    margin-top: var(--tr-space-2xs);
-}
-
-.input,
-.select,
-.textarea {
-    width: 100%;
-    font-family: inherit;
-    font-size: var(--tr-fs-md);
-    line-height: var(--tr-lh-normal);
-    padding: 10px 12px;
-    border-radius: var(--tr-radius-sm);
-    border: 1px solid var(--tr-border);
-    background: var(--tr-surface);
-    color: var(--tr-text);
-    box-shadow: none;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.textarea {
-    min-height: 96px;
-    resize: vertical;
-}
-
-.input:focus,
-.select:focus,
-.textarea:focus {
-    outline: none;
-    border-color: var(--tr-accent);
-    box-shadow: 0 0 0 4px var(--tr-focus);
-}
-
-.input:disabled,
-.select:disabled,
-.textarea:disabled {
-    background: #eef2f7;
-    cursor: not-allowed;
-    opacity: 0.85;
-}
-
-.is-invalid {
-    border-color: var(--tr-danger) !important;
-    box-shadow: 0 0 0 4px rgb(220 38 38 / 18%) !important;
-}
-
-/* =========================================================
-   7) TABLE
-   ========================================================= */
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--tr-surface);
-    border: 1px solid var(--tr-border);
-    border-radius: var(--tr-radius-md);
-    overflow: hidden;
-}
-
-.table th {
-    text-align: left;
-    font-size: var(--tr-fs-sm);
-    font-weight: var(--tr-fw-medium);
-    color: var(--tr-text-muted);
-    background: #f8fafc;
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--tr-border);
-}
-
-.table td {
-    font-size: var(--tr-fs-sm);
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--tr-border);
-}
-
-.table tr:last-child td {
-    border-bottom: none;
-}
-
-.table tbody tr:hover {
-    background: #f1f5f9;
-}
-
-/* =========================================================
-   8) BADGE (optional)
-   ========================================================= */
-.badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: var(--tr-fs-xs);
-    font-weight: var(--tr-fw-medium);
-    border: 1px solid var(--tr-border);
-    background: #f8fafc;
-    color: var(--tr-text);
-}
-
-.badge-success {
-    border-color: rgb(22 163 74 / 25%);
-    background: rgb(22 163 74 / 8%);
-    color: var(--tr-success);
-}
-
-.badge-warning {
-    border-color: rgb(217 119 6 / 25%);
-    background: rgb(217 119 6 / 10%);
-    color: var(--tr-warning);
-}
-
-.badge-danger {
-    border-color: rgb(220 38 38 / 25%);
-    background: rgb(220 38 38 / 8%);
-    color: var(--tr-danger);
-}
-
-/* =========================================================
-   FORM BASELINE (Global) — B1 safe
-   Fix input/label overlap across pages (login, POS, forms)
-   ========================================================= */
-
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-}
-
+/* Global form baseline (keep for now) */
 label {
     display: block !important;
     margin: 0 0 8px !important;
@@ -501,25 +154,16 @@ textarea {
     border-radius: 12px;
     background: #fff;
     color: var(--tr-text);
-    min-height: 42px !important; /* kunci tinggi minimal */
+    min-height: 42px !important;
 }
 
 input::placeholder,
 textarea::placeholder {
-    color: var(--tr-muted-text);
+    color: var(--tr-text-muted);
 }
 
-
-
-
-
-/* jarak antar field kalau wrapper gak punya gap */
 label + input,
 label + select,
 label + textarea {
     margin-bottom: 12px !important;
 }
-
-/* =========================================================
-   END — UI BASELINE v1
-   ========================================================= */

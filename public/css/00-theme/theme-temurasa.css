@@ -1,42 +1,49 @@
-/* =========================================================
-   THEME TOKENS (Light / Dark) — Temu Rasa POS
-   File: public/css/theme-temurasa.css
-   Responsibility:
-   - Theme tokens only (colors, surfaces, accents)
-   - Light/Dark variables
-   - Compatibility mappings for legacy --tr-* tokens
-   ========================================================= */
+/* ===================================================================
+   LAYER: Theme
+   FILE : public/css/00-theme/theme-temurasa.css
+   SCOPE: Color palette, surfaces, accents (light / dark)
+   NOTES:
+   - Defines brand colors only
+   - No layout, no components, no typography
+   - Safe to load globally
+   =================================================================== */
 
 :root {
-  /* Sidebar text */
+  /* Sidebar */
   --sidebar-text: #e5e7eb;
   --sidebar-text-muted: rgb(229 231 235 / 72%);
 
-  /* Base palette (light default) */
+  /* Surfaces */
   --bg-page: #f8fafc;
   --bg-card: #fff;
   --bg-sidebar: #0f172a;
+
+  /* Text */
   --text-main: #0f172a;
   --text-muted: #64748b;
-  --border: #e5e7eb;
+  --text-on-primary: #fff;
+  --text-on-primary-muted: rgb(255 255 255 / 82%);
 
-  /* BLUE accent */
+  /* Borders & shadows */
+  --border: #e5e7eb;
+  --shadow-card: 0 10px 28px rgb(15 23 42 / 12%);
+
+  /* Accent */
   --accent-primary: #2563eb;
   --accent-primary-strong: #1d4ed8;
   --accent-primary-deep: #1e40af;
   --accent-soft: #dbeafe;
-  --success: #16a34a;
-  --danger: #dc2626;
-  --warning: #f59e0b;
-  --shadow-card: 0 10px 28px rgb(15 23 42 / 12%);
-  --text-on-primary: #fff;
-  --text-on-primary-muted: rgb(255 255 255 / 82%);
 
-  /* Tables (if needed by some legacy modules) */
+  /* Status */
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #dc2626;
+
+  /* Optional tables */
   --table-head-bg: #f1f5f9;
   --table-hover: rgb(37 99 235 / 10%);
 
-  /* ---------- Compatibility mappings (legacy --tr-*) ---------- */
+  /* Legacy mappings (keep for now) */
   --tr-primary: var(--accent-primary);
   --tr-primary-strong: var(--accent-primary-strong);
   --tr-primary-deep: var(--accent-primary-deep);
@@ -47,38 +54,48 @@
   --tr-text-muted: var(--text-muted);
   --tr-shadow: var(--shadow-card);
 
-  /* Keep these for any remaining legacy inline style usage */
+  /* Legacy aliases */
   --tr-secondary-green: var(--accent-soft);
   --tr-secondary-beige: var(--accent-soft);
   --tr-accent-brown: var(--accent-primary-deep);
 }
 
 :root[data-theme="dark"] {
-  /* Sidebar text */
+  /* Sidebar */
   --sidebar-text: #e5e7eb;
   --sidebar-text-muted: rgb(229 231 235 / 70%);
+
+  /* Surfaces */
   --bg-page: #020617;
   --bg-card: #0f172a;
   --bg-sidebar: #020617;
+
+  /* Text */
   --text-main: #e5e7eb;
   --text-muted: #94a3b8;
-  --border: #1e293b;
+  --text-on-primary: #fff;
+  --text-on-primary-muted: rgb(255 255 255 / 86%);
 
-  /* BLUE accent */
+  /* Borders & shadows */
+  --border: #1e293b;
+  --shadow-card: 0 14px 32px rgb(0 0 0 / 28%);
+
+  /* Accent */
   --accent-primary: #3b82f6;
   --accent-primary-strong: #2563eb;
   --accent-primary-deep: #1e40af;
   --accent-soft: #1e3a8a;
+
+  /* Status */
   --success: #22c55e;
-  --danger: #ef4444;
   --warning: #fbbf24;
-  --shadow-card: 0 14px 32px rgb(0 0 0 / 28%);
-  --text-on-primary: #fff;
-  --text-on-primary-muted: rgb(255 255 255 / 86%);
+  --danger: #ef4444;
+
+  /* Optional tables */
   --table-head-bg: #111827;
   --table-hover: rgb(59 130 246 / 18%);
 
-  /* Legacy mapping stays consistent */
+  /* Legacy mappings (keep for now) */
   --tr-primary: var(--accent-primary);
   --tr-primary-strong: var(--accent-primary-strong);
   --tr-primary-deep: var(--accent-primary-deep);
@@ -88,7 +105,10 @@
   --tr-text: var(--text-main);
   --tr-text-muted: var(--text-muted);
   --tr-shadow: var(--shadow-card);
+
+  /* Legacy aliases */
   --tr-secondary-green: var(--accent-soft);
   --tr-secondary-beige: var(--accent-soft);
   --tr-accent-brown: var(--accent-primary-deep);
 }
+

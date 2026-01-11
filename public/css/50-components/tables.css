@@ -1,81 +1,146 @@
-/* =========================================================
-   B2.4 — GLOBAL TABLE SYSTEM (Non-DataTables)
-   File: public/css/ui/tables.css
-   ========================================================= */
+/* ===================================================================
+   LAYER: Component
+   FILE : public/css/50-components/tables.css
+   SCOPE: Table component (non-DataTables)
+   NOTES:
+   - PRIMARY API : .tr-table, .tr-table-*
+   - LEGACY ALIAS: .table (temporary, migration only)
+   - Do NOT style DataTables (.dataTable) here
+   =================================================================== */
 
-/* Wrapper (optional) */
-.tr-table-wrap{
-  width: 100%;
-  overflow-x: auto;
+/*
+  This file intentionally contains both legacy (.table) and new (.tr-table)
+  systems during migration. Stylelint's no-descending-specificity rule can
+  produce false positives across unrelated selectors, so it is disabled here.
+*/
+/* stylelint-disable no-descending-specificity */
+
+/* =========================================================
+   Legacy alias (TEMPORARY): .table
+   ========================================================= */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--tr-surface);
+    border: 1px solid var(--tr-border);
+    border-radius: var(--tr-radius-md);
+    overflow: hidden;
 }
 
-/* Base table */
-.tr-table{
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  background: var(--tr-surface, #fff);
-  color: var(--tr-text, #111);
-  font-size: 13px;
+.table th {
+    text-align: left;
+    font-size: var(--tr-fs-sm);
+    font-weight: var(--tr-fw-medium);
+    color: var(--tr-text-muted);
+    background: #f8fafc;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--tr-border);
+}
+
+.table td {
+    font-size: var(--tr-fs-sm);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--tr-border);
+}
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+.table tbody tr:hover {
+    background: #f1f5f9;
+}
+
+/* =========================================================
+   Wrapper (optional)
+   ========================================================= */
+.tr-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* =========================================================
+   Base table (PRIMARY SYSTEM)
+   ========================================================= */
+.tr-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--tr-surface);
+    color: var(--tr-text);
+    font-size: var(--tr-fs-sm);
 }
 
 /* Head */
-.tr-table thead th{
-  position: sticky; /* optional, helpful inside cards */
-  top: 0;
-  z-index: 1;
-  text-align: left;
-  font-weight: 700;
-  font-size: 12px;
-  color: var(--tr-muted-text, #6b7280);
-  background: var(--tr-surface-2, #f7f7f8);
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--tr-border, #e5e7eb);
+.tr-table thead th {
+    text-align: left;
+    font-weight: var(--tr-fw-semibold);
+    font-size: var(--tr-fs-xs);
+    color: var(--tr-text-muted);
+    background: #f7f7f8;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--tr-border);
+}
+
+/* Sticky head — only when wrapped (safe) */
+.tr-table-wrap .tr-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 /* Body cells */
-.tr-table tbody td{
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--tr-border, #e5e7eb);
-  vertical-align: middle;
+.tr-table tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--tr-border);
+    vertical-align: middle;
 }
 
 /* Compact variant */
 .tr-table-compact thead th,
-.tr-table-compact tbody td{
-  padding: 8px 10px;
-  font-size: 12.5px;
+.tr-table-compact tbody td {
+    padding: 8px 10px;
+    font-size: 12.5px;
 }
 
-/* Last row border cleanup */
-.tr-table tbody tr:last-child td{
-  border-bottom: 0;
+/* Last row cleanup */
+.tr-table tbody tr:last-child td {
+    border-bottom: 0;
 }
 
-/* Hover (desktop-friendly) */
-.tr-table tbody tr:hover{
-  background: var(--tr-surface-2, #f7f7f8);
+/* Hover */
+.tr-table tbody tr:hover {
+    background: #f7f7f8;
 }
 
 /* Alignment helpers */
-.tr-table .is-right{ text-align: right; }
-.tr-table .is-center{ text-align: center; }
-.tr-table .is-muted{ color: var(--tr-muted-text, #6b7280); }
-
-
-/* Striped variant (optional) */
-.tr-table-striped tbody tr:nth-child(even){
-  background: rgb(0 0 0 / 2%);
+.tr-table .is-right {
+    text-align: right;
 }
 
-/* Empty state (place inside tbody) */
-.tr-table-empty{
-  text-align: center;
-  color: var(--tr-muted-text, #6b7280);
-  padding: 18px 12px;
+.tr-table .is-center {
+    text-align: center;
+}
+
+.tr-table .is-muted {
+    color: var(--tr-text-muted);
+}
+
+/* Striped variant */
+.tr-table-striped tbody tr:nth-child(even) {
+    background: rgb(0 0 0 / 2%);
+}
+
+/* Empty state (inside tbody) */
+.tr-table-empty {
+    text-align: center;
+    color: var(--tr-text-muted);
+    padding: 18px 12px;
 }
 
 /* Inside card polish */
-.tr-card .tr-table thead th{
-  background: var(--tr-surface, #fff);
+.card .tr-table thead th {
+    background: var(--tr-surface);
 }
+
+/* stylelint-enable no-descending-specificity */

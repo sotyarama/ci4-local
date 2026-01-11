@@ -1,3 +1,23 @@
+/* from ui-baseline.css */
+.card {
+    background: var(--tr-surface);
+    border: 1px solid var(--tr-border);
+    border-radius: var(--tr-radius-lg);
+    box-shadow: var(--tr-shadow-sm);
+    padding: var(--tr-space-lg);
+}
+
+.card-compact {
+    padding: var(--tr-space-md);
+    border-radius: var(--tr-radius-md);
+}
+
+.divider {
+    height: 1px;
+    background: var(--tr-border);
+    margin: var(--tr-space-md) 0;
+}
+
 /* =========================================================
    B2.2 — GLOBAL CARD SYSTEM (Temu Rasa)
    File: public/css/ui/cards.css

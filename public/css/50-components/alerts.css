@@ -1,22 +1,33 @@
-/* Alerts (inline) */
+/* ===================================================================
+   LAYER: Component
+   FILE : public/css/50-components/alerts.css
+   SCOPE: Inline alerts / callouts
+   NOTES:
+   - PRIMARY API : .tr-alert
+   - LEGACY      : .pos-alert (temporary)
+   =================================================================== */
+
 .tr-alert,
-.pos-alert{
-	padding: 10px 12px;
-	margin-bottom: 12px;
-	border-radius: 12px;
-	background: var(--tr-secondary-beige);
-	border: 1px solid var(--tr-accent-brown);
-	color: var(--tr-text);
-	font-size: 12px;
-	line-height: 1.35;
+.pos-alert {
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    border-radius: 12px;
+
+    /* Prefer current system tokens; fallback to legacy mappings */
+    background: var(--accent-soft, var(--tr-secondary-beige));
+    border: 1px solid var(--accent-primary-deep, var(--tr-accent-brown));
+    color: var(--tr-text);
+    font-size: 12px;
+    line-height: 1.35;
 }
 
 .tr-alert ul,
-.pos-alert ul{
-	margin: 0;
-	padding-left: 18px;
+.pos-alert ul {
+    margin: 0;
+    padding-left: 18px;
 }
 
 .tr-alert li,
-.pos-alert li{ margin: 2px 0; }
-
+.pos-alert li {
+    margin: 2px 0;
+}
