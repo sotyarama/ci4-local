@@ -59,15 +59,19 @@ foreach (($recipes ?? []) as $r) {
 }
 ?>
 
-<div class="card">
+<div class="tr-card">
 
     <!-- Header -->
-    <h2 class="page-title">
-        <?= $isEdit ? 'Edit Resep Menu' : 'Tambah Resep Menu'; ?>
-    </h2>
-    <p class="page-subtitle">
-        Definisikan komposisi bahan baku sebagai dasar perhitungan HPP.
-    </p>
+    <div class="tr-card-header">
+        <div>
+            <h2 class="tr-card-title">
+                <?= $isEdit ? 'Edit Resep Menu' : 'Tambah Resep Menu'; ?>
+            </h2>
+            <p class="tr-card-subtitle">
+                Definisikan komposisi bahan baku sebagai dasar perhitungan HPP.
+            </p>
+        </div>
+    </div>
 
     <!-- Summary HPP (Edit Mode Only) -->
     <?php if ($isEdit && ! empty($hpp)): ?>
@@ -77,17 +81,17 @@ foreach (($recipes ?? []) as $r) {
         $totalCost = (float) ($hpp['total_cost'] ?? 0);
         $hppPer    = (float) ($hpp['hpp_per_yield'] ?? 0);
         ?>
-        <div class="alert alert-success">
+        <div class="tr-alert tr-alert-success">
             <div style="font-weight:600; margin-bottom:4px;">Ringkasan HPP (Perkiraan)</div>
-            <div class="row-between">
+            <div class="tr-row-between">
                 <span>Total biaya 1 resep (<?= number_format($yieldQty, 3, ',', '.'); ?> <?= esc($yieldUnit); ?>)</span>
                 <strong>Rp <?= number_format($totalCost, 0, ',', '.'); ?></strong>
             </div>
-            <div class="row-between">
+            <div class="tr-row-between">
                 <span>HPP per <?= esc($yieldUnit); ?></span>
                 <strong>Rp <?= number_format($hppPer, 0, ',', '.'); ?></strong>
             </div>
-            <div class="form-note">
+            <div class="tr-form-help">
                 *Menggunakan <code>cost_avg</code> bahan baku dan waste %.
             </div>
         </div>
@@ -95,8 +99,8 @@ foreach (($recipes ?? []) as $r) {
 
     <!-- Error Messages -->
     <?php if (! empty($errors)): ?>
-        <div class="alert alert-danger">
-            <ul class="alert-list">
+        <div class="tr-alert tr-alert-danger">
+            <ul class="tr-alert-list">
                 <?php foreach ($errors as $error): ?>
                     <li><?= esc($error); ?></li>
                 <?php endforeach; ?>
@@ -113,15 +117,15 @@ foreach (($recipes ?? []) as $r) {
         <?= csrf_field(); ?>
 
         <!-- Menu -->
-        <div class="form-field">
-            <label class="form-label">Menu</label>
+        <div class="tr-form-group">
+            <label class="tr-label">Menu</label>
 
             <?php if ($isEdit): ?>
-                <input class="form-input" type="text"
+                <input class="tr-control" type="text"
                     value="<?= esc($menus[0]['name'] ?? ''); ?>" readonly>
                 <input type="hidden" name="menu_id" value="<?= esc($recipe['menu_id']); ?>">
             <?php else: ?>
-                <select name="menu_id" class="form-input" required>
+                <select name="menu_id" class="tr-control" required>
                     <option value="">-- pilih menu --</option>
                     <?php foreach ($menus as $m): ?>
                         <option value="<?= $m['id']; ?>"
@@ -134,176 +138,178 @@ foreach (($recipes ?? []) as $r) {
         </div>
 
         <!-- Yield -->
-        <div class="form-grid">
-            <div class="form-field">
-                <label class="form-label">Yield (jumlah hasil)</label>
-                <input class="form-input" type="number" step="0.001"
+        <div class="tr-form-grid">
+            <div class="tr-form-group">
+                <label class="tr-label">Yield (jumlah hasil)</label>
+                <input class="tr-control" type="number" step="0.001"
                     name="yield_qty"
                     value="<?= old('yield_qty', $recipe['yield_qty'] ?? 1); ?>"
                     required>
             </div>
-            <div class="form-field">
-                <label class="form-label">Satuan</label>
-                <input class="form-input" type="text"
+            <div class="tr-form-group">
+                <label class="tr-label">Satuan</label>
+                <input class="tr-control" type="text"
                     name="yield_unit"
                     value="<?= old('yield_unit', $recipe['yield_unit'] ?? 'porsi'); ?>">
             </div>
         </div>
 
         <!-- Notes -->
-        <div class="form-field">
-            <label class="form-label">Catatan (opsional)</label>
-            <textarea class="form-input" rows="2"
+        <div class="tr-form-group">
+            <label class="tr-label">Catatan (opsional)</label>
+            <textarea class="tr-control" rows="2"
                 name="notes"><?= old('notes', $recipe['notes'] ?? ''); ?></textarea>
         </div>
 
-        <hr class="divider">
+        <hr class="tr-divider">
 
         <!-- Composition -->
-        <div class="row-between">
-            <h3 class="section-title">Komposisi Bahan / Sub-Resep</h3>
-            <button type="button" id="btn-add-ingredient" class="btn btn-secondary btn-sm">
+        <div class="tr-section-header">
+            <h3 class="tr-section-title">Komposisi Bahan / Sub-Resep</h3>
+            <button type="button" id="btn-add-ingredient" class="tr-btn tr-btn-secondary tr-btn-sm">
                 + Tambah baris
             </button>
         </div>
-        <p class="form-note">
+        <p class="tr-form-help">
             Isi bahan baku yang digunakan untuk 1 resep (sesuai yield).
         </p>
 
-        <table class="table" style="margin-bottom:10px;">
-            <thead>
-                <tr>
-                    <th class="table__th" style="width:160px;">Tipe</th>
-                    <th class="table__th">Bahan / Sub-Resep</th>
-                    <th class="table__th table__th--right" style="width:140px;">Qty</th>
-                    <th class="table__th" style="width:140px;">Satuan / Info</th>
-                    <th class="table__th table__th--right" style="width:120px;">Waste %</th>
-                    <th class="table__th">Catatan</th>
-                    <th class="table__th table__th--center" style="width:90px;">Aksi</th>
-                </tr>
-            </thead>
-
-            <tbody id="recipe-items-body">
-                <?php foreach ($rows as $idx => $row): ?>
-                    <?php
-                    $type    = (string) ($row['item_type'] ?? 'raw');
-                    $rawId   = (string) ($row['raw_material_id'] ?? '');
-                    $childId = (string) ($row['child_recipe_id'] ?? '');
-                    $qty     = (string) ($row['qty'] ?? '');
-                    $waste   = (string) ($row['waste_pct'] ?? '0');
-                    $note    = (string) ($row['note'] ?? '');
-
-                    $unitLabel = '';
-                    if ($type === 'raw' && $rawId !== '') {
-                        $unitLabel = $materialUnitMap[(int)$rawId] ?? '';
-                    } elseif ($type === 'recipe' && $childId !== '') {
-                        $unitLabel = 'Sub: ' . ($recipeNameMap[(int)$childId] ?? ('Resep #' . $childId));
-                    }
-                    ?>
+        <div class="tr-table-wrapper">
+            <table class="tr-table">
+                <thead>
                     <tr>
-                        <!-- TIPE -->
-                        <td class="table__td">
-                            <select name="items[<?= $idx; ?>][item_type]" class="form-input item-type">
-                                <option value="raw" <?= $type === 'raw' ? 'selected' : ''; ?>>Bahan Baku</option>
-                                <option value="recipe" <?= $type === 'recipe' ? 'selected' : ''; ?>>Sub-Resep</option>
-                            </select>
-                        </td>
-
-                        <!-- ITEM -->
-                        <td class="table__td">
-                            <select name="items[<?= $idx; ?>][raw_material_id]"
-                                class="form-input select-raw"
-                                <?= $type === 'raw' ? '' : 'hidden disabled'; ?>
-                                style="<?= $type === 'raw' ? '' : 'display:none;'; ?>">
-                                <option value="">-- pilih bahan --</option>
-                                <?php foreach (($materials ?? []) as $m): ?>
-                                    <?php
-                                    $mid  = (string) ($m['id'] ?? '');
-                                    $unit = (string) ($m['unit_short'] ?? '');
-                                    ?>
-                                    <option value="<?= esc($mid); ?>"
-                                        data-unit="<?= esc($unit); ?>"
-                                        <?= $rawId === $mid ? 'selected' : ''; ?>>
-                                        <?= esc($m['name'] ?? ''); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-
-                            <select name="items[<?= $idx; ?>][child_recipe_id]"
-                                class="form-input select-recipe"
-                                <?= $type === 'recipe' ? '' : 'hidden disabled'; ?>
-                                style="<?= $type === 'recipe' ? '' : 'display:none;'; ?>">
-                                <option value="">-- pilih sub-resep --</option>
-                                <?php foreach (($recipes ?? []) as $r): ?>
-                                    <?php $rid = (string) ($r['id'] ?? ''); ?>
-                                    <option value="<?= esc($rid); ?>"
-                                        <?= $childId === $rid ? 'selected' : ''; ?>>
-                                        <?= esc($r['menu_name'] ?? ('Resep #' . $rid)); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-
-                        <!-- QTY -->
-                        <td class="table__td table__td--right">
-                            <input type="number"
-                                step="0.001"
-                                name="items[<?= $idx; ?>][qty]"
-                                value="<?= esc($qty); ?>"
-                                class="form-input"
-                                style="text-align:right;">
-                        </td>
-
-                        <!-- UNIT/INFO -->
-                        <td class="table__td muted">
-                            <span class="unit-label"><?= esc($unitLabel); ?></span>
-                        </td>
-
-                        <!-- WASTE -->
-                        <td class="table__td table__td--right">
-                            <input type="number"
-                                step="0.01"
-                                min="0"
-                                max="100"
-                                name="items[<?= $idx; ?>][waste_pct]"
-                                value="<?= esc($waste); ?>"
-                                class="form-input"
-                                style="text-align:right;">
-                        </td>
-
-                        <!-- NOTE -->
-                        <td class="table__td">
-                            <input type="text"
-                                name="items[<?= $idx; ?>][note]"
-                                value="<?= esc($note); ?>"
-                                class="form-input">
-                        </td>
-
-                        <!-- ACTION -->
-                        <td class="table__td table__td--center">
-                            <button type="button" class="btn btn-danger btn-sm btn-remove-row">Hapus</button>
-                        </td>
+                        <th style="width:160px;">Tipe</th>
+                        <th>Bahan / Sub-Resep</th>
+                        <th class="tr-text-right" style="width:140px;">Qty</th>
+                        <th style="width:140px;">Satuan / Info</th>
+                        <th class="tr-text-right" style="width:120px;">Waste %</th>
+                        <th>Catatan</th>
+                        <th class="tr-text-center" style="width:90px;">Aksi</th>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                </thead>
+
+                <tbody id="recipe-items-body">
+                    <?php foreach ($rows as $idx => $row): ?>
+                        <?php
+                        $type    = (string) ($row['item_type'] ?? 'raw');
+                        $rawId   = (string) ($row['raw_material_id'] ?? '');
+                        $childId = (string) ($row['child_recipe_id'] ?? '');
+                        $qty     = (string) ($row['qty'] ?? '');
+                        $waste   = (string) ($row['waste_pct'] ?? '0');
+                        $note    = (string) ($row['note'] ?? '');
+
+                        $unitLabel = '';
+                        if ($type === 'raw' && $rawId !== '') {
+                            $unitLabel = $materialUnitMap[(int)$rawId] ?? '';
+                        } elseif ($type === 'recipe' && $childId !== '') {
+                            $unitLabel = 'Sub: ' . ($recipeNameMap[(int)$childId] ?? ('Resep #' . $childId));
+                        }
+                        ?>
+                        <tr>
+                            <!-- TIPE -->
+                            <td>
+                                <select name="items[<?= $idx; ?>][item_type]" class="item-type tr-control">
+                                    <option value="raw" <?= $type === 'raw' ? 'selected' : ''; ?>>Bahan Baku</option>
+                                    <option value="recipe" <?= $type === 'recipe' ? 'selected' : ''; ?>>Sub-Resep</option>
+                                </select>
+                            </td>
+
+                            <!-- ITEM -->
+                            <td>
+                                <select name="items[<?= $idx; ?>][raw_material_id]"
+                                    class="select-raw tr-control"
+                                    <?= $type === 'raw' ? '' : 'hidden disabled'; ?>
+                                    style="<?= $type === 'raw' ? '' : 'display:none;'; ?>">
+                                    <option value="">-- pilih bahan --</option>
+                                    <?php foreach (($materials ?? []) as $m): ?>
+                                        <?php
+                                        $mid  = (string) ($m['id'] ?? '');
+                                        $unit = (string) ($m['unit_short'] ?? '');
+                                        ?>
+                                        <option value="<?= esc($mid); ?>"
+                                            data-unit="<?= esc($unit); ?>"
+                                            <?= $rawId === $mid ? 'selected' : ''; ?>>
+                                            <?= esc($m['name'] ?? ''); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+
+                                <select name="items[<?= $idx; ?>][child_recipe_id]"
+                                    class="select-recipe tr-control"
+                                    <?= $type === 'recipe' ? '' : 'hidden disabled'; ?>
+                                    style="<?= $type === 'recipe' ? '' : 'display:none;'; ?>">
+                                    <option value="">-- pilih sub-resep --</option>
+                                    <?php foreach (($recipes ?? []) as $r): ?>
+                                        <?php $rid = (string) ($r['id'] ?? ''); ?>
+                                        <option value="<?= esc($rid); ?>"
+                                            <?= $childId === $rid ? 'selected' : ''; ?>>
+                                            <?= esc($r['menu_name'] ?? ('Resep #' . $rid)); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+
+                            <!-- QTY -->
+                            <td class="tr-text-right">
+                                <input type="number"
+                                    step="0.001"
+                                    name="items[<?= $idx; ?>][qty]"
+                                    value="<?= esc($qty); ?>"
+                                    class="tr-control"
+                                    style="text-align:right;">
+                            </td>
+
+                            <!-- UNIT/INFO -->
+                            <td class="tr-muted">
+                                <span class="unit-label"><?= esc($unitLabel); ?></span>
+                            </td>
+
+                            <!-- WASTE -->
+                            <td class="tr-text-right">
+                                <input type="number"
+                                    step="0.01"
+                                    min="0"
+                                    max="100"
+                                    name="items[<?= $idx; ?>][waste_pct]"
+                                    value="<?= esc($waste); ?>"
+                                    class="tr-control"
+                                    style="text-align:right;">
+                            </td>
+
+                            <!-- NOTE -->
+                            <td>
+                                <input type="text"
+                                    name="items[<?= $idx; ?>][note]"
+                                    value="<?= esc($note); ?>"
+                                    class="tr-control">
+                            </td>
+
+                            <!-- ACTION -->
+                            <td class="tr-text-center">
+                                <button type="button" class="btn-remove-row tr-btn tr-btn-danger tr-btn-sm">Hapus</button>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
 
         <!-- Live HPP (placeholder UI, perhitungan bisa kamu tambah belakangan) -->
-        <div id="hpp-live" class="alert alert-info">
+        <div id="hpp-live" class="tr-alert tr-alert-info">
             <div style="font-weight:600;">HPP Live (perkiraan)</div>
-            <div class="row-between">
+            <div class="tr-row-between">
                 <span>Total biaya resep</span>
                 <span id="hpp-live-total">Rp 0</span>
             </div>
-            <div class="row-between">
+            <div class="tr-row-between">
                 <span>HPP per yield</span>
                 <span id="hpp-live-per">Rp 0</span>
             </div>
         </div>
 
-        <div class="form-actions">
-            <a href="<?= site_url('master/recipes'); ?>" class="btn btn-secondary">Batal</a>
-            <button type="submit" class="btn btn-primary">
+        <div class="tr-form-actions">
+            <a href="<?= site_url('master/recipes'); ?>" class="tr-btn tr-btn-secondary">Batal</a>
+            <button type="submit" class="tr-btn tr-btn-primary">
                 <?= $isEdit ? 'Simpan Perubahan' : 'Simpan Resep'; ?>
             </button>
         </div>
