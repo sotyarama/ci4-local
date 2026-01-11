@@ -203,9 +203,14 @@
     border-color: rgb(37 99 235 / 30%);
 }
 
-.tr-touch,
-.pos-touch #options-modal > div {
-    background: #fff;
+/* Modal dialog styling - inner dialog only, not overlay container */
+.tr-touch .tr-modal-dialog,
+.tr-touch .pos-modal-dialog,
+.pos-touch .tr-modal-dialog,
+.pos-touch .pos-modal-dialog,
+.pos-touch #options-modal > div,
+.pos-touch #customer-modal > div {
+    background: var(--tr-surface, #fff);
     border: 1px solid var(--tr-border);
     border-radius: 16px;
     box-shadow: 0 14px 30px rgb(0 0 0 / 18%);
@@ -634,12 +639,12 @@
 
 /* =========================================================
    7) Options Modal (Scoped)
+   IMPORTANT: Overlay positioning is in modal.css
+   These rules only style inner dialog components
    ========================================================= */
 
-.tr-touch,
-.pos-touch #options-modal {
-    padding: 18px;
-}
+/* Remove conflicting padding - handled by modal.css overlay */
+/* .pos-touch #options-modal { padding: 18px; } */
 
 
 .tr-touch,
