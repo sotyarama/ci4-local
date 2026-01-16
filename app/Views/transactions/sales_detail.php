@@ -2,7 +2,7 @@
 
 <?= $this->section('content') ?>
 
-<div class="card">
+<div class="tr-card">
 
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <div>
@@ -12,13 +12,11 @@
             </p>
         </div>
         <div style="display:flex; gap:6px;">
-            <a href="<?= site_url('transactions/sales/kitchen-ticket/' . $sale['id']); ?>"
-                style="font-size:11px; padding:6px 10px; border-radius:999px; background:rgba(122,154,108,0.14); color:var(--tr-primary); text-decoration:none; border:1px solid var(--tr-primary);">
-                Ticket Dapur
+            <a href="<?= site_url('transactions/sales/kitchen-ticket/' . $sale['id']); ?>" class="tr-btn tr-btn-primary tr-btn-sm">
+                <span class="tr-btn-label">Ticket Dapur</span>
             </a>
-            <a href="<?= site_url('transactions/sales'); ?>"
-                style="font-size:11px; padding:6px 10px; border-radius:999px; background:var(--tr-border); color:var(--tr-text); text-decoration:none;">
-                Kembali ke daftar
+            <a href="<?= site_url('transactions/sales'); ?>" class="tr-btn tr-btn-secondary tr-btn-sm">
+                <span class="tr-btn-label">Kembali ke daftar</span>
             </a>
         </div>
 
@@ -97,17 +95,17 @@
         <p style="font-size:12px; color:var(--tr-muted-text);">Tidak ada item tercatat untuk penjualan ini.</p>
     <?php else: ?>
 
-        <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:12px;">
+        <table class="tr-table tr-table-compact" style="margin-bottom:12px;">
             <thead>
                 <tr>
-                    <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:left;">Menu</th>
-                    <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:left;">Kategori</th>
-                    <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">Qty</th>
-                    <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">Harga</th>
-                    <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">Subtotal</th>
-                    <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">HPP / Porsi</th>
-                    <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">Total HPP</th>
-                    <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">Margin</th>
+                    <th>Menu</th>
+                    <th>Kategori</th>
+                    <th class="is-right">Qty</th>
+                    <th class="is-right">Harga</th>
+                    <th class="is-right">Subtotal</th>
+                    <th class="is-right">HPP / Porsi</th>
+                    <th class="is-right">Total HPP</th>
+                    <th class="is-right">Margin</th>
                 </tr>
             </thead>
             <tbody>
@@ -136,7 +134,7 @@
                     $totalHpp     += $totalHppItem;
                     ?>
                     <tr>
-                        <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
+                        <td>
                             <?= esc($row['menu_name'] ?? ''); ?>
                             <?php if (! empty($row['item_note'])): ?>
                                 <div style="font-size:11px; color:var(--tr-muted-text); margin-top:4px;">
@@ -144,33 +142,33 @@
                                 </div>
                             <?php endif; ?>
                         </td>
-                        <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); color:var(--tr-muted-text);">
+                        <td class="is-muted">
                             <?= esc($row['category_name'] ?? '-'); ?>
                         </td>
-                        <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
+                        <td class="is-right">
                             <?= number_format($qty, 2, ',', '.'); ?>
                         </td>
-                        <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
+                        <td class="is-right">
                             Rp <?= number_format($row['price'], 0, ',', '.'); ?>
                         </td>
-                        <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
+                        <td class="is-right">
                             Rp <?= number_format($subtotal, 0, ',', '.'); ?>
                         </td>
-                        <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
+                        <td class="is-right">
                             <?php if ($hppPerPortion > 0): ?>
                                 Rp <?= number_format($hppPerPortion, 0, ',', '.'); ?>
                             <?php else: ?>
-                                <span style="color:var(--tr-muted-text);">-</span>
+                                <span class="is-muted">-</span>
                             <?php endif; ?>
                         </td>
-                        <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
+                        <td class="is-right">
                             <?php if ($totalHppItem > 0): ?>
                                 Rp <?= number_format($totalHppItem, 0, ',', '.'); ?>
                             <?php else: ?>
-                                <span style="color:var(--tr-muted-text);">-</span>
+                                <span class="is-muted">-</span>
                             <?php endif; ?>
                         </td>
-                        <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
+                        <td class="is-right">
                             <?php
                             $colorMargin = $marginItem >= 0 ? 'var(--tr-primary-deep)' : 'var(--tr-accent-brown)';
                             ?>
@@ -234,9 +232,9 @@
             <form method="post" action="<?= site_url('transactions/sales/void/' . $sale['id']); ?>" onsubmit="return confirm('Yakin void transaksi ini? Stok akan dikembalikan.');">
                 <?= csrf_field(); ?>
                 <label style="display:block; margin-bottom:4px; color:var(--tr-muted-text);">Alasan (opsional)</label>
-                <textarea name="void_reason" rows="2" style="width:100%; padding:6px 8px; font-size:12px; background:var(--tr-bg); border:1px solid var(--tr-border); border-radius:6px; color:var(--tr-text); margin-bottom:8px;"></textarea>
-                <button type="submit" style="padding:8px 12px; border-radius:8px; border:1px solid var(--tr-accent-brown); background:var(--tr-secondary-beige); color:var(--tr-accent-brown); cursor:pointer; font-size:12px;">
-                    Void Transaksi
+                <textarea name="void_reason" rows="2" class="tr-control" style="margin-bottom:8px;"></textarea>
+                <button type="submit" class="tr-btn tr-btn-danger tr-btn-sm">
+                    <span class="tr-btn-label">Void Transaksi</span>
                 </button>
             </form>
         </div>
