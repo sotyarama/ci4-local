@@ -2,7 +2,7 @@
 
 <?= $this->section('content') ?>
 
-<div class="card">
+<div class="tr-card">
 
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <div>
@@ -11,9 +11,8 @@
                 Rincian pembelian bahan baku dan total biaya.
             </p>
         </div>
-        <a href="<?= site_url('purchases'); ?>"
-           style="font-size:11px; padding:6px 10px; border-radius:999px; background:var(--tr-border); color:var(--tr-text); text-decoration:none;">
-            ← Kembali ke daftar
+        <a href="<?= site_url('purchases'); ?>" class="tr-btn tr-btn-secondary tr-btn-sm">
+            <span class="tr-btn-label">← Kembali ke daftar</span>
         </a>
     </div>
 
@@ -60,62 +59,62 @@
     </div>
 
     <?php if (empty($items)): ?>
-        <p style="font-size:12px; color:var(--tr-muted-text);">Tidak ada item untuk pembelian ini.</p>
+        <p class="tr-help" style="margin:0;">Tidak ada item untuk pembelian ini.</p>
     <?php else: ?>
-        <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:12px;">
+        <table class="tr-table tr-table-compact" style="margin-bottom:12px;">
             <thead>
-            <tr>
-                <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:left;">Bahan</th>
-                <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">Qty</th>
-                <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">Harga Satuan</th>
-                <th style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">Subtotal</th>
-            </tr>
+                <tr>
+                    <th>Bahan</th>
+                    <th class="is-right">Qty</th>
+                    <th class="is-right">Harga Satuan</th>
+                    <th class="is-right">Subtotal</th>
+                </tr>
             </thead>
             <tbody>
-            <?php $grandTotal = 0; ?>
-            <?php foreach ($items as $row): ?>
-                <?php
+                <?php $grandTotal = 0; ?>
+                <?php foreach ($items as $row): ?>
+                    <?php
                     $qty        = (float) ($row['qty'] ?? 0);
                     $unitCost   = (float) ($row['unit_cost'] ?? 0);
                     $totalCost  = (float) ($row['total_cost'] ?? ($qty * $unitCost));
                     $grandTotal += $totalCost;
-                ?>
-                <tr>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
-                        <?= esc($row['material_name'] ?? '-'); ?>
-                        <?php if (! empty($row['brand_name'])): ?>
-                            <div style="font-size:11px; color:var(--tr-muted-text);">
-                                Brand: <?= esc($row['brand_name']); ?>
-                            </div>
-                        <?php endif; ?>
-                        <?php if (! empty($row['variant_name'])): ?>
-                            <div style="font-size:11px; color:var(--tr-muted-text);">
-                                Varian: <?= esc($row['variant_name']); ?>
-                            </div>
-                        <?php endif; ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
-                        <?= number_format($qty, 2, ',', '.'); ?>
-                        <?php if (! empty($row['unit_short'])): ?>
-                            <span style="color:var(--tr-muted-text);"> <?= esc($row['unit_short']); ?></span>
-                        <?php endif; ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
-                        Rp <?= number_format($unitCost, 0, ',', '.'); ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:right;">
-                        Rp <?= number_format($totalCost, 0, ',', '.'); ?>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
+                    ?>
+                    <tr>
+                        <td>
+                            <?= esc($row['material_name'] ?? '-'); ?>
+                            <?php if (! empty($row['brand_name'])): ?>
+                                <div style="font-size:11px; color:var(--tr-muted-text);">
+                                    Brand: <?= esc($row['brand_name']); ?>
+                                </div>
+                            <?php endif; ?>
+                            <?php if (! empty($row['variant_name'])): ?>
+                                <div style="font-size:11px; color:var(--tr-muted-text);">
+                                    Varian: <?= esc($row['variant_name']); ?>
+                                </div>
+                            <?php endif; ?>
+                        </td>
+                        <td class="is-right">
+                            <?= number_format($qty, 2, ',', '.'); ?>
+                            <?php if (! empty($row['unit_short'])): ?>
+                                <span class="is-muted"> <?= esc($row['unit_short']); ?></span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="is-right">
+                            Rp <?= number_format($unitCost, 0, ',', '.'); ?>
+                        </td>
+                        <td class="is-right">
+                            Rp <?= number_format($totalCost, 0, ',', '.'); ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
             </tbody>
             <tfoot>
-            <tr>
-                <td colspan="3" style="padding:8px 8px; text-align:right; font-weight:700; border-top:1px solid var(--tr-border);">Total</td>
-                <td style="padding:8px 8px; text-align:right; font-weight:700; border-top:1px solid var(--tr-border);">
-                    Rp <?= number_format($grandTotal, 0, ',', '.'); ?>
-                </td>
-            </tr>
+                <tr>
+                    <td colspan="3" class="is-right" style="font-weight:700;">Total</td>
+                    <td class="is-right" style="font-weight:700;">
+                        Rp <?= number_format($grandTotal, 0, ',', '.'); ?>
+                    </td>
+                </tr>
             </tfoot>
         </table>
     <?php endif; ?>
