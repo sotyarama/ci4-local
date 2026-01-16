@@ -3,21 +3,21 @@
 <?= $this->section('content') ?>
 
 <div class="pos-touch">
-    <div class="card pos-card">
+    <div class="tr-card pos-card">
         <div class="pos-header pos-header-sticky">
             <div>
                 <h2 class="pos-title"><?= esc($title); ?></h2>
                 <p class="pos-subtitle"><?= esc($subtitle); ?></p>
             </div>
             <div>
-                <span class="pill pos-pill"><?= esc($today); ?></span>
+                <span class="tr-pill pos-pill"><?= esc($today); ?></span>
             </div>
         </div>
 
         <?php if (session()->getFlashdata('errors')): ?>
             <?php $errs = (array) session()->getFlashdata('errors'); ?>
             <div class="pos-alert">
-                <ul style="margin:0; padding-left:16px;">
+                <ul class="tr-alert-list">
                     <?php foreach ($errs as $e): ?>
                         <li><?= $e; ?></li>
                     <?php endforeach; ?>
@@ -42,7 +42,7 @@
                         <div class="pos-cat-grid">
                             <?php foreach ($menus as $m): ?>
                                 <button type="button"
-                                    class="menu-card pos-menu-card"
+                                    class="menu-card tr-btn pos-menu-card"
                                     data-id="<?= $m['id']; ?>"
                                     data-name="<?= esc($m['name']); ?>"
                                     data-price="<?= (float) $m['price']; ?>">
@@ -92,7 +92,7 @@
                             <div class="pos-section-title">Keranjang</div>
                             <div class="pos-section-hint">Tap menu untuk tambah qty</div>
                         </div>
-                        <button type="button" id="clear-cart" class="btn btn-secondary pos-small-btn">Kosongkan</button>
+                        <button type="button" id="clear-cart" class="tr-btn tr-btn-secondary pos-small-btn">Kosongkan</button>
                     </div>
                 </div>
 
@@ -158,7 +158,7 @@
                     </div>
 
                     <div class="pos-actions">
-                        <button type="submit" class="btn btn-primary pos-save-btn">Simpan Transaksi</button>
+                        <button type="submit" class="tr-btn tr-btn-primary pos-save-btn">Simpan Transaksi</button>
                     </div>
                 </div>
             </div>
@@ -166,54 +166,54 @@
     </div>
 
     <!-- OPTIONS MODAL -->
-    <div id="options-modal" style="display:none; position:fixed; inset:0; background:rgba(20,20,20,0.4); align-items:center; justify-content:center; z-index:60;">
-        <div style="background:#fff; border-radius:14px; width:min(520px, 92vw); max-height:86vh; overflow:auto; padding:16px; box-shadow:0 14px 30px rgba(0,0,0,0.18);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+    <div id="options-modal" class="tr-modal" style="display:none;">
+        <div class="tr-modal-backdrop"></div>
+        <div class="tr-modal-dialog">
+            <div class="tr-modal-header">
                 <div>
-                    <div id="options-title" style="font-weight:700; font-size:16px;">Pilih Opsi</div>
-                    <div style="font-size:12px; color:var(--tr-muted-text);">Pilih sesuai kebutuhan</div>
+                    <div id="options-title" class="tr-modal-title">Pilih Opsi</div>
+                    <div class="tr-modal-subtitle">Pilih sesuai kebutuhan</div>
                 </div>
-                <button type="button" id="options-close" style="border:none; background:transparent; font-size:18px; cursor:pointer; color:var(--tr-muted-text);">x</button>
+                <button type="button" id="options-close" class="tr-modal-close">x</button>
             </div>
-            <div id="options-body" style="display:flex; flex-direction:column; gap:12px;"></div>
-            <div id="options-error" style="display:none; margin-top:10px; padding:8px 10px; border-radius:8px; background:var(--tr-secondary-beige); border:1px solid var(--tr-accent-brown); color:var(--tr-accent-brown); font-size:12px;"></div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px;">
-                <div style="font-size:12px; color:var(--tr-muted-text);">Total per item</div>
+            <div id="options-body" class="tr-modal-body"></div>
+            <div id="options-error" class="tr-alert tr-alert-warning" style="display:none; margin-top:10px;"></div>
+            <div class="tr-row-between" style="margin-top:14px;">
+                <div class="tr-muted">Total per item</div>
                 <div id="options-total" style="font-weight:700;">Rp 0</div>
             </div>
-            <div style="display:flex; gap:8px; margin-top:12px;">
-                <button type="button" id="options-cancel" class="btn btn-secondary" style="flex:1;">Batal</button>
-                <button type="button" id="options-confirm" class="btn btn-primary" style="flex:1;">Tambah</button>
+            <div class="tr-modal-footer">
+                <button type="button" id="options-cancel" class="tr-btn tr-btn-secondary" style="flex:1;">Batal</button>
+                <button type="button" id="options-confirm" class="tr-btn tr-btn-primary" style="flex:1;">Tambah</button>
             </div>
         </div>
     </div>
 
     <!-- CUSTOMER MODAL -->
-    <div id="customer-modal" class="pos-modal" style="display:none; position:fixed; inset:0; background:rgba(20,20,20,0.4); align-items:center; justify-content:center; z-index:70;">
-        <div class="pos-modal-dialog" style="background:#fff; border-radius:14px; width:min(560px, 94vw); max-height:86vh; overflow:hidden; padding:16px; box-shadow:0 14px 30px rgba(0,0,0,0.18);">
-            <div class="pos-modal-head" style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:10px;">
+    <div id="customer-modal" class="pos-modal tr-modal" style="display:none;">
+        <div class="tr-modal-backdrop"></div>
+        <div class="pos-modal-dialog tr-modal-dialog">
+            <div class="pos-modal-head tr-modal-header">
                 <div>
-                    <div class="pos-modal-title" style="font-weight:900; font-size:18px; line-height:1.2;">Pilih Customer</div>
-                    <div class="pos-modal-sub" style="font-size:12px; color:var(--tr-muted-text); margin-top:3px;">Cari dan pilih customer</div>
+                    <div class="pos-modal-title tr-modal-title">Pilih Customer</div>
+                    <div class="pos-modal-sub tr-modal-subtitle">Cari dan pilih customer</div>
                 </div>
-                <button type="button" id="customer-close" class="pos-modal-x"
-                    style="width:36px; height:36px; border-radius:12px; border:1px solid var(--tr-border); background:#fff; cursor:pointer;">X</button>
+                <button type="button" id="customer-close" class="pos-modal-x tr-modal-close">X</button>
             </div>
 
-            <div class="pos-modal-search" style="margin-bottom:10px;">
+            <div class="pos-modal-search">
                 <input type="text"
                     id="customer-filter"
                     placeholder="Cari nama / telepon / email..."
-                    class="tr-control"
-                    style="width:100%;">
+                    class="tr-control">
             </div>
 
             <div id="customer-recent-wrap" style="display:none; margin-bottom:10px;">
-                <div style="font-size:12px; font-weight:900; margin:0 0 6px; color:var(--tr-text);">Recent</div>
+                <div class="tr-section-label">Recent</div>
                 <div id="customer-recent" style="display:flex; flex-direction:column; gap:6px;"></div>
             </div>
 
-            <div id="customer-list" class="pos-modal-list" style="max-height:56vh; overflow:auto; display:flex; flex-direction:column; gap:8px;">
+            <div id="customer-list" class="pos-modal-list">
                 <?php foreach (($customers ?? []) as $cust): ?>
                     <?php
                     $cid = (int) ($cust['id'] ?? 0);
@@ -223,24 +223,23 @@
                     $search = strtolower(trim($cname . ' ' . $cphone . ' ' . $cemail));
                     ?>
                     <button type="button"
-                        class="customer-item"
+                        class="customer-item tr-btn"
                         data-id="<?= $cid; ?>"
                         data-name="<?= esc($cname); ?>"
-                        data-search="<?= esc($search, 'attr'); ?>"
-                        style="text-align:left; border:1px solid var(--tr-border); border-radius:12px; background:#fff; cursor:pointer;">
-                        <div style="font-weight:900; padding:10px 12px 2px;"><?= esc($cname !== '' ? $cname : '-'); ?></div>
+                        data-search="<?= esc($search, 'attr'); ?>">
+                        <div class="customer-name"><?= esc($cname !== '' ? $cname : '-'); ?></div>
                         <?php if ($cphone !== '' || $cemail !== ''): ?>
-                            <div style="font-size:11px; color:var(--tr-muted-text); padding:0 12px 10px;">
+                            <div class="customer-contact">
                                 <?= esc(trim($cphone . ($cphone !== '' && $cemail !== '' ? ' • ' : '') . $cemail)); ?>
                             </div>
                         <?php else: ?>
-                            <div style="padding:0 12px 10px;"></div>
+                            <div class="customer-contact"></div>
                         <?php endif; ?>
                     </button>
                 <?php endforeach; ?>
             </div>
 
-            <div id="customer-empty" class="pos-modal-empty" style="display:none; margin-top:10px; font-size:12px; color:var(--tr-muted-text); text-align:center;">
+            <div id="customer-empty" class="pos-modal-empty" style="display:none;">
                 Tidak ada hasil.
             </div>
         </div>
@@ -498,9 +497,9 @@
                Options Modal
                ========================================================= */
             function closeModal() {
-                modal.style.display = 'none';
+                if (modal) modal.style.display = 'none';
                 modalBody.innerHTML = '';
-                modalError.style.display = 'none';
+                if (modalError) modalError.style.display = 'none';
                 pendingMenu = null;
                 pendingGroups = [];
             }
@@ -567,41 +566,25 @@
 
                 pendingGroups.forEach(group => {
                     const groupWrap = document.createElement('div');
-                    groupWrap.style.border = '1px solid var(--tr-border)';
-                    groupWrap.style.borderRadius = '10px';
-                    groupWrap.style.padding = '10px';
+                    groupWrap.className = 'tr-option-group';
 
                     const header = document.createElement('div');
-                    header.style.fontWeight = '700';
-                    header.style.fontSize = '13px';
+                    header.className = 'tr-option-group-title';
                     header.textContent = group.name;
 
                     const hint = document.createElement('div');
-                    hint.style.fontSize = '11px';
-                    hint.style.color = 'var(--tr-muted-text)';
+                    hint.className = 'tr-option-group-hint';
                     hint.textContent = buildGroupHint(group);
 
                     const list = document.createElement('div');
-                    list.style.display = 'flex';
-                    list.style.flexDirection = 'column';
-                    list.style.gap = '6px';
-                    list.style.marginTop = '8px';
+                    list.className = 'tr-option-list';
 
                     (group.options || []).forEach(opt => {
                         const row = document.createElement('div');
-                        row.style.display = 'flex';
-                        row.style.alignItems = 'center';
-                        row.style.justifyContent = 'space-between';
-                        row.style.gap = '10px';
-                        row.style.padding = '6px 8px';
-                        row.style.border = '1px solid var(--tr-border)';
-                        row.style.borderRadius = '8px';
-                        row.style.cursor = 'pointer';
+                        row.className = 'tr-option-item';
 
                         const left = document.createElement('div');
-                        left.style.display = 'flex';
-                        left.style.alignItems = 'center';
-                        left.style.gap = '6px';
+                        left.className = 'tr-option-left';
 
                         const checkbox = document.createElement('input');
                         checkbox.type = 'checkbox';
@@ -623,9 +606,7 @@
                         left.appendChild(text);
 
                         const price = document.createElement('div');
-                        price.style.textAlign = 'right';
-                        price.style.fontSize = '12px';
-                        price.style.color = 'var(--tr-muted-text)';
+                        price.className = 'tr-option-price';
                         const delta = parseFloat(opt.price_delta || 0);
                         price.textContent = delta > 0 ? '+ Rp ' + numberFormat(delta) : 'Rp 0';
 
@@ -648,7 +629,7 @@
                 });
 
                 updateModalTotal();
-                modal.style.display = 'flex';
+                if (modal) modal.style.display = 'flex';
             }
 
             /* =========================================================
