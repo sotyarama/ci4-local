@@ -8,7 +8,7 @@
 $errors = session('errors') ?? [];
 ?>
 
-<div class="card">
+<div class="tr-card">
     <h2 class="page-title"><?= esc($title ?? 'Form Satuan'); ?></h2>
     <p class="page-subtitle"><?= esc($subtitle ?? ''); ?></p>
 
@@ -30,7 +30,7 @@ $errors = session('errors') ?? [];
             <div class="form-field">
                 <label class="form-label">Nama Satuan</label>
                 <input
-                    class="form-input"
+                    class="form-input tr-control"
                     type="text"
                     name="name"
                     value="<?= esc(old('name', $unit['name'] ?? '')); ?>"
@@ -41,7 +41,7 @@ $errors = session('errors') ?? [];
             <div class="form-field">
                 <label class="form-label">Singkatan</label>
                 <input
-                    class="form-input"
+                    class="form-input tr-control"
                     type="text"
                     name="short_name"
                     value="<?= esc(old('short_name', $unit['short_name'] ?? '')); ?>"
@@ -63,8 +63,8 @@ $errors = session('errors') ?? [];
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Simpan</button>
-            <a href="<?= site_url('master/units'); ?>" class="btn btn-secondary">Batal</a>
+            <button type="submit" class="tr-btn tr-btn-primary">Simpan</button>
+            <a href="<?= site_url('master/units'); ?>" class="tr-btn tr-btn-secondary">Batal</a>
         </div>
     </form>
 </div>
