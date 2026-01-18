@@ -539,7 +539,7 @@ These files must be migrated first.
 - [x] app/Views/master/raw_materials_form.php
 - [x] app/Views/master/suppliers_form.php
 - [x] app/Views/master/units_form.php
-- [ ] app/Views/master/menu_categories_form.php
+- [x] app/Views/master/menu_categories_form.php
 - [ ] app/Views/master/menu_options_index.php
 
 ### P3 — Inventory

@@ -17,14 +17,14 @@ $action = $isEdit
     : site_url('master/categories/store');
 ?>
 
-<div class="card">
+<div class="tr-card">
     <div class="page-head">
         <div>
             <h2 class="page-title"><?= esc($title ?? 'Kategori Menu'); ?></h2>
             <p class="page-subtitle">Kelola kategori untuk mengelompokkan menu/produk.</p>
         </div>
 
-        <a href="<?= site_url('master/categories'); ?>" class="btn btn-secondary btn-sm">
+        <a href="<?= site_url('master/categories'); ?>" class="tr-btn tr-btn-secondary tr-btn-sm">
             Kembali
         </a>
     </div>
@@ -47,7 +47,7 @@ $action = $isEdit
             <div class="form-field">
                 <label class="form-label">Nama Kategori</label>
                 <input
-                    class="form-input"
+                    class="form-input tr-control"
                     type="text"
                     name="name"
                     required
@@ -59,13 +59,13 @@ $action = $isEdit
         <div class="form-field">
             <label class="form-label">Deskripsi (opsional)</label>
             <textarea
-                class="form-input"
+                class="form-input tr-control"
                 name="description"
                 rows="2"><?= esc(old('description', $category['description'] ?? '')); ?></textarea>
         </div>
 
-        <div class="form-actions" style="justify-content:flex-end;">
-            <button type="submit" class="btn btn-primary">
+        <div class="form-actions">
+            <button type="submit" class="tr-btn tr-btn-primary">
                 <?= $isEdit ? 'Simpan Perubahan' : 'Simpan'; ?>
             </button>
         </div>
