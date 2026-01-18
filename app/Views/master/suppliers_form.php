@@ -10,7 +10,7 @@
 $errors = session('errors') ?? [];
 ?>
 
-<div class="card">
+<div class="tr-card">
     <h2 class="page-title"><?= esc($title ?? 'Form Supplier'); ?></h2>
     <p class="page-subtitle"><?= esc($subtitle ?? ''); ?></p>
 
@@ -32,7 +32,7 @@ $errors = session('errors') ?? [];
             <div class="form-field">
                 <label class="form-label">Nama Supplier</label>
                 <input
-                    class="form-input"
+                    class="form-input tr-control"
                     type="text"
                     name="name"
                     value="<?= esc(old('name', $supplier['name'] ?? '')); ?>"
@@ -42,7 +42,7 @@ $errors = session('errors') ?? [];
             <div class="form-field">
                 <label class="form-label">Telepon (opsional)</label>
                 <input
-                    class="form-input"
+                    class="form-input tr-control"
                     type="text"
                     name="phone"
                     value="<?= esc(old('phone', $supplier['phone'] ?? '')); ?>">
@@ -52,7 +52,7 @@ $errors = session('errors') ?? [];
         <div class="form-field form-field--stack">
             <label class="form-label">Alamat (opsional)</label>
             <textarea
-                class="form-input"
+                class="form-input tr-control"
                 name="address"
                 rows="3"><?= esc(old('address', $supplier['address'] ?? '')); ?></textarea>
         </div>
@@ -70,8 +70,8 @@ $errors = session('errors') ?? [];
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Simpan</button>
-            <a href="<?= site_url('master/suppliers'); ?>" class="btn btn-secondary">Batal</a>
+            <button type="submit" class="tr-btn tr-btn-primary">Simpan</button>
+            <a href="<?= site_url('master/suppliers'); ?>" class="tr-btn tr-btn-secondary">Batal</a>
         </div>
     </form>
 </div>
