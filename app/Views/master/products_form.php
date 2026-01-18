@@ -11,19 +11,19 @@ $titleText = $title ?? 'Form Produk';
 $subtitleText = $subtitle ?? '';
 ?>
 
-<div class="card">
-    <div class="page-head" style="margin-bottom:10px;">
+<div class="tr-card">
+    <div class="page-head">
         <div>
-            <h2 class="page-title" style="margin:0;"><?= esc($titleText); ?></h2>
+            <h2 class="page-title"><?= esc($titleText); ?></h2>
             <?php if ($subtitleText !== ''): ?>
-                <p class="page-subtitle" style="margin:4px 0 0;"><?= esc($subtitleText); ?></p>
+                <p class="page-subtitle"><?= esc($subtitleText); ?></p>
             <?php endif; ?>
         </div>
     </div>
 
     <?php if (!empty($errors)): ?>
         <div class="alert alert-danger">
-            <div style="font-weight:600;">Terjadi kesalahan:</div>
+            <div class="alert-heading">Terjadi kesalahan:</div>
             <ul class="alert-list">
                 <?php foreach ($errors as $error): ?>
                     <li><?= esc($error); ?></li>
@@ -40,7 +40,7 @@ $subtitleText = $subtitle ?? '';
                 <label class="form-label" for="product-name">Nama Menu</label>
                 <input
                     id="product-name"
-                    class="form-input"
+                    class="form-input tr-control"
                     type="text"
                     name="name"
                     value="<?= esc(old('name', $menu['name'] ?? '')); ?>"
@@ -51,7 +51,7 @@ $subtitleText = $subtitle ?? '';
                 <label class="form-label" for="product-category">Kategori</label>
                 <select
                     id="product-category"
-                    class="form-input"
+                    class="form-input tr-control"
                     name="menu_category_id"
                     required>
                     <option value="">-- pilih kategori --</option>
@@ -71,7 +71,7 @@ $subtitleText = $subtitle ?? '';
                 <label class="form-label" for="product-sku">SKU (opsional)</label>
                 <input
                     id="product-sku"
-                    class="form-input"
+                    class="form-input tr-control"
                     type="text"
                     name="sku"
                     value="<?= esc(old('sku', $menu['sku'] ?? '')); ?>"
@@ -82,7 +82,7 @@ $subtitleText = $subtitle ?? '';
                 <label class="form-label" for="product-price">Harga Jual</label>
                 <input
                     id="product-price"
-                    class="form-input"
+                    class="form-input tr-control"
                     type="number"
                     name="price"
                     step="100"
@@ -106,8 +106,8 @@ $subtitleText = $subtitle ?? '';
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Simpan</button>
-            <a class="btn btn-secondary" href="<?= site_url('master/products'); ?>">Batal</a>
+            <button type="submit" class="tr-btn tr-btn-primary">Simpan</button>
+            <a class="tr-btn tr-btn-secondary" href="<?= site_url('master/products'); ?>">Batal</a>
         </div>
 
     <div class="form-note">

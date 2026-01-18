@@ -535,7 +535,7 @@ These files must be migrated first.
 ### P2 — Master Data (CRUD)
 
 - [x] app/Views/master/customers_form.php
-- [ ] app/Views/master/products_form.php
+- [x] app/Views/master/products_form.php
 - [ ] app/Views/master/raw_materials_form.php
 - [ ] app/Views/master/suppliers_form.php
 - [ ] app/Views/master/units_form.php
