@@ -23,7 +23,7 @@ if ($qtyPrecision > 3) {
 $precisionStep = $qtyPrecision > 0 ? '0.' . str_repeat('0', $qtyPrecision - 1) . '1' : '1';
 ?>
 
-<div class="card">
+<div class="tr-card">
     <h2 class="page-title"><?= esc($title ?? 'Form Bahan Baku'); ?></h2>
     <p class="page-subtitle"><?= esc($subtitle ?? ''); ?></p>
 
@@ -44,8 +44,8 @@ $precisionStep = $qtyPrecision > 0 ? '0.' . str_repeat('0', $qtyPrecision - 1) .
         <div class="form-grid">
             <div class="form-field">
                 <label class="form-label">Memiliki Varian?</label>
-                <div class="form-check" style="margin-top:6px;">
-                    <label class="form-check__label" style="margin-right:12px;">
+                <div class="form-check">
+                    <label class="form-check__label">
                         <input
                             class="form-check__input"
                             type="radio"
@@ -69,7 +69,7 @@ $precisionStep = $qtyPrecision > 0 ? '0.' . str_repeat('0', $qtyPrecision - 1) .
             <div class="form-field">
                 <label class="form-label">Nama Bahan</label>
                 <input
-                    class="form-input"
+                    class="form-input tr-control"
                     type="text"
                     name="name"
                     value="<?= esc(old('name', $material['name'] ?? '')); ?>"
@@ -78,7 +78,7 @@ $precisionStep = $qtyPrecision > 0 ? '0.' . str_repeat('0', $qtyPrecision - 1) .
 
             <div class="form-field">
                 <label class="form-label">Satuan</label>
-                <select class="form-input" name="unit_id" required>
+                <select class="form-input tr-control" name="unit_id" required>
                     <option value="">-- pilih satuan --</option>
 
                     <?php foreach (($units ?? []) as $u): ?>
@@ -97,7 +97,7 @@ $precisionStep = $qtyPrecision > 0 ? '0.' . str_repeat('0', $qtyPrecision - 1) .
 
             <div class="form-field">
                 <label class="form-label">Presisi Qty</label>
-                <select class="form-input" name="qty_precision" id="qty-precision-input">
+                <select class="form-input tr-control" name="qty_precision" id="qty-precision-input">
                     <option value="0" <?= $qtyPrecision === 0 ? 'selected' : ''; ?>>0 (tanpa desimal)</option>
                     <option value="2" <?= $qtyPrecision === 2 ? 'selected' : ''; ?>>2 digit</option>
                     <option value="3" <?= $qtyPrecision === 3 ? 'selected' : ''; ?>>3 digit</option>
@@ -108,7 +108,7 @@ $precisionStep = $qtyPrecision > 0 ? '0.' . str_repeat('0', $qtyPrecision - 1) .
             <div class="form-field">
                 <label class="form-label">Min. Stok</label>
                 <input
-                    class="form-input"
+                    class="form-input tr-control"
                     type="number"
                     step="<?= esc($precisionStep); ?>"
                     name="min_stock"
@@ -120,7 +120,7 @@ $precisionStep = $qtyPrecision > 0 ? '0.' . str_repeat('0', $qtyPrecision - 1) .
                 <div class="form-field">
                     <label class="form-label">Stok Awal (opsional)</label>
                     <input
-                        class="form-input"
+                        class="form-input tr-control"
                         type="number"
                         step="<?= esc($precisionStep); ?>"
                         name="initial_stock"
@@ -132,7 +132,7 @@ $precisionStep = $qtyPrecision > 0 ? '0.' . str_repeat('0', $qtyPrecision - 1) .
                 <div class="form-field">
                     <label class="form-label">Harga per Satuan (opsional)</label>
                     <input
-                        class="form-input"
+                        class="form-input tr-control"
                         type="number"
                         step="1"
                         name="initial_cost"
@@ -144,7 +144,7 @@ $precisionStep = $qtyPrecision > 0 ? '0.' . str_repeat('0', $qtyPrecision - 1) .
                 <div class="form-field">
                     <label class="form-label">Stok Saat Ini</label>
                     <input
-                        class="form-input"
+                        class="form-input tr-control"
                         type="number"
                         step="<?= esc($precisionStep); ?>"
                         name="current_stock"
@@ -156,7 +156,7 @@ $precisionStep = $qtyPrecision > 0 ? '0.' . str_repeat('0', $qtyPrecision - 1) .
                 <div class="form-field">
                     <label class="form-label">Last Cost (readonly untuk info)</label>
                     <input
-                        class="form-input"
+                        class="form-input tr-control"
                         type="number"
                         step="1"
                         value="<?= esc($material['cost_last'] ?? '0'); ?>"
@@ -171,7 +171,7 @@ $precisionStep = $qtyPrecision > 0 ? '0.' . str_repeat('0', $qtyPrecision - 1) .
             <div class="form-field" id="brand-parent-field">
                 <label class="form-label">Brand (opsional)</label>
                 <input
-                    class="form-input"
+                    class="form-input tr-control"
                     type="text"
                     name="brand_name"
                     value="<?= esc($brandName); ?>">
@@ -197,13 +197,13 @@ $precisionStep = $qtyPrecision > 0 ? '0.' . str_repeat('0', $qtyPrecision - 1) .
             }
         ?>
 
-        <div class="form-section" style="margin-top:16px;" id="variant-section">
-            <h3 class="page-subtitle" style="margin-bottom:8px;">Varian / Brand</h3>
-            <p class="form-note" style="margin-bottom:8px;">
+        <div class="form-section" id="variant-section">
+            <h3 class="page-subtitle">Varian / Brand</h3>
+            <p class="form-note">
                 Isi varian bila bahan punya pilihan brand. Baris kosong akan diabaikan.
             </p>
 
-            <table class="table">
+            <table class="tr-table">
                 <thead>
                     <tr>
                         <th class="table__th">Brand</th>
@@ -228,7 +228,7 @@ $precisionStep = $qtyPrecision > 0 ? '0.' . str_repeat('0', $qtyPrecision - 1) .
                         <tr>
                             <td class="table__td">
                                 <input
-                                    class="form-input"
+                                    class="form-input tr-control"
                                     type="text"
                                     name="variants[<?= $idx; ?>][brand_name]"
                                     value="<?= esc($rowBrand); ?>">
@@ -236,21 +236,21 @@ $precisionStep = $qtyPrecision > 0 ? '0.' . str_repeat('0', $qtyPrecision - 1) .
                             <td class="table__td">
                                 <input type="hidden" name="variants[<?= $idx; ?>][id]" value="<?= esc($rowId); ?>">
                                 <input
-                                    class="form-input"
+                                    class="form-input tr-control"
                                     type="text"
                                     name="variants[<?= $idx; ?>][variant_name]"
                                     value="<?= esc($rowName); ?>">
                             </td>
                             <td class="table__td">
                                 <input
-                                    class="form-input"
+                                    class="form-input tr-control"
                                     type="text"
                                     name="variants[<?= $idx; ?>][sku_code]"
                                     value="<?= esc($rowSku); ?>">
                             </td>
                             <td class="table__td">
                                 <input
-                                    class="form-input"
+                                    class="form-input tr-control"
                                     type="number"
                                     step="<?= esc($precisionStep); ?>"
                                     data-precision-input="1"
@@ -259,7 +259,7 @@ $precisionStep = $qtyPrecision > 0 ? '0.' . str_repeat('0', $qtyPrecision - 1) .
                             </td>
                             <td class="table__td">
                                 <input
-                                    class="form-input"
+                                    class="form-input tr-control"
                                     type="number"
                                     step="<?= esc($precisionStep); ?>"
                                     data-precision-input="1"
@@ -278,7 +278,7 @@ $precisionStep = $qtyPrecision > 0 ? '0.' . str_repeat('0', $qtyPrecision - 1) .
                 </tbody>
             </table>
 
-            <button type="button" class="btn btn-secondary btn-sm" id="add-variant-row">
+            <button type="button" class="tr-btn tr-btn-secondary tr-btn-sm" id="add-variant-row">
                 + Tambah Baris Varian
             </button>
         </div>
@@ -296,8 +296,8 @@ $precisionStep = $qtyPrecision > 0 ? '0.' . str_repeat('0', $qtyPrecision - 1) .
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Simpan</button>
-            <a href="<?= site_url('master/raw-materials'); ?>" class="btn btn-secondary">Batal</a>
+            <button type="submit" class="tr-btn tr-btn-primary">Simpan</button>
+            <a href="<?= site_url('master/raw-materials'); ?>" class="tr-btn tr-btn-secondary">Batal</a>
         </div>
 
     <?php if (! $isEdit): ?>
@@ -311,20 +311,20 @@ $precisionStep = $qtyPrecision > 0 ? '0.' . str_repeat('0', $qtyPrecision - 1) .
 <template id="variant-row-template">
     <tr>
         <td class="table__td">
-            <input class="form-input" type="text" name="variants[__INDEX__][brand_name]" value="">
+            <input class="form-input tr-control" type="text" name="variants[__INDEX__][brand_name]" value="">
         </td>
         <td class="table__td">
             <input type="hidden" name="variants[__INDEX__][id]" value="">
-            <input class="form-input" type="text" name="variants[__INDEX__][variant_name]" value="">
+            <input class="form-input tr-control" type="text" name="variants[__INDEX__][variant_name]" value="">
         </td>
         <td class="table__td">
-            <input class="form-input" type="text" name="variants[__INDEX__][sku_code]" value="">
+            <input class="form-input tr-control" type="text" name="variants[__INDEX__][sku_code]" value="">
         </td>
         <td class="table__td">
-            <input class="form-input" type="number" step="1" data-precision-input="1" name="variants[__INDEX__][current_stock]" value="">
+            <input class="form-input tr-control" type="number" step="1" data-precision-input="1" name="variants[__INDEX__][current_stock]" value="">
         </td>
         <td class="table__td">
-            <input class="form-input" type="number" step="1" data-precision-input="1" name="variants[__INDEX__][min_stock]" value="">
+            <input class="form-input tr-control" type="number" step="1" data-precision-input="1" name="variants[__INDEX__][min_stock]" value="">
         </td>
         <td class="table__td table__td--center">
             <input type="checkbox" name="variants[__INDEX__][is_active]" value="1" checked>
