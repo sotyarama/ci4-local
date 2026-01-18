@@ -8,7 +8,7 @@
 $errors = session('errors') ?? [];
 ?>
 
-<div class="card">
+<div class="tr-card">
     <h2 class="page-title"><?= esc($title ?? 'Form Customer'); ?></h2>
     <p class="page-subtitle"><?= esc($subtitle ?? ''); ?></p>
 
@@ -30,7 +30,7 @@ $errors = session('errors') ?? [];
             <div class="form-field">
                 <label class="form-label">Nama Customer</label>
                 <input
-                    class="form-input"
+                    class="form-input tr-control"
                     type="text"
                     name="name"
                     value="<?= esc(old('name', $customer['name'] ?? '')); ?>"
@@ -41,7 +41,7 @@ $errors = session('errors') ?? [];
             <div class="form-field">
                 <label class="form-label">No. Telepon (opsional)</label>
                 <input
-                    class="form-input"
+                    class="form-input tr-control"
                     type="text"
                     name="phone"
                     value="<?= esc(old('phone', $customer['phone'] ?? '')); ?>"
@@ -51,7 +51,7 @@ $errors = session('errors') ?? [];
             <div class="form-field">
                 <label class="form-label">Email (opsional)</label>
                 <input
-                    class="form-input"
+                    class="form-input tr-control"
                     type="email"
                     name="email"
                     value="<?= esc(old('email', $customer['email'] ?? '')); ?>"
@@ -72,8 +72,8 @@ $errors = session('errors') ?? [];
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Simpan</button>
-            <a href="<?= site_url('master/customers'); ?>" class="btn btn-secondary">Batal</a>
+            <button type="submit" class="tr-btn tr-btn-primary">Simpan</button>
+            <a href="<?= site_url('master/customers'); ?>" class="tr-btn tr-btn-secondary">Batal</a>
         </div>
     </form>
 </div>
