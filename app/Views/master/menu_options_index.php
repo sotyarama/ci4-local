@@ -43,7 +43,7 @@ foreach (($variants ?? []) as $v) {
 }
 ?>
 
-<div class="card">
+<div class="tr-card">
     <div class="page-head">
         <div>
             <h2 class="page-title">Menu Options</h2>
@@ -72,7 +72,7 @@ foreach (($variants ?? []) as $v) {
         <div class="form-grid">
             <div class="form-field">
                 <label class="form-label">Pilih Menu</label>
-                <select name="menu_id" class="form-input" required>
+                <select name="menu_id" class="form-input tr-control" required>
                     <option value="">-- pilih menu --</option>
                     <?php foreach (($menus ?? []) as $m): ?>
                         <option value="<?= esc($m['id']); ?>" <?= (string) $menuId === (string) $m['id'] ? 'selected' : ''; ?>>
@@ -82,7 +82,7 @@ foreach (($variants ?? []) as $v) {
                 </select>
             </div>
             <div class="form-field" style="align-self:end;">
-                <button type="submit" class="btn btn-primary btn-sm">Load</button>
+                <button type="submit" class="tr-btn tr-btn-primary tr-btn-sm">Load</button>
             </div>
         </div>
     </form>
@@ -121,29 +121,29 @@ foreach (($variants ?? []) as $v) {
                             'is_active' => 1,
                         ];
                     ?>
-                    <div class="card" style="margin-top:12px;" data-group-index="<?= $gIdx; ?>">
-                        <div class="page-head" style="margin-bottom:6px;">
-                            <div class="page-title" style="font-size:14px; margin:0;">Group Opsi</div>
-                            <button type="button" class="btn btn-secondary btn-sm remove-group">Hapus Group</button>
+                    <div class="tr-card" data-group-index="<?= $gIdx; ?>">
+                        <div class="page-head">
+                            <div class="page-title" style="font-size:14px;">Group Opsi</div>
+                            <button type="button" class="tr-btn tr-btn-secondary tr-btn-sm remove-group">Hapus Group</button>
                         </div>
 
                         <div class="form-grid">
                             <input type="hidden" name="groups[<?= $gIdx; ?>][id]" value="<?= esc($groupId); ?>">
                             <div class="form-field">
                                 <label class="form-label">Nama Group</label>
-                                <input class="form-input" type="text" name="groups[<?= $gIdx; ?>][name]" value="<?= esc($groupName); ?>">
+                                <input class="form-input tr-control" type="text" name="groups[<?= $gIdx; ?>][name]" value="<?= esc($groupName); ?>">
                             </div>
                             <div class="form-field">
                                 <label class="form-label">Min Pilih</label>
-                                <input class="form-input" type="number" name="groups[<?= $gIdx; ?>][min_select]" value="<?= esc($minSelect); ?>">
+                                <input class="form-input tr-control" type="number" name="groups[<?= $gIdx; ?>][min_select]" value="<?= esc($minSelect); ?>">
                             </div>
                             <div class="form-field">
                                 <label class="form-label">Max Pilih</label>
-                                <input class="form-input" type="number" name="groups[<?= $gIdx; ?>][max_select]" value="<?= esc($maxSelect); ?>">
+                                <input class="form-input tr-control" type="number" name="groups[<?= $gIdx; ?>][max_select]" value="<?= esc($maxSelect); ?>">
                             </div>
                             <div class="form-field">
                                 <label class="form-label">Sort Order</label>
-                                <input class="form-input" type="number" name="groups[<?= $gIdx; ?>][sort_order]" value="<?= esc($sortOrder); ?>">
+                                <input class="form-input tr-control" type="number" name="groups[<?= $gIdx; ?>][sort_order]" value="<?= esc($sortOrder); ?>">
                             </div>
                         </div>
 
@@ -152,19 +152,19 @@ foreach (($variants ?? []) as $v) {
                                 <input class="form-check__input" type="checkbox" name="groups[<?= $gIdx; ?>][is_required]" value="1" <?= $isRequired ? 'checked' : ''; ?>>
                                 Wajib dipilih
                             </label>
-                            <label class="form-check__label" style="margin-left:12px;">
+                            <label class="form-check__label">
                                 <input class="form-check__input" type="checkbox" name="groups[<?= $gIdx; ?>][show_on_kitchen_ticket]" value="1" <?= $showTicket ? 'checked' : ''; ?>>
                                 Tampil di kitchen ticket
                             </label>
-                            <label class="form-check__label" style="margin-left:12px;">
+                            <label class="form-check__label">
                                 <input class="form-check__input" type="checkbox" name="groups[<?= $gIdx; ?>][is_active]" value="1" <?= $isActive ? 'checked' : ''; ?>>
                                 Aktif
                             </label>
                         </div>
 
-                        <div class="form-section" style="margin-top:10px;">
-                            <h3 class="page-subtitle" style="margin-bottom:8px;">Opsi dalam Group</h3>
-                            <table class="table">
+                        <div class="form-section">
+                            <h3 class="page-subtitle">Opsi dalam Group</h3>
+                            <table class="tr-table">
                                 <thead>
                                     <tr>
                                         <th class="table__th">Nama Opsi</th>
@@ -190,10 +190,10 @@ foreach (($variants ?? []) as $v) {
                                         <tr>
                                             <td class="table__td">
                                                 <input type="hidden" name="groups[<?= $gIdx; ?>][options][<?= $oIdx; ?>][id]" value="<?= esc($optId); ?>">
-                                                <input class="form-input" type="text" name="groups[<?= $gIdx; ?>][options][<?= $oIdx; ?>][name]" value="<?= esc($optName); ?>">
+                                                <input class="form-input tr-control" type="text" name="groups[<?= $gIdx; ?>][options][<?= $oIdx; ?>][name]" value="<?= esc($optName); ?>">
                                             </td>
                                             <td class="table__td">
-                                                <select name="groups[<?= $gIdx; ?>][options][<?= $oIdx; ?>][variant_id]" class="form-input">
+                                                <select name="groups[<?= $gIdx; ?>][options][<?= $oIdx; ?>][variant_id]" class="form-input tr-control">
                                                     <option value="">-- pilih varian --</option>
                                                     <?php foreach (($variants ?? []) as $v): ?>
                                                         <?php
@@ -217,64 +217,64 @@ foreach (($variants ?? []) as $v) {
                                                 </select>
                                             </td>
                                             <td class="table__td table__td--right">
-                                                <input class="form-input" type="number" step="1" name="groups[<?= $gIdx; ?>][options][<?= $oIdx; ?>][price_delta]" value="<?= esc($optPrice); ?>">
+                                                <input class="form-input tr-control" type="number" step="1" name="groups[<?= $gIdx; ?>][options][<?= $oIdx; ?>][price_delta]" value="<?= esc($optPrice); ?>">
                                             </td>
                                             <td class="table__td table__td--right">
-                                                <input class="form-input" type="number" step="0.001" name="groups[<?= $gIdx; ?>][options][<?= $oIdx; ?>][qty_multiplier]" value="<?= esc($optQty); ?>">
+                                                <input class="form-input tr-control" type="number" step="0.001" name="groups[<?= $gIdx; ?>][options][<?= $oIdx; ?>][qty_multiplier]" value="<?= esc($optQty); ?>">
                                             </td>
                                             <td class="table__td table__td--right">
-                                                <input class="form-input" type="number" name="groups[<?= $gIdx; ?>][options][<?= $oIdx; ?>][sort_order]" value="<?= esc($optSort); ?>">
+                                                <input class="form-input tr-control" type="number" name="groups[<?= $gIdx; ?>][options][<?= $oIdx; ?>][sort_order]" value="<?= esc($optSort); ?>">
                                             </td>
                                             <td class="table__td table__td--center">
                                                 <input type="checkbox" name="groups[<?= $gIdx; ?>][options][<?= $oIdx; ?>][is_active]" value="1" <?= $optActive ? 'checked' : ''; ?>>
                                             </td>
                                             <td class="table__td table__td--center">
-                                                <button type="button" class="btn btn-secondary btn-sm remove-option">Hapus</button>
+                                                <button type="button" class="tr-btn tr-btn-secondary tr-btn-sm remove-option">Hapus</button>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
 
-                            <button type="button" class="btn btn-secondary btn-sm add-option">+ Tambah Opsi</button>
+                            <button type="button" class="tr-btn tr-btn-secondary tr-btn-sm add-option">+ Tambah Opsi</button>
                         </div>
                     </div>
                 <?php endforeach; ?>
             </div>
 
             <div class="form-actions">
-                <button type="button" class="btn btn-secondary" id="add-group">+ Tambah Group</button>
-                <button type="submit" class="btn btn-primary">Simpan</button>
-                <a href="<?= site_url('master/menu-options?menu_id=' . $menuId); ?>" class="btn btn-secondary">Reset</a>
+                <button type="button" class="tr-btn tr-btn-secondary" id="add-group">+ Tambah Group</button>
+                <button type="submit" class="tr-btn tr-btn-primary">Simpan</button>
+                <a href="<?= site_url('master/menu-options?menu_id=' . $menuId); ?>" class="tr-btn tr-btn-secondary">Reset</a>
             </div>
         </form>
     <?php endif; ?>
 </div>
 
 <template id="group-template">
-    <div class="card" style="margin-top:12px;" data-group-index="__GROUP_INDEX__">
-        <div class="page-head" style="margin-bottom:6px;">
-            <div class="page-title" style="font-size:14px; margin:0;">Group Opsi</div>
-            <button type="button" class="btn btn-secondary btn-sm remove-group">Hapus Group</button>
+    <div class="tr-card" data-group-index="__GROUP_INDEX__">
+        <div class="page-head">
+            <div class="page-title" style="font-size:14px;">Group Opsi</div>
+            <button type="button" class="tr-btn tr-btn-secondary tr-btn-sm remove-group">Hapus Group</button>
         </div>
 
         <div class="form-grid">
             <input type="hidden" name="groups[__GROUP_INDEX__][id]" value="">
             <div class="form-field">
                 <label class="form-label">Nama Group</label>
-                <input class="form-input" type="text" name="groups[__GROUP_INDEX__][name]" value="">
+                <input class="form-input tr-control" type="text" name="groups[__GROUP_INDEX__][name]" value="">
             </div>
             <div class="form-field">
                 <label class="form-label">Min Pilih</label>
-                <input class="form-input" type="number" name="groups[__GROUP_INDEX__][min_select]" value="0">
+                <input class="form-input tr-control" type="number" name="groups[__GROUP_INDEX__][min_select]" value="0">
             </div>
             <div class="form-field">
                 <label class="form-label">Max Pilih</label>
-                <input class="form-input" type="number" name="groups[__GROUP_INDEX__][max_select]" value="1">
+                <input class="form-input tr-control" type="number" name="groups[__GROUP_INDEX__][max_select]" value="1">
             </div>
             <div class="form-field">
                 <label class="form-label">Sort Order</label>
-                <input class="form-input" type="number" name="groups[__GROUP_INDEX__][sort_order]" value="">
+                <input class="form-input tr-control" type="number" name="groups[__GROUP_INDEX__][sort_order]" value="">
             </div>
         </div>
 
@@ -283,19 +283,19 @@ foreach (($variants ?? []) as $v) {
                 <input class="form-check__input" type="checkbox" name="groups[__GROUP_INDEX__][is_required]" value="1">
                 Wajib dipilih
             </label>
-            <label class="form-check__label" style="margin-left:12px;">
+            <label class="form-check__label">
                 <input class="form-check__input" type="checkbox" name="groups[__GROUP_INDEX__][show_on_kitchen_ticket]" value="1" checked>
                 Tampil di kitchen ticket
             </label>
-            <label class="form-check__label" style="margin-left:12px;">
+            <label class="form-check__label">
                 <input class="form-check__input" type="checkbox" name="groups[__GROUP_INDEX__][is_active]" value="1" checked>
                 Aktif
             </label>
         </div>
 
-        <div class="form-section" style="margin-top:10px;">
-            <h3 class="page-subtitle" style="margin-bottom:8px;">Opsi dalam Group</h3>
-            <table class="table">
+        <div class="form-section">
+            <h3 class="page-subtitle">Opsi dalam Group</h3>
+            <table class="tr-table">
                 <thead>
                     <tr>
                         <th class="table__th">Nama Opsi</th>
@@ -311,33 +311,33 @@ foreach (($variants ?? []) as $v) {
                     <tr>
                         <td class="table__td">
                             <input type="hidden" name="groups[__GROUP_INDEX__][options][0][id]" value="">
-                            <input class="form-input" type="text" name="groups[__GROUP_INDEX__][options][0][name]" value="">
+                            <input class="form-input tr-control" type="text" name="groups[__GROUP_INDEX__][options][0][name]" value="">
                         </td>
                         <td class="table__td">
-                            <select name="groups[__GROUP_INDEX__][options][0][variant_id]" class="form-input">
+                            <select name="groups[__GROUP_INDEX__][options][0][variant_id]" class="form-input tr-control">
                                 <option value="">-- pilih varian --</option>
                                 <?= $variantOptions; ?>
                             </select>
                         </td>
                         <td class="table__td table__td--right">
-                            <input class="form-input" type="number" step="1" name="groups[__GROUP_INDEX__][options][0][price_delta]" value="0">
+                            <input class="form-input tr-control" type="number" step="1" name="groups[__GROUP_INDEX__][options][0][price_delta]" value="0">
                         </td>
                         <td class="table__td table__td--right">
-                            <input class="form-input" type="number" step="0.001" name="groups[__GROUP_INDEX__][options][0][qty_multiplier]" value="1">
+                            <input class="form-input tr-control" type="number" step="0.001" name="groups[__GROUP_INDEX__][options][0][qty_multiplier]" value="1">
                         </td>
                         <td class="table__td table__td--right">
-                            <input class="form-input" type="number" name="groups[__GROUP_INDEX__][options][0][sort_order]" value="">
+                            <input class="form-input tr-control" type="number" name="groups[__GROUP_INDEX__][options][0][sort_order]" value="">
                         </td>
                         <td class="table__td table__td--center">
                             <input type="checkbox" name="groups[__GROUP_INDEX__][options][0][is_active]" value="1" checked>
                         </td>
                         <td class="table__td table__td--center">
-                            <button type="button" class="btn btn-secondary btn-sm remove-option">Hapus</button>
+                            <button type="button" class="tr-btn tr-btn-secondary tr-btn-sm remove-option">Hapus</button>
                         </td>
                     </tr>
                 </tbody>
             </table>
-            <button type="button" class="btn btn-secondary btn-sm add-option">+ Tambah Opsi</button>
+            <button type="button" class="tr-btn tr-btn-secondary tr-btn-sm add-option">+ Tambah Opsi</button>
         </div>
     </div>
 </template>
@@ -346,28 +346,28 @@ foreach (($variants ?? []) as $v) {
     <tr>
         <td class="table__td">
             <input type="hidden" name="groups[__GROUP_INDEX__][options][__OPT_INDEX__][id]" value="">
-            <input class="form-input" type="text" name="groups[__GROUP_INDEX__][options][__OPT_INDEX__][name]" value="">
+            <input class="form-input tr-control" type="text" name="groups[__GROUP_INDEX__][options][__OPT_INDEX__][name]" value="">
         </td>
         <td class="table__td">
-            <select name="groups[__GROUP_INDEX__][options][__OPT_INDEX__][variant_id]" class="form-input">
+            <select name="groups[__GROUP_INDEX__][options][__OPT_INDEX__][variant_id]" class="form-input tr-control">
                 <option value="">-- pilih varian --</option>
                 <?= $variantOptions; ?>
             </select>
         </td>
         <td class="table__td table__td--right">
-            <input class="form-input" type="number" step="1" name="groups[__GROUP_INDEX__][options][__OPT_INDEX__][price_delta]" value="0">
+            <input class="form-input tr-control" type="number" step="1" name="groups[__GROUP_INDEX__][options][__OPT_INDEX__][price_delta]" value="0">
         </td>
         <td class="table__td table__td--right">
-            <input class="form-input" type="number" step="0.001" name="groups[__GROUP_INDEX__][options][__OPT_INDEX__][qty_multiplier]" value="1">
+            <input class="form-input tr-control" type="number" step="0.001" name="groups[__GROUP_INDEX__][options][__OPT_INDEX__][qty_multiplier]" value="1">
         </td>
         <td class="table__td table__td--right">
-            <input class="form-input" type="number" name="groups[__GROUP_INDEX__][options][__OPT_INDEX__][sort_order]" value="">
+            <input class="form-input tr-control" type="number" name="groups[__GROUP_INDEX__][options][__OPT_INDEX__][sort_order]" value="">
         </td>
         <td class="table__td table__td--center">
             <input type="checkbox" name="groups[__GROUP_INDEX__][options][__OPT_INDEX__][is_active]" value="1" checked>
         </td>
         <td class="table__td table__td--center">
-            <button type="button" class="btn btn-secondary btn-sm remove-option">Hapus</button>
+            <button type="button" class="tr-btn tr-btn-secondary tr-btn-sm remove-option">Hapus</button>
         </td>
     </tr>
 </template>
