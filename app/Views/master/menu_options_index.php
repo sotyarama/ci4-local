@@ -101,25 +101,25 @@ foreach (($variants ?? []) as $v) {
             <div id="group-container">
                 <?php foreach ($groupRows as $gIdx => $g): ?>
                     <?php
-                        $groupId = (int) ($g['id'] ?? 0);
-                        $groupName = (string) ($g['name'] ?? '');
-                        $isRequired = ! empty($g['is_required']);
-                        $minSelect = (string) ($g['min_select'] ?? '0');
-                        $maxSelect = (string) ($g['max_select'] ?? '1');
-                        $sortOrder = (string) ($g['sort_order'] ?? ($gIdx + 1));
-                        $showTicket = ! empty($g['show_on_kitchen_ticket']);
-                        $isActive = ! empty($g['is_active']);
-                        $options = $g['options'] ?? [];
-                        $options = array_values($options);
-                        $options[] = [
-                            'id' => '',
-                            'name' => '',
-                            'variant_id' => '',
-                            'price_delta' => '',
-                            'qty_multiplier' => '',
-                            'sort_order' => '',
-                            'is_active' => 1,
-                        ];
+                    $groupId = (int) ($g['id'] ?? 0);
+                    $groupName = (string) ($g['name'] ?? '');
+                    $isRequired = ! empty($g['is_required']);
+                    $minSelect = (string) ($g['min_select'] ?? '0');
+                    $maxSelect = (string) ($g['max_select'] ?? '1');
+                    $sortOrder = (string) ($g['sort_order'] ?? ($gIdx + 1));
+                    $showTicket = ! empty($g['show_on_kitchen_ticket']);
+                    $isActive = ! empty($g['is_active']);
+                    $options = $g['options'] ?? [];
+                    $options = array_values($options);
+                    $options[] = [
+                        'id' => '',
+                        'name' => '',
+                        'variant_id' => '',
+                        'price_delta' => '',
+                        'qty_multiplier' => '',
+                        'sort_order' => '',
+                        'is_active' => 1,
+                    ];
                     ?>
                     <div class="tr-card" data-group-index="<?= $gIdx; ?>">
                         <div class="page-head">
@@ -179,13 +179,13 @@ foreach (($variants ?? []) as $v) {
                                 <tbody data-next-index="<?= count($options); ?>">
                                     <?php foreach ($options as $oIdx => $opt): ?>
                                         <?php
-                                            $optId = (int) ($opt['id'] ?? 0);
-                                            $optName = (string) ($opt['name'] ?? '');
-                                            $optVariant = (string) ($opt['variant_id'] ?? '');
-                                            $optPrice = (string) ($opt['price_delta'] ?? '');
-                                            $optQty = (string) ($opt['qty_multiplier'] ?? 1);
-                                            $optSort = (string) ($opt['sort_order'] ?? ($oIdx + 1));
-                                            $optActive = ! empty($opt['is_active']);
+                                        $optId = (int) ($opt['id'] ?? 0);
+                                        $optName = (string) ($opt['name'] ?? '');
+                                        $optVariant = (string) ($opt['variant_id'] ?? '');
+                                        $optPrice = (string) ($opt['price_delta'] ?? '');
+                                        $optQty = (string) ($opt['qty_multiplier'] ?? 1);
+                                        $optSort = (string) ($opt['sort_order'] ?? ($oIdx + 1));
+                                        $optActive = ! empty($opt['is_active']);
                                         ?>
                                         <tr>
                                             <td class="table__td">
@@ -197,18 +197,18 @@ foreach (($variants ?? []) as $v) {
                                                     <option value="">-- pilih varian --</option>
                                                     <?php foreach (($variants ?? []) as $v): ?>
                                                         <?php
-                                                            $rawName = (string) ($v['raw_material_name'] ?? '');
-                                                            $brandName = (string) ($v['brand_name'] ?? '');
-                                                            $variantName = (string) ($v['variant_name'] ?? '');
-                                                            $labelParts = [];
-                                                            if ($rawName !== '') {
-                                                                $labelParts[] = $rawName;
-                                                            }
-                                                            $detail = trim($brandName . ' ' . $variantName);
-                                                            if ($detail !== '') {
-                                                                $labelParts[] = $detail;
-                                                            }
-                                                            $label = implode(' - ', $labelParts);
+                                                        $rawName = (string) ($v['raw_material_name'] ?? '');
+                                                        $brandName = (string) ($v['brand_name'] ?? '');
+                                                        $variantName = (string) ($v['variant_name'] ?? '');
+                                                        $labelParts = [];
+                                                        if ($rawName !== '') {
+                                                            $labelParts[] = $rawName;
+                                                        }
+                                                        $detail = trim($brandName . ' ' . $variantName);
+                                                        if ($detail !== '') {
+                                                            $labelParts[] = $detail;
+                                                        }
+                                                        $label = implode(' - ', $labelParts);
                                                         ?>
                                                         <option value="<?= esc($v['id']); ?>" <?= (string) $optVariant === (string) $v['id'] ? 'selected' : ''; ?>>
                                                             <?= esc($label); ?>
@@ -372,6 +372,24 @@ foreach (($variants ?? []) as $v) {
     </tr>
 </template>
 
+<!--
+INLINE SCRIPT — DO NOT REFACTOR
+
+Purpose:
+Manages dynamic option groups and option rows (add/remove groups, add/remove options),
+uses HTML templates for new elements, handles delegation for dynamic buttons.
+
+Dependencies:
+- IDs: #group-container, #add-group, #group-template, #option-row-template
+- Classes (JS hooks): .add-option, .remove-option, .remove-group
+- Data attributes: [data-group-index]
+
+Notes:
+- These selectors are intentional JS hooks.
+- Do NOT rename or remove without updating JS.
+- Script is intentionally inline.
+- Candidate for extraction ONLY AFTER full UI migration.
+-->
 <script>
     (function() {
         const groupContainer = document.getElementById('group-container');

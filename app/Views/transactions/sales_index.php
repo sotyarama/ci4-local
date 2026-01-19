@@ -217,6 +217,24 @@ $sales = (isset($sales) && is_iterable($sales)) ? $sales : [];
     </div>
 </div>
 
+<!--
+INLINE SCRIPT — DO NOT REFACTOR
+
+Purpose:
+Sets up live filtering for sales table, manages void modal (open/close/submit),
+handles void button click delegation.
+
+Dependencies:
+- IDs: #void-modal, #void-form, #void-reason, #void-close, #void-cancel
+- Classes (JS hooks): .btn-void
+- Data attributes: data-url (on .btn-void)
+
+Notes:
+- These selectors are intentional JS hooks.
+- Do NOT rename or remove without updating JS.
+- Script is intentionally inline.
+- Candidate for extraction ONLY AFTER full UI migration.
+-->
 <script>
     (function() {
         function init() {

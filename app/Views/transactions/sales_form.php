@@ -183,6 +183,23 @@
 
 </div>
 
+<!--
+INLINE SCRIPT — DO NOT REFACTOR
+
+Purpose:
+Manages dynamic item rows (add/remove), calculates subtotals and grand total,
+handles payment method toggle and change calculation.
+
+Dependencies:
+- IDs: #items-body, #btn-add-row, #grand-total-display, #payment-method, #amount-paid, #change-display
+- Classes (JS hooks): .item-menu, .item-qty, .item-price, .item-subtotal, .btn-remove-row
+
+Notes:
+- These selectors are intentional JS hooks.
+- Do NOT rename or remove without updating JS.
+- Script is intentionally inline (requires PHP data injection).
+- Candidate for extraction ONLY AFTER full UI migration.
+-->
 <script>
     (function() {
         let rowIndex = 0;

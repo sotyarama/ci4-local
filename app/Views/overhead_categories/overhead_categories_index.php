@@ -11,7 +11,7 @@
             </p>
         </div>
         <a href="<?= site_url('overhead-categories/create'); ?>"
-           style="font-size:12px; padding:6px 10px; border-radius:999px; border:none; background:var(--tr-primary); color:#fff; text-decoration:none;">
+            style="font-size:12px; padding:6px 10px; border-radius:999px; border:none; background:var(--tr-primary); color:#fff; text-decoration:none;">
             + Tambah
         </a>
     </div>
@@ -38,52 +38,70 @@
         </div>
         <table style="width:100%; border-collapse:collapse; font-size:12px;">
             <thead>
-            <tr>
-                <th style="text-align:left;  padding:6px 8px; border-bottom:1px solid var(--tr-border);">Nama</th>
-                <th style="text-align:center;padding:6px 8px; border-bottom:1px solid var(--tr-border);">Aktif</th>
-                <th style="text-align:center;padding:6px 8px; border-bottom:1px solid var(--tr-border);">Aksi</th>
-            </tr>
+                <tr>
+                    <th style="text-align:left;  padding:6px 8px; border-bottom:1px solid var(--tr-border);">Nama</th>
+                    <th style="text-align:center;padding:6px 8px; border-bottom:1px solid var(--tr-border);">Aktif</th>
+                    <th style="text-align:center;padding:6px 8px; border-bottom:1px solid var(--tr-border);">Aksi</th>
+                </tr>
             </thead>
             <tbody id="oc-table-body">
-            <?php foreach ($rows as $row): ?>
-                <tr data-name="<?= esc(strtolower($row['name'])); ?>" data-status="<?= (int)($row['is_active'] ?? 0) === 1 ? 'aktif' : 'nonaktif'; ?>">
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
-                        <?= esc($row['name']); ?>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:center;">
-                        <?php $isActive = (int) ($row['is_active'] ?? 0) === 1; ?>
-                        <span class="oc-status"
-                              data-id="<?= $row['id']; ?>"
-                              data-active="<?= $isActive ? '1' : '0'; ?>"
-                              style="padding:2px 8px; border-radius:999px; border:1px solid <?= $isActive ? 'var(--tr-primary)' : 'var(--tr-accent-brown)'; ?>; background:<?= $isActive ? 'rgba(122,154,108,0.14)' : 'var(--tr-secondary-beige)'; ?>; color:<?= $isActive ? 'var(--tr-primary)' : 'var(--tr-accent-brown)'; ?>;">
-                            <?= $isActive ? 'Aktif' : 'Nonaktif'; ?>
-                        </span>
-                    </td>
-                    <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:center;">
-                        <div style="display:flex; justify-content:center; gap:6px; flex-wrap:wrap;">
-                            <a href="<?= site_url('overhead-categories/edit/' . $row['id']); ?>"
-                               style="display:inline-block; font-size:11px; padding:6px 12px; border-radius:999px; background:var(--tr-primary); color:#fff; text-decoration:none;">
-                                Edit
-                            </a>
-                            <button type="button"
+                <?php foreach ($rows as $row): ?>
+                    <tr data-name="<?= esc(strtolower($row['name'])); ?>" data-status="<?= (int)($row['is_active'] ?? 0) === 1 ? 'aktif' : 'nonaktif'; ?>">
+                        <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
+                            <?= esc($row['name']); ?>
+                        </td>
+                        <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:center;">
+                            <?php $isActive = (int) ($row['is_active'] ?? 0) === 1; ?>
+                            <span class="oc-status"
+                                data-id="<?= $row['id']; ?>"
+                                data-active="<?= $isActive ? '1' : '0'; ?>"
+                                style="padding:2px 8px; border-radius:999px; border:1px solid <?= $isActive ? 'var(--tr-primary)' : 'var(--tr-accent-brown)'; ?>; background:<?= $isActive ? 'rgba(122,154,108,0.14)' : 'var(--tr-secondary-beige)'; ?>; color:<?= $isActive ? 'var(--tr-primary)' : 'var(--tr-accent-brown)'; ?>;">
+                                <?= $isActive ? 'Aktif' : 'Nonaktif'; ?>
+                            </span>
+                        </td>
+                        <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); text-align:center;">
+                            <div style="display:flex; justify-content:center; gap:6px; flex-wrap:wrap;">
+                                <a href="<?= site_url('overhead-categories/edit/' . $row['id']); ?>"
+                                    style="display:inline-block; font-size:11px; padding:6px 12px; border-radius:999px; background:var(--tr-primary); color:#fff; text-decoration:none;">
+                                    Edit
+                                </a>
+                                <button type="button"
                                     class="btn-toggle-oc"
                                     data-id="<?= $row['id']; ?>"
                                     data-active="<?= $isActive ? '1' : '0'; ?>"
                                     style="font-size:11px; padding:6px 12px; border-radius:999px; border:1px solid var(--tr-border-soft, #e0d7c8); background:var(--tr-bg, #f4f1ea); color:var(--tr-text, #3a3a3a); cursor:pointer;">
-                                <?= $isActive ? 'Nonaktifkan' : 'Aktifkan'; ?>
-                            </button>
-                        </div>
-                    </td>
+                                    <?= $isActive ? 'Nonaktifkan' : 'Aktifkan'; ?>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                <tr id="oc-noresult" style="display:none;">
+                    <td colspan="3" style="padding:8px; text-align:center; color:var(--tr-muted-text);">Tidak ada hasil.</td>
                 </tr>
-            <?php endforeach; ?>
-            <tr id="oc-noresult" style="display:none;">
-                <td colspan="3" style="padding:8px; text-align:center; color:var(--tr-muted-text);">Tidak ada hasil.</td>
-            </tr>
             </tbody>
         </table>
     <?php endif; ?>
 </div>
 
+<!--
+INLINE SCRIPT — DO NOT REFACTOR
+
+Purpose:
+Handles toggle active/inactive for overhead categories via AJAX,
+updates status badges dynamically, sets up live filtering.
+
+Dependencies:
+- IDs: #oc-filter, #oc-table-body, #oc-noresult
+- Classes (JS hooks): .btn-toggle-oc, .oc-status
+- Data attributes: data-id, data-active
+
+Notes:
+- These selectors are intentional JS hooks.
+- Do NOT rename or remove without updating JS.
+- Script is intentionally inline (requires PHP URL injection).
+- Candidate for extraction ONLY AFTER full UI migration.
+-->
 <script>
     (function() {
         const toggleUrl = "<?= site_url('overhead-categories/toggle'); ?>";
@@ -123,7 +141,11 @@
                     this.disabled = true;
                     this.textContent = 'Menyimpan...';
                     try {
-                        const res = await App.fetchJSON(toggleUrl, { body: { id } });
+                        const res = await App.fetchJSON(toggleUrl, {
+                            body: {
+                                id
+                            }
+                        });
                         const isActive = (res && res.is_active === 1) || res.is_active === '1';
                         updateBadge(id, isActive);
                         this.dataset.active = isActive ? '1' : '0';

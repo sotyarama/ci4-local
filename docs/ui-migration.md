@@ -572,3 +572,12 @@ A file is considered **DONE** when:
 - [ ] Tables use `.tr-table` (dual-class allowed temporarily)
 - [ ] All JS behaviors still work correctly
 - [ ] No new legacy classes introduced
+
+---
+
+## JavaScript Hook Registry
+
+See: [docs/js-hooks.md](js-hooks.md)
+
+This registry defines selectors that are **JavaScript contracts**
+and must be preserved during UI, CSS, or layout migration.

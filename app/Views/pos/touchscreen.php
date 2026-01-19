@@ -245,6 +245,30 @@
         </div>
     </div>
 
+    <!--
+    INLINE SCRIPT — DO NOT REFACTOR
+
+    Purpose:
+    Full POS touchscreen logic: cart management, menu item selection with options modal,
+    customer selection modal, payment method handling, change calculation, form submission.
+
+    Dependencies:
+    - IDs: #cart-list, #cart-empty, #total-items, #total-amount, #pos-form,
+           #payment-method, #amount-paid, #change-display, #customer-display,
+           #customer-id, #customer-modal, #customer-open, #customer-close,
+           #customer-filter, #customer-list, #customer-empty, #customer-recent-wrap,
+           #customer-recent, #options-modal, #options-title, #options-body,
+           #options-error, #options-total, #options-cancel, #options-confirm,
+           #options-close, #pos-pay, #clear-cart, #pay-hint, #money-paid, #money-change
+    - Classes (JS hooks): .customer-item
+    - Data attributes: data-id, data-name, data-price, data-group-id, data-option-id, data-search
+
+    Notes:
+    - These selectors are intentional JS hooks.
+    - Do NOT rename or remove without updating JS.
+    - Script is intentionally inline (requires PHP data injection).
+    - Candidate for extraction ONLY AFTER full UI migration.
+    -->
     <script>
         (function() {
             const cart = [];

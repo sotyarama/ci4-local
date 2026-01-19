@@ -317,6 +317,23 @@ foreach (($recipes ?? []) as $r) {
     </form>
 </div>
 
+<!--
+INLINE SCRIPT — DO NOT REFACTOR
+
+Purpose:
+Manages dynamic ingredient rows (add/remove), syncs type select to show/hide
+raw material or recipe selects, updates unit labels, and reindexes rows.
+
+Dependencies:
+- IDs: #recipe-items-body, #btn-add-ingredient
+- Classes (JS hooks): .item-type, .select-raw, .select-recipe, .unit-label, .btn-remove-row
+
+Notes:
+- These selectors are intentional JS hooks.
+- Do NOT rename or remove without updating JS.
+- Script is intentionally inline.
+- Candidate for extraction ONLY AFTER full UI migration.
+-->
 <script>
     (function() {
         const tbody = document.getElementById('recipe-items-body');
