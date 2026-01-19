@@ -5,16 +5,19 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\OverheadModel;
 use App\Models\OverheadCategoryModel;
+use App\Services\AuditLogService;
 
 class Overheads extends BaseController
 {
     protected OverheadModel $overheadModel;
     protected OverheadCategoryModel $categoryModel;
+    protected AuditLogService $auditService;
 
     public function __construct()
     {
         $this->overheadModel = new OverheadModel();
         $this->categoryModel = new OverheadCategoryModel();
+        $this->auditService  = new AuditLogService();
     }
 
     public function index()
@@ -91,14 +94,20 @@ class Overheads extends BaseController
                 ->withInput();
         }
 
-        $this->overheadModel->insert([
+        $categoryName = $this->resolveCategoryName($this->request->getPost('category_id'));
+        $payload = [
             'trans_date'  => $this->request->getPost('trans_date'),
-            'category'    => $this->request->getPost('category') ?: null,
+            'category'    => $categoryName,
             'description' => $this->request->getPost('description') ?: null,
             'category_id' => $this->request->getPost('category_id') ?: null,
-            'category'    => $this->resolveCategoryName($this->request->getPost('category_id')),
             'amount'      => (float) $this->request->getPost('amount'),
-        ]);
+        ];
+
+        $this->overheadModel->insert($payload);
+        $insertId = $this->overheadModel->getInsertID();
+
+        // Log overhead creation
+        $this->auditService->log('overhead', 'create', $insertId, $payload, 'Overhead created: ' . ($categoryName ?? 'Uncategorized') . ' - Rp ' . number_format($payload['amount'], 0, ',', '.'));
 
         return redirect()->to(site_url('overheads'))
             ->with('message', 'Biaya overhead berhasil disimpan.');

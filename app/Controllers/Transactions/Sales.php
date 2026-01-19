@@ -14,6 +14,7 @@ use App\Models\MenuOptionModel;
 use App\Models\OrderItemOptionModel;
 use App\Models\CustomerModel;
 use App\Services\StockConsumptionService;
+use App\Services\AuditLogService;
 
 class Sales extends BaseController
 {
@@ -28,6 +29,7 @@ class Sales extends BaseController
     protected OrderItemOptionModel $orderItemOptionModel;
     protected StockConsumptionService $stockService;
     protected CustomerModel $customerModel;
+    protected AuditLogService $auditService;
 
     public function __construct()
     {
@@ -42,6 +44,7 @@ class Sales extends BaseController
         $this->orderItemOptionModel = new OrderItemOptionModel();
         $this->stockService = new StockConsumptionService();
         $this->customerModel = new CustomerModel();
+        $this->auditService  = new AuditLogService();
     }
 
     /**
@@ -705,6 +708,18 @@ class Sales extends BaseController
                 ->withInput();
         }
 
+        // Log sale creation
+        $this->auditService->log('sale', 'create', $saleId, [
+            'sale_date'      => $headerData['sale_date'],
+            'invoice_no'     => $headerData['invoice_no'],
+            'customer_id'    => $customerId,
+            'customer_name'  => $customerName,
+            'payment_method' => $paymentMethod,
+            'total_amount'   => $totalAmount,
+            'total_cost'     => $totalCost,
+            'items_count'    => count($items),
+        ], 'Sale created: ' . ($headerData['invoice_no'] ?? '#' . $saleId));
+
         return redirect()->to(site_url('transactions/sales'))
             ->with('message', 'Transaksi penjualan berhasil disimpan.');
     }
@@ -926,6 +941,15 @@ class Sales extends BaseController
                 ->with('error', 'Gagal memproses void. Silakan coba lagi.')
                 ->withInput();
         }
+
+        // Log sale void
+        $this->auditService->log('sale', 'void', $id, [
+            'sale_date'     => $sale['sale_date'] ?? null,
+            'invoice_no'    => $sale['invoice_no'] ?? null,
+            'customer_name' => $sale['customer_name'] ?? null,
+            'total_amount'  => $sale['total_amount'] ?? 0,
+            'void_reason'   => $this->request->getPost('void_reason') ?: null,
+        ], 'Sale voided: ' . ($sale['invoice_no'] ?? '#' . $id));
 
         return redirect()->to(site_url('transactions/sales/detail/' . $id))
             ->with('message', 'Transaksi berhasil di-void dan stok sudah dikembalikan.');

@@ -76,6 +76,7 @@ if (! isset($canManageUsers)) {
         <div class="nav-group" id="nav-main">
             <?= $navLink('/', 'Dashboard', $menuAllowed('dashboard'), $isActive(['', 'dashboard']), false); ?>
             <?= $navLink('pos/touch', 'Main Sales UI', $menuAllowed('transactions'), $isActive(['pos/touch']), true); ?>
+            <?= $navLink('logs', 'Logs', $menuAllowed('dashboard'), $isActive(['logs']), true); ?>
         </div>
 
         <!-- Master -->

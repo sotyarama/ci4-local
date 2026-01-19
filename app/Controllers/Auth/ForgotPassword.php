@@ -5,19 +5,22 @@ namespace App\Controllers\Auth;
 use App\Controllers\BaseController;
 use App\Models\PasswordResetModel;
 use App\Models\UserModel;
+use App\Services\AuditLogService;
 use Config\Services;
 
 class ForgotPassword extends BaseController
 {
     private UserModel $userModel;
     private PasswordResetModel $resetModel;
+    private AuditLogService $auditService;
     private int $expiryMinutes = 60;
     private int $throttleSeconds = 120;
 
     public function __construct()
     {
-        $this->userModel  = new UserModel();
-        $this->resetModel = new PasswordResetModel();
+        $this->userModel    = new UserModel();
+        $this->resetModel   = new PasswordResetModel();
+        $this->auditService = new AuditLogService();
     }
 
     public function index()
@@ -54,9 +57,21 @@ class ForgotPassword extends BaseController
 
             if ($lastReset && strtotime((string) $lastReset['created_at']) > (time() - $this->throttleSeconds)) {
                 $shouldCreate = false;
+
+                // Log throttled request
+                $this->auditService->logAuth('forgot_throttled', (int) $user['id'], [
+                    'email' => $email,
+                    'ip'    => $ip,
+                ], 'Password reset request throttled');
             }
         } else {
             $shouldCreate = false; // user tidak ada -> tetap balikan sukses generic
+
+            // Log unknown email attempt (for security monitoring)
+            $this->auditService->logAuth('forgot_unknown', null, [
+                'email' => $email,
+                'ip'    => $ip,
+            ], 'Password reset requested for unknown email');
         }
 
         $resetLink = null;
@@ -66,7 +81,13 @@ class ForgotPassword extends BaseController
             $this->resetModel->createTokenForUser((int) $user['id'], $rawToken, $expiresAt, $ip, $ua);
 
             $resetLink = site_url('auth/reset?token=' . urlencode($rawToken) . '&email=' . urlencode($email));
-            $this->sendEmail($email, $resetLink, $this->expiryMinutes);
+            $emailSent = $this->sendEmail($email, $resetLink, $this->expiryMinutes);
+
+            // Log reset request + email status
+            $this->auditService->logAuth($emailSent ? 'forgot_email_sent' : 'forgot_email_fail', (int) $user['id'], [
+                'email' => $email,
+                'ip'    => $ip,
+            ], $emailSent ? 'Password reset email sent' : 'Password reset email failed to send');
         }
 
         // Selalu tampilkan pesan sukses generic (tidak bocorkan keberadaan email)
@@ -79,7 +100,7 @@ class ForgotPassword extends BaseController
         return rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '=');
     }
 
-    private function sendEmail(string $toEmail, string $link, int $expiresMinutes): void
+    private function sendEmail(string $toEmail, string $link, int $expiresMinutes): bool
     {
         $config = config('Email');
         $email  = Services::email();
@@ -100,8 +121,10 @@ class ForgotPassword extends BaseController
 
         try {
             $email->send();
+            return true;
         } catch (\Throwable $e) {
             log_message('error', 'Gagal mengirim email reset password: {message}', ['message' => $e->getMessage()]);
+            return false;
         }
     }
 }

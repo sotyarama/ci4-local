@@ -7,7 +7,7 @@
         <div>
             <h2 style="margin:0; font-size:18px;">Audit Log</h2>
             <p style="margin:2px 0 0; font-size:12px; color:var(--tr-muted-text);">
-                Jejak perubahan menu & resep (create/update).
+                Jejak perubahan data dan aktivitas sistem.
             </p>
         </div>
     </div>
@@ -20,8 +20,20 @@
             <select name="entity_type" id="entity_type"
                     style="min-width:160px; padding:5px 8px; border-radius:6px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:12px;">
                 <option value="">-- semua --</option>
-                <option value="menu" <?= $entityType === 'menu' ? 'selected' : ''; ?>>Menu</option>
-                <option value="recipe" <?= $entityType === 'recipe' ? 'selected' : ''; ?>>Recipe</option>
+                <?php foreach ($entityTypeList ?? [] as $et): ?>
+                    <option value="<?= esc($et); ?>" <?= $entityType === $et ? 'selected' : ''; ?>><?= esc(ucfirst(str_replace('_', ' ', $et))); ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <div style="display:flex; flex-direction:column; font-size:12px;">
+            <label for="action" style="margin-bottom:2px; color:var(--tr-muted-text);">Action</label>
+            <select name="action" id="action"
+                    style="min-width:120px; padding:5px 8px; border-radius:6px; border:1px solid var(--tr-border); background:var(--tr-bg); color:var(--tr-text); font-size:12px;">
+                <option value="">-- semua --</option>
+                <?php foreach ($actionList ?? [] as $act): ?>
+                    <option value="<?= esc($act); ?>" <?= ($action ?? '') === $act ? 'selected' : ''; ?>><?= esc($act); ?></option>
+                <?php endforeach; ?>
             </select>
         </div>
 
@@ -73,25 +85,36 @@
                 <tbody id="audit-table-body">
                 <?php foreach ($logs as $log): ?>
                     <?php
-                        $actionColor = $log['action'] === 'update' ? 'var(--tr-accent-brown)' : 'var(--tr-primary)';
+                        $act = $log['action'] ?? '';
+                        $actionColor = match($act) {
+                            'create' => 'var(--tr-primary)',
+                            'update' => 'var(--tr-accent-brown)',
+                            'delete', 'void' => '#c0392b',
+                            'login_success', 'logout', 'reset_success' => '#27ae60',
+                            'login_fail', 'reset_fail', 'reset_invalid', 'forgot_unknown' => '#e74c3c',
+                            default => 'var(--tr-muted-text)',
+                        };
+                        $userName = $log['user_name'] ?? null;
+                        $userId = $log['user_id'] ?? null;
+                        $userDisplay = $userName ?: ($userId ? 'ID:' . $userId : '-');
                     ?>
-                    <tr data-entity="<?= esc(strtolower($log['entity_type'] ?? '')); ?>" data-action="<?= esc(strtolower($log['action'] ?? '')); ?>" data-desc="<?= esc(strtolower($log['description'] ?? '')); ?>" data-user="<?= esc(strtolower($log['user_id'] ?? '')); ?>">
+                    <tr data-entity="<?= esc(strtolower($log['entity_type'] ?? '')); ?>" data-action="<?= esc(strtolower($act)); ?>" data-desc="<?= esc(strtolower($log['description'] ?? '')); ?>" data-user="<?= esc(strtolower($userDisplay)); ?>">
                         <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
                             <?= esc($log['created_at']); ?>
                         </td>
                         <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
-                            <?= esc($log['entity_type']); ?> #<?= esc($log['entity_id'] ?? '-'); ?>
+                            <?= esc($log['entity_type']); ?><?php if (isset($log['entity_id']) && $log['entity_id']): ?> #<?= esc($log['entity_id']); ?><?php endif; ?>
                         </td>
                         <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
                             <span style="padding:2px 8px; border-radius:999px; border:1px solid var(--tr-border); background:var(--tr-secondary-beige); color:<?= $actionColor; ?>;">
-                                <?= esc($log['action']); ?>
+                                <?= esc($act); ?>
                             </span>
                         </td>
                         <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border); white-space:pre-wrap;">
                             <?= esc($log['description'] ?? ''); ?>
                         </td>
                         <td style="padding:6px 8px; border-bottom:1px solid var(--tr-border);">
-                            <?= esc($log['user_id'] ?? '-'); ?>
+                            <?= esc($userDisplay); ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>

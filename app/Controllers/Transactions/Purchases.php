@@ -9,6 +9,7 @@ use App\Models\SupplierModel;
 use App\Models\RawMaterialModel;
 use App\Models\RawMaterialVariantModel;
 use App\Models\StockMovementModel;
+use App\Services\AuditLogService;
 
 class Purchases extends BaseController
 {
@@ -18,6 +19,7 @@ class Purchases extends BaseController
     protected RawMaterialModel $rawModel;
     protected RawMaterialVariantModel $variantModel;
     protected StockMovementModel $movementModel;
+    protected AuditLogService $auditService;
 
     public function __construct()
     {
@@ -27,6 +29,7 @@ class Purchases extends BaseController
         $this->rawModel      = new RawMaterialModel();
         $this->variantModel  = new RawMaterialVariantModel();
         $this->movementModel = new StockMovementModel();
+        $this->auditService  = new AuditLogService();
     }
 
     public function index()
@@ -277,6 +280,17 @@ class Purchases extends BaseController
                 ->with('error', 'Terjadi kesalahan saat menyimpan pembelian.')
                 ->withInput();
         }
+
+        // Log purchase creation
+        $supplier = $this->supplierModel->find($purchaseData['supplier_id']);
+        $this->auditService->log('purchase', 'create', (int) $purchaseId, [
+            'purchase_date' => $purchaseData['purchase_date'],
+            'invoice_no'    => $purchaseData['invoice_no'],
+            'supplier_id'   => $purchaseData['supplier_id'],
+            'supplier_name' => $supplier['name'] ?? null,
+            'total_amount'  => $total,
+            'items_count'   => count($items),
+        ], 'Purchase created: ' . ($purchaseData['invoice_no'] ?? '#' . $purchaseId));
 
         return redirect()->to(site_url('purchases'))
             ->with('message', 'Pembelian berhasil disimpan.');

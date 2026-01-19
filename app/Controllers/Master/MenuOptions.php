@@ -7,6 +7,7 @@ use App\Models\MenuModel;
 use App\Models\MenuOptionGroupModel;
 use App\Models\MenuOptionModel;
 use App\Models\RawMaterialVariantModel;
+use App\Services\AuditLogService;
 
 class MenuOptions extends BaseController
 {
@@ -14,13 +15,15 @@ class MenuOptions extends BaseController
     protected MenuOptionGroupModel $groupModel;
     protected MenuOptionModel $optionModel;
     protected RawMaterialVariantModel $variantModel;
+    protected AuditLogService $auditService;
 
     public function __construct()
     {
-        $this->menuModel = new MenuModel();
-        $this->groupModel = new MenuOptionGroupModel();
-        $this->optionModel = new MenuOptionModel();
+        $this->menuModel    = new MenuModel();
+        $this->groupModel   = new MenuOptionGroupModel();
+        $this->optionModel  = new MenuOptionModel();
         $this->variantModel = new RawMaterialVariantModel();
+        $this->auditService = new AuditLogService();
     }
 
     public function index()
@@ -234,6 +237,16 @@ class MenuOptions extends BaseController
                 ->with('errors', ['Gagal menyimpan konfigurasi opsi menu.'])
                 ->withInput();
         }
+
+        // Log menu options bulk save
+        $menu = $this->menuModel->find($menuId);
+        $menuName = $menu['name'] ?? 'Unknown';
+        $this->auditService->log('menu_options', 'bulk_save', $menuId, [
+            'menu_id'       => $menuId,
+            'menu_name'     => $menuName,
+            'groups_count'  => count($submittedGroupIds),
+            'groups_input'  => $groupsInput,
+        ], 'Menu options saved for: ' . $menuName);
 
         return redirect()->to(site_url('master/menu-options?menu_id=' . $menuId))
             ->with('message', 'Konfigurasi opsi menu berhasil disimpan.');

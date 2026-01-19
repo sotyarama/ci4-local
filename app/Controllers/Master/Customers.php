@@ -5,16 +5,19 @@ namespace App\Controllers\Master;
 use App\Controllers\BaseController;
 use App\Models\CustomerModel;
 use App\Models\SaleModel;
+use App\Services\AuditLogService;
 
 class Customers extends BaseController
 {
     protected CustomerModel $customerModel;
     protected SaleModel $saleModel;
+    protected AuditLogService $auditService;
 
     public function __construct()
     {
         $this->customerModel = new CustomerModel();
-        $this->saleModel = new SaleModel();
+        $this->saleModel     = new SaleModel();
+        $this->auditService  = new AuditLogService();
     }
 
     /**
@@ -60,6 +63,11 @@ class Customers extends BaseController
         $payload = $this->payloadFromRequest();
         $this->customerModel->insert($payload);
 
+        $insertId = $this->customerModel->getInsertID();
+
+        // Log customer creation
+        $this->auditService->log('customer', 'create', $insertId, $payload, 'Customer created: ' . $payload['name']);
+
         return redirect()->to(site_url('master/customers'))
             ->with('message', 'Customer berhasil ditambahkan.');
     }
@@ -100,8 +108,15 @@ class Customers extends BaseController
                 ->with('error', 'Customer tidak ditemukan.');
         }
 
+        $oldData = $customer;
         $payload = $this->payloadFromRequest();
         $this->customerModel->update($id, $payload);
+
+        // Log customer update with before/after
+        $this->auditService->log('customer', 'update', $id, [
+            'before' => $oldData,
+            'after'  => $payload,
+        ], 'Customer updated: ' . $payload['name']);
 
         return redirect()->to(site_url('master/customers'))
             ->with('message', 'Customer berhasil diperbarui.');
@@ -130,6 +145,9 @@ class Customers extends BaseController
             return redirect()->to(site_url('master/customers'))
                 ->with('error', 'Customer ini sudah dipakai pada transaksi dan tidak bisa dihapus.');
         }
+
+        // Log customer deletion (capture before delete)
+        $this->auditService->log('customer', 'delete', $id, $customer, 'Customer deleted: ' . ($customer['name'] ?? ''));
 
         $this->customerModel->delete($id);
 

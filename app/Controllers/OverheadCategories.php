@@ -4,14 +4,17 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\OverheadCategoryModel;
+use App\Services\AuditLogService;
 
 class OverheadCategories extends BaseController
 {
     protected OverheadCategoryModel $categoryModel;
+    protected AuditLogService $auditService;
 
     public function __construct()
     {
         $this->categoryModel = new OverheadCategoryModel();
+        $this->auditService  = new AuditLogService();
     }
 
     public function index()
@@ -54,10 +57,16 @@ class OverheadCategories extends BaseController
                 ->withInput();
         }
 
-        $this->categoryModel->insert([
+        $payload = [
             'name'      => $this->request->getPost('name'),
             'is_active' => $this->request->getPost('is_active') ? 1 : 0,
-        ]);
+        ];
+
+        $this->categoryModel->insert($payload);
+        $insertId = $this->categoryModel->getInsertID();
+
+        // Log overhead category creation
+        $this->auditService->log('overhead_category', 'create', $insertId, $payload, 'Overhead category created: ' . $payload['name']);
 
         return redirect()->to(site_url('overhead-categories'))
             ->with('message', 'Kategori overhead berhasil disimpan.');
@@ -99,10 +108,19 @@ class OverheadCategories extends BaseController
                 ->withInput();
         }
 
-        $this->categoryModel->update($id, [
+        $oldData = $category;
+        $payload = [
             'name'      => $this->request->getPost('name'),
             'is_active' => $this->request->getPost('is_active') ? 1 : 0,
-        ]);
+        ];
+
+        $this->categoryModel->update($id, $payload);
+
+        // Log overhead category update
+        $this->auditService->log('overhead_category', 'update', $id, [
+            'before' => $oldData,
+            'after'  => $payload,
+        ], 'Overhead category updated: ' . $payload['name']);
 
         return redirect()->to(site_url('overhead-categories'))
             ->with('message', 'Kategori overhead berhasil diperbarui.');
@@ -133,8 +151,16 @@ class OverheadCategories extends BaseController
             ]);
         }
 
-        $newStatus = (int) ($category['is_active'] ?? 0) === 1 ? 0 : 1;
+        $oldStatus = (int) ($category['is_active'] ?? 0);
+        $newStatus = $oldStatus === 1 ? 0 : 1;
         $this->categoryModel->update($id, ['is_active' => $newStatus]);
+
+        // Log toggle action
+        $this->auditService->log('overhead_category', 'toggle', $id, [
+            'name'       => $category['name'] ?? '',
+            'old_status' => $oldStatus,
+            'new_status' => $newStatus,
+        ], 'Overhead category ' . ($newStatus ? 'activated' : 'deactivated') . ': ' . ($category['name'] ?? ''));
 
         return $this->response->setJSON([
             'status'     => 'ok',

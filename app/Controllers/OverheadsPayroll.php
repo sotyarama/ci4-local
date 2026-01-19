@@ -5,16 +5,19 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\UserModel;
 use App\Models\PayrollModel;
+use App\Services\AuditLogService;
 
 class OverheadsPayroll extends BaseController
 {
     protected UserModel $userModel;
     protected PayrollModel $payrollModel;
+    protected AuditLogService $auditService;
 
     public function __construct()
     {
-        $this->userModel = new UserModel();
+        $this->userModel    = new UserModel();
         $this->payrollModel = new PayrollModel();
+        $this->auditService = new AuditLogService();
     }
 
     public function index()
@@ -82,6 +85,14 @@ class OverheadsPayroll extends BaseController
         }
 
         $this->payrollModel->insert($data);
+        $insertId = $this->payrollModel->getInsertID();
+
+        // Get staff name for logging
+        $staff = $this->userModel->find($data['user_id']);
+        $staffName = $staff['full_name'] ?? $staff['username'] ?? 'Unknown';
+
+        // Log payroll creation
+        $this->auditService->log('payroll', 'create', $insertId, array_merge($data, ['staff_name' => $staffName]), 'Payroll created: ' . $staffName . ' - ' . $data['period_month']);
 
         return redirect()->to(site_url('overheads/payroll'))
             ->with('message', 'Payroll berhasil ditambahkan.');
@@ -124,6 +135,16 @@ class OverheadsPayroll extends BaseController
 
         $this->payrollModel->update($id, $data);
 
+        // Get staff name for logging
+        $staff = $this->userModel->find($data['user_id']);
+        $staffName = $staff['full_name'] ?? $staff['username'] ?? 'Unknown';
+
+        // Log payroll update
+        $this->auditService->log('payroll', 'update', $id, [
+            'before' => $exists,
+            'after'  => array_merge($data, ['staff_name' => $staffName]),
+        ], 'Payroll updated: ' . $staffName . ' - ' . $data['period_month']);
+
         return redirect()->to(site_url('overheads/payroll'))
             ->with('message', 'Payroll berhasil diperbarui.');
     }
@@ -131,6 +152,16 @@ class OverheadsPayroll extends BaseController
     public function delete(int $id)
     {
         $this->ensureOwner();
+
+        $payroll = $this->payrollModel->find($id);
+        if ($payroll) {
+            // Get staff name for logging
+            $staff = $this->userModel->find($payroll['user_id'] ?? 0);
+            $staffName = $staff['full_name'] ?? $staff['username'] ?? 'Unknown';
+
+            // Log payroll deletion (capture before delete)
+            $this->auditService->log('payroll', 'delete', $id, array_merge($payroll, ['staff_name' => $staffName]), 'Payroll deleted: ' . $staffName . ' - ' . ($payroll['period_month'] ?? ''));
+        }
 
         $this->payrollModel->delete($id);
         return redirect()->to(site_url('overheads/payroll'))

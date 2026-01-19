@@ -217,6 +217,12 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 
 
         // ------------------------------
+        // Activity Logs (User-facing)
+        // ------------------------------
+        $routes->get('logs', 'Logs::index');
+
+
+        // ------------------------------
         // Brand Guide
         // ------------------------------
         $routes->get('brand-guide', 'BrandGuide::index');
